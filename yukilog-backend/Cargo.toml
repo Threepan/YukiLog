@@ -1,0 +1,32 @@
+[package]
+name = "yukilog-backend"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# Web 框架与路由
+axum = "0.7"
+# 异步运行时
+tokio = { version = "1.0", features = ["full"] }
+# 序列化与反序列化
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# 数据库 ORM (指定使用 Postgres)
+sea-orm = { version = "1.1", features = [
+    "sqlx-postgres", 
+    "runtime-tokio-rustls", 
+    "macros"
+] }
+
+# 身份验证 JWT
+jsonwebtoken = "9.3"
+# 密码哈希 (用于 Users 表密码存储)
+argon2 = "0.5"
+
+# 跨域处理 (前端 Vue/Astro 需要)
+tower-http = { version = "0.5", features = ["cors"] }
+
+# 日志打印
+tracing = "0.1"
+tracing-subscriber = "0.3"
