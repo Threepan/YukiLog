@@ -1,2 +1,4 @@
 # Rust build
 target/
+
+db
