@@ -98,7 +98,7 @@ CREATE TABLE links (
     link_url VARCHAR(255) NOT NULL UNIQUE,              -- 站点url
     link_avatar VARCHAR(255),                           -- 站点头像
     link_desc TEXT,                                     -- 站点描述
-    link_status VARCHAR(20) NOT NULL DEFAULT 'broken',  -- 站点状态 active, pending, broken
+    link_status VARCHAR(20) NOT NULL DEFAULT 'broken',  -- 站点状态 active, , broken
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
