@@ -1,0 +1,1 @@
+/// 负责操作 `entities` 和 `AppState`
