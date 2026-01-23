@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YukiLog 分层架构图</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>😋</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #fff;
+            margin-bottom: 40px;
+            font-size: 2rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .layer {
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            position: relative;
+        }
+        
+        .layer::after {
+            content: '↓';
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            color: #fff;
+            z-index: 10;
+        }
+        
+        .layer:last-child::after {
+            display: none;
+        }
+        
+        .layer-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .layer-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        
+        .layer-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+        
+        .layer-subtitle {
+            font-size: 0.875rem;
+            color: #666;
+            margin-left: auto;
+        }
+        
+        /* HTTP Layer */
+        .http .layer-icon { background: #e3f2fd; }
+        .http .layer-header { border-bottom-color: #2196f3; }
+        
+        /* Service Layer */
+        .service .layer-icon { background: #f3e5f5; }
+        .service .layer-header { border-bottom-color: #9c27b0; }
+        
+        /* Repository Layer */
+        .repo .layer-icon { background: #e8f5e9; }
+        .repo .layer-header { border-bottom-color: #4caf50; }
+        
+        /* Entity Layer */
+        .entity .layer-icon { background: #fff3e0; }
+        .entity .layer-header { border-bottom-color: #ff9800; }
+        
+        .routes-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .route-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .route-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .route-card.public { border-color: #4caf50; }
+        .route-card.user { border-color: #2196f3; }
+        .route-card.admin { border-color: #f44336; }
+        
+        .route-path {
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        
+        .route-desc {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .route-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+        
+        .route-card.public .route-badge { background: #e8f5e9; color: #2e7d32; }
+        .route-card.user .route-badge { background: #e3f2fd; color: #1565c0; }
+        .route-card.admin .route-badge { background: #ffebee; color: #c62828; }
+        
+        .middleware-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 16px;
+            background: #fafafa;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .middleware-item {
+            background: #fff;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .middleware-item.active {
+            border-color: #2196f3;
+            background: #e3f2fd;
+        }
+        
+        .middleware-arrow {
+            color: #999;
+            font-size: 1.2rem;
+        }
+        
+        .handler-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .handler-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .handler-flow {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+        
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+        
+        .service-card {
+            background: #fafafa;
+            border-radius: 12px;
+            padding: 16px;
+            border-left: 4px solid #9c27b0;
+        }
+        
+        .service-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+        
+        .service-features {
+            list-style: none;
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .service-features li {
+            padding: 2px 0;
+        }
+        
+        .service-features li::before {
+            content: '•';
+            color: #9c27b0;
+            margin-right: 6px;
+        }
+        
+        .trait-box {
+            background: #f5f5f5;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 2px dashed #4caf50;
+        }
+        
+        .trait-header {
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9rem;
+            color: #2e7d32;
+            margin-bottom: 12px;
+        }
+        
+        .trait-methods {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .method-tag {
+            background: #fff;
+            border: 1px solid #4caf50;
+            border-radius: 4px;
+            padding: 4px 10px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: #333;
+        }
+        
+        .repos-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+        
+        .repo-item {
+            background: #fff;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .repo-item span {
+            font-size: 0.75rem;
+            color: #888;
+            display: block;
+            margin-top: 4px;
+        }
+        
+        .entities-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
+        .entity-tag {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        .entity-divider {
+            color: #ccc;
+            font-size: 1.2rem;
+        }
+        
+        .orm-badge {
+            background: #fff3e0;
+            color: #e65100;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            margin-top: 16px;
+            display: inline-block;
+        }
+        
+        @media (max-width: 768px) {
+            .routes-grid,
+            .services-grid,
+            .repos-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .middleware-flow {
+                flex-direction: column;
+            }
+            
+            .middleware-arrow {
+                transform: rotate(90deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏗️ YukiLog 分层架构</h1>
+        
+        <!-- HTTP Layer -->
+        <div class="layer http">
+            <div class="layer-header">
+                <div class="layer-icon">🌐</div>
+                <div class="layer-title">HTTP Layer</div>
+                <div class="layer-subtitle">Axum Framework</div>
+            </div>
+            
+            <div class="routes-grid">
+                <div class="route-card public">
+                    <div class="route-path">/api/*</div>
+                    <div class="route-desc">公开接口</div>
+                    <div class="route-badge">无需认证</div>
+                </div>
+                <div class="route-card user">
+                    <div class="route-path">/api/user/*</div>
+                    <div class="route-desc">用户接口</div>
+                    <div class="route-badge">需要 JWT</div>
+                </div>
+                <div class="route-card admin">
+                    <div class="route-path">/api/admin/*</div>
+                    <div class="route-desc">管理接口</div>
+                    <div class="route-badge">需要 Admin</div>
+                </div>
+            </div>
+            
+            <div class="middleware-flow">
+                <div class="middleware-item">Request</div>
+                <div class="middleware-arrow">→</div>
+                <div class="middleware-item active">AuthGuard</div>
+                <div class="middleware-arrow">→</div>
+                <div class="middleware-item active">AdminGuard</div>
+                <div class="middleware-arrow">→</div>
+                <div class="middleware-item">Handler</div>
+            </div>
+            
+            <div class="handler-box">
+                <div class="handler-title">Handlers (api/http)</div>
+                <div class="handler-flow">请求解析 → 调用 Service → 构造响应</div>
+            </div>
+        </div>
+        
+        <!-- Service Layer -->
+        <div class="layer service">
+            <div class="layer-header">
+                <div class="layer-icon">💼</div>
+                <div class="layer-title">Service Layer</div>
+                <div class="layer-subtitle">core/</div>
+            </div>
+            
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-name">PostService</div>
+                    <ul class="service-features">
+                        <li>业务校验</li>
+                        <li>聚合查询</li>
+                        <li>事务处理</li>
+                    </ul>
+                </div>
+                <div class="service-card">
+                    <div class="service-name">AuthService</div>
+                    <ul class="service-features">
+                        <li>登录验证</li>
+                        <li>JWT 签发</li>
+                        <li>密码哈希</li>
+                    </ul>
+                </div>
+                <div class="service-card">
+                    <div class="service-name">CommentService</div>
+                    <ul class="service-features">
+                        <li>评论树构建</li>
+                        <li>敏感词过滤</li>
+                        <li>通知触发</li>
+                    </ul>
+                </div>
+                <div class="service-card">
+                    <div class="service-name">CategoryService</div>
+                    <ul class="service-features">
+                        <li>分类管理</li>
+                        <li>文章计数</li>
+                    </ul>
+                </div>
+                <div class="service-card">
+                    <div class="service-name">TagService</div>
+                    <ul class="service-features">
+                        <li>标签管理</li>
+                        <li>标签云统计</li>
+                    </ul>
+                </div>
+                <div class="service-card">
+                    <div class="service-name">LinkService</div>
+                    <ul class="service-features">
+                        <li>友链管理</li>
+                        <li>状态检测</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Repository Layer -->
+        <div class="layer repo">
+            <div class="layer-header">
+                <div class="layer-icon">🗄️</div>
+                <div class="layer-title">Repository Layer</div>
+                <div class="layer-subtitle">infra/</div>
+            </div>
+            
+            <div class="trait-box">
+                <div class="trait-header">trait Repository&lt;E: EntityTrait&gt;</div>
+                <div class="trait-methods">
+                    <span class="method-tag">find_by_id()</span>
+                    <span class="method-tag">find_all()</span>
+                    <span class="method-tag">find_paginated()</span>
+                    <span class="method-tag">create()</span>
+                    <span class="method-tag">update()</span>
+                    <span class="method-tag">delete()</span>
+                    <span class="method-tag">find_by_condition()</span>
+                </div>
+            </div>
+            
+            <div class="repos-grid">
+                <div class="repo-item">PostRepository<span>特殊查询扩展</span></div>
+                <div class="repo-item">UserRepository<span>特殊查询扩展</span></div>
+                <div class="repo-item">CommentRepository<span>嵌套评论查询</span></div>
+                <div class="repo-item">CategoryRepository<span>通用 CRUD</span></div>
+                <div class="repo-item">TagRepository<span>通用 CRUD</span></div>
+                <div class="repo-item">LinkRepository<span>通用 CRUD</span></div>
+            </div>
+        </div>
+        
+        <!-- Entity Layer -->
+        <div class="layer entity">
+            <div class="layer-header">
+                <div class="layer-icon">📊</div>
+                <div class="layer-title">Entities</div>
+                <div class="layer-subtitle">entities/</div>
+            </div>
+            
+            <div class="entities-flow">
+                <span class="entity-tag">posts</span>
+                <span class="entity-divider">|</span>
+                <span class="entity-tag">users</span>
+                <span class="entity-divider">|</span>
+                <span class="entity-tag">categories</span>
+                <span class="entity-divider">|</span>
+                <span class="entity-tag">tags</span>
+                <span class="entity-divider">|</span>
+                <span class="entity-tag">comments</span>
+                <span class="entity-divider">|</span>
+                <span class="entity-tag">links</span>
+            </div>
+            
+            <div style="text-align: center; margin-top: 16px;">
+                <span class="orm-badge">SeaORM Models (自动生成)</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
