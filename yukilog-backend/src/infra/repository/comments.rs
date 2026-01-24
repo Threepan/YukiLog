@@ -3,7 +3,7 @@
 //! 提供评论相关的数据访问操作
 
 use crate::entities::{comments, prelude::Comments};
-use sea_orm::*;
+use sea_orm::{prelude::Expr, query::*, *};
 
 /// 评论仓储
 #[derive(Clone)]

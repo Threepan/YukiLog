@@ -2,11 +2,11 @@
 //!
 //! 提供文章相关的数据访问操作，包括复杂的关联查询
 
-use sea_orm::*;
 use crate::entities::{
-    prelude::{Posts, Categories, Tags, Users, PostTags},
-    posts, post_tags,
+    post_tags, posts,
+    prelude::{PostTags, Posts},
 };
+use sea_orm::*;
 
 /// 文章仓储
 #[derive(Clone)]

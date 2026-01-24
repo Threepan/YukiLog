@@ -3,7 +3,7 @@
 //! 提供友链相关的数据访问操作
 
 use crate::entities::{links, prelude::Links};
-use sea_orm::*;
+use sea_orm::{prelude::Expr, query::*, *};
 
 /// 友链仓储
 #[derive(Clone)]
