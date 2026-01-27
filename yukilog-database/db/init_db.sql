@@ -32,7 +32,7 @@ CREATE TABLE tags (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- 4. 文章表 (POsts)
+-- 4. 文章表 (Posts)
 -- 博客的核心
 CREATE TABLE posts (
     id BIGSERIAL PRIMARY KEY,             -- 自增ID
