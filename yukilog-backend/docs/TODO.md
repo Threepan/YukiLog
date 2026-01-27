@@ -25,27 +25,62 @@
 
 从最基础的认证开始，逐步扩展：
 
-1. AuthService 🔐（最优先）
+### ✅ Phase 1: AuthService 🔐（最优先）
 
-- `core/auth/service.rs` - 登录、注册、Token 验证
-- `core/auth/jwt.rs` - JWT 生成/验证工具
-- `core/auth/password.rs` - Argon2 密码哈希
+- ✅ `core/auth/password.rs` - Argon2 密码哈希/验证
+- ✅ `core/auth/jwt.rs` - JWT 生成/验证工具（HS256, 15min/7天）
+- ✅ `core/auth/dto.rs` - LoginRequest, LoginResponse, UserInfo
+- ✅ `core/auth/service.rs` - login(), refresh_token(), verify_token()
+- ✅ `core/auth/mod.rs` - 模块导出
 
-2. UsersService 👤
+### Phase 2: UsersService 👤
 
-- `core/users/service.rs` - 用户管理
-- `core/users/dto.rs` - 用户相关 DTO
+- `core/users/dto.rs` - CreateUserRequest, UpdateProfileRequest, ChangePasswordRequest, UserDetailResponse
+- `core/users/service.rs` - create_user(), update_profile(), change_password(), update_role()
+- `core/users/mod.rs` - 模块导出
 
-3. PostsService 📝
+### Phase 3: CategoriesService 🏷️
 
-- `core/posts/service.rs` - 文章 CRUD、发布流程
-- `core/posts/dto.rs` - 文章相关 DTO
+- `core/categories/dto.rs` - CreateCategoryRequest, CategoryResponse
+- `core/categories/service.rs` - create(), update(), delete(), get_all_with_count()
+- `core/categories/mod.rs` - 模块导出
 
-4. 其他 Service（按需）
+### Phase 4: TagsService 🔖
 
-- CategoriesService、TagsService
-- CommentsService（评论树构建）
-- LinksService
+- `core/tags/dto.rs` - CreateTagRequest, TagResponse
+- `core/tags/service.rs` - create(), update(), delete(), find_or_create_batch()
+- `core/tags/mod.rs` - 模块导出
+
+### Phase 5: PostsService 📝（最复杂）
+
+- `core/posts/dto.rs` - CreatePostRequest, PostDetailResponse, PostListItemResponse
+- `core/posts/service.rs` - create_post(), update_post(), publish_post(), get_post_by_slug(), sync_tags()
+- `core/posts/mod.rs` - 模块导出
+
+### Phase 6: CommentsService 💬
+
+- `core/comments/dto.rs` - CreateCommentRequest, CommentNode, CommentResponse
+- `core/comments/service.rs` - create_comment(), build_comment_tree(), review_comment(), batch_review()
+- `core/comments/mod.rs` - 模块导出
+
+### Phase 7: LinksService 🔗
+x
+- `core/links/dto.rs` - ApplyLinkRequest, LinkResponse
+- `core/links/service.rs` - apply_link(), approve_link(), batch_update_status()
+- `core/links/mod.rs` - 模块导出
+
+### 通用工具 🔨
+
+- `common/dto.rs` - PaginatedResponse<T> 通用分页响应
+- 更新 `lib.rs` - 添加所有 Service 模块声明
+
+### 依赖项补充 📦
+
+需要在 `Cargo.toml` 添加：
+- `argon2 = "0.5"` - 密码哈希
+- `jsonwebtoken = "9"` - JWT
+- `chrono = { version = "0.4", features = ["serde"] }` - 时间处理
+- `validator = { version = "0.18", features = ["derive"] }` - 输入校验
 
 ---
 

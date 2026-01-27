@@ -14,7 +14,14 @@ tokio = { version = "1.0", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
+# 事件处理
 chrono = { version = "0.4", features = ["serde"] }
+
+# 校验
+validator = { version = "0.18", features = ["derive"] }
+
+# 随机数生成（用于盐值）
+rand = "0.8"
 
 # 数据库 ORM (指定使用 Postgres)
 sea-orm = { version = "1.1", features = [

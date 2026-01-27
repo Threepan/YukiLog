@@ -1,10 +1,43 @@
 //! 认证授权服务
 //!
-//! 提供用户认证、JWT 管理、密码哈希等功能。
+//! 本模块提供用户认证相关功能，包括：
+//! - 密码哈希和验证（Argon2id）
+//! - JWT Token 生成和验证（Access + Refresh 双 Token 策略）
+//! - 登录和 Token 刷新业务逻辑
 //!
-//! # 计划模块
-//! - `service.rs` - AuthService（登录、注册、Token 刷新）
-//! - `jwt.rs` - JWT 生成和验证工具
-//! - `password.rs` - Argon2 密码哈希工具
+//! # 模块结构
+//!
+//! - [`password`] - 密码哈希工具
+//! - [`jwt`] - JWT Token 工具
+//! - [`dto`] - 数据传输对象
+//! - [`service`] - 认证服务
+//!
+//! # 示例
+//!
+//! ```rust
+//! use crate::core::auth::{AuthService, dto::LoginRequest};
+//! use crate::core::auth::jwt::JwtUtils;
+//!
+//! // 创建服务
+//! let jwt_utils = JwtUtils::new(&config.jwt);
+//! let auth_service = AuthService::new(user_repo, jwt_utils);
+//!
+//! // 登录
+//! let response = auth_service.login(LoginRequest {
+//!     username: "alice".to_string(),
+//!     password: "password".to_string(),
+//! }).await?;
+//!
+//! // 刷新 Token
+//! let new_tokens = auth_service.refresh_token(&response.refresh_token).await?;
+//! ```
 
-// 待实现
+pub mod dto;
+pub mod jwt;
+pub mod password;
+pub mod service;
+
+// 重导出常用类型
+pub use dto::{LoginRequest, LoginResponse, RefreshTokenRequest, RefreshTokenResponse, UserInfo};
+pub use jwt::{Claims, JwtUtils, TokenType};
+pub use service::AuthService;

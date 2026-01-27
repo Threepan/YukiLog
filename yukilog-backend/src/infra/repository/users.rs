@@ -43,6 +43,31 @@ impl UsersRepository {
             .await
     }
 
+    /// 根据用户名查询用户（包含密码哈希）
+    ///
+    /// 主要用于登录验证场景，比 `find_by_username` 性能更好。
+    /// 使用 `select_only()` 只选择必要字段，减少数据传输。
+    ///
+    /// # 参数
+    /// - `username`: 用户名（精确匹配）
+    pub async fn find_by_username_with_password(
+        &self,
+        username: &str,
+    ) -> Result<Option<users::Model>, DbErr> {
+        Users::find()
+            .filter(users::Column::Username.eq(username))
+            .select_only()
+            .columns([
+                users::Column::Id,
+                users::Column::Username,
+                users::Column::PasswordHash,
+                users::Column::Role,
+            ])
+            .into_model::<users::Model>()
+            .one(&self.db)
+            .await
+    }
+
     /// 根据邮箱查询用户
     ///
     /// # 参数
