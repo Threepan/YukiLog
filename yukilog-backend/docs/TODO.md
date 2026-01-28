@@ -39,17 +39,17 @@
 - ✅ `core/users/service.rs` - create_user(), get_user_by_id(), get_users_paginated(), update_profile(), change_password(), update_email(), update_role(), delete_user(), exists_by_username(), exists_by_email()
 - ✅ `core/users/mod.rs` - 模块导出
 
-### Phase 3: CategoriesService 🏷️
+### ✅ Phase 3: CategoriesService 🏷️
 
-- `core/categories/dto.rs` - CreateCategoryRequest, CategoryResponse
-- `core/categories/service.rs` - create(), update(), delete(), get_all_with_count()
-- `core/categories/mod.rs` - 模块导出
+- ✅ `core/categories/dto.rs` - CreateCategoryRequest, UpdateCategoryRequest, CategoryResponse (含post_count)
+- ✅ `core/categories/service.rs` - create_category(), get_category_by_id(), get_category_by_slug(), get_all_categories(), update_category(), delete_category(), exists_by_name(), exists_by_slug()
+- ✅ `core/categories/mod.rs` - 模块导出
 
-### Phase 4: TagsService 🔖
+### ✅ Phase 4: TagsService 🔖
 
-- `core/tags/dto.rs` - CreateTagRequest, TagResponse
-- `core/tags/service.rs` - create(), update(), delete(), find_or_create_batch()
-- `core/tags/mod.rs` - 模块导出
+- ✅ `core/tags/dto.rs` - CreateTagRequest, UpdateTagRequest, TagResponse, TagWithCountResponse, FindOrCreateBatchRequest/Response
+- ✅ `core/tags/service.rs` - create_tag(), get_tag_by_id(), get_tag_by_slug(), get_all_tags(), get_all_tags_with_count(), update_tag(), delete_tag(), exists_by_name(), exists_by_slug(), find_or_create_batch()
+- ✅ `core/tags/mod.rs` - 模块导出
 
 ### Phase 5: PostsService 📝（最复杂）
 
