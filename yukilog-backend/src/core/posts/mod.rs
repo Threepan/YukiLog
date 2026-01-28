@@ -1,9 +1,5 @@
-//! 文章管理服务
-//!
-//! 提供文章相关的业务逻辑。
-//!
-//! # 计划实现
-//! - `service.rs` - PostsService
-//! - `dto.rs` - 文章相关 DTO
+pub mod dto;
+pub mod service;
 
-// 待实现
+pub use dto::*;
+pub use service::PostsService;
