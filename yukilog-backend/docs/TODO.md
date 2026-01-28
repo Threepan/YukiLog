@@ -51,17 +51,17 @@
 - ✅ `core/tags/service.rs` - create_tag(), get_tag_by_id(), get_tag_by_slug(), get_all_tags(), get_all_tags_with_count(), update_tag(), delete_tag(), exists_by_name(), exists_by_slug(), find_or_create_batch()
 - ✅ `core/tags/mod.rs` - 模块导出
 
-### Phase 5: PostsService 📝（最复杂）
+### ✅ Phase 5: PostsService 📝（最复杂）
 
-- `core/posts/dto.rs` - CreatePostRequest, PostDetailResponse, PostListItemResponse
-- `core/posts/service.rs` - create_post(), update_post(), publish_post(), get_post_by_slug(), sync_tags()
-- `core/posts/mod.rs` - 模块导出
+- ✅ `core/posts/dto.rs` - CreatePostRequest, UpdatePostRequest, PublishPostRequest, PostDetailResponse, PostListItemResponse, PostArchiveItem, ArchiveGroup, PostListResponse
+- ✅ `core/posts/service.rs` - get_published_posts(), get_post_by_slug(), get_posts_by_category(), get_posts_by_tag(), get_archives(), create_post(), update_post(), publish_post(), unpublish_post(), archive_post(), delete_post(), toggle_pin(), sync_tags(), get_all_posts(), get_post_by_id()
+- ✅ `core/posts/mod.rs` - 模块导出
 
-### Phase 6: CommentsService 💬
+### ✅ Phase 6: CommentsService 💬
 
-- `core/comments/dto.rs` - CreateCommentRequest, CommentNode, CommentResponse
-- `core/comments/service.rs` - create_comment(), build_comment_tree(), review_comment(), batch_review()
-- `core/comments/mod.rs` - 模块导出
+- ✅ `core/comments/dto.rs` - CreateCommentRequest, UpdateCommentRequest, ReviewCommentRequest, BatchReviewRequest, CommentResponse, CommentNode, CommentListResponse
+- ✅ `core/comments/service.rs` - get_comment_tree(), create_comment_as_guest(), create_comment_as_user(), get_all_comments(), get_pending_comments(), get_comment_by_id(), update_comment(), review_comment(), batch_review(), delete_comment(), get_comments_by_ip(), get_user_comments()
+- ✅ `core/comments/mod.rs` - 模块导出
 
 ### ✅ Phase 7: LinksService 🔗
 
