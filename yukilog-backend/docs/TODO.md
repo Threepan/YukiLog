@@ -63,11 +63,11 @@
 - `core/comments/service.rs` - create_comment(), build_comment_tree(), review_comment(), batch_review()
 - `core/comments/mod.rs` - 模块导出
 
-### Phase 7: LinksService 🔗
-x
-- `core/links/dto.rs` - ApplyLinkRequest, LinkResponse
-- `core/links/service.rs` - apply_link(), approve_link(), batch_update_status()
-- `core/links/mod.rs` - 模块导出
+### ✅ Phase 7: LinksService 🔗
+
+- ✅ `core/links/dto.rs` - ApplyLinkRequest, UpdateLinkRequest, UpdateStatusRequest, BatchUpdateStatusRequest, LinkResponse, LinkListResponse
+- ✅ `core/links/service.rs` - get_active_links(), apply_link(), get_link_by_id(), get_all_links(), get_links_paginated(), update_link(), update_status(), batch_update_status(), delete_link(), exists_by_url()
+- ✅ `core/links/mod.rs` - 模块导出
 
 ### 通用工具 🔨
 
