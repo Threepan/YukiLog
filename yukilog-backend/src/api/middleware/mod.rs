@@ -1,11 +1,11 @@
 //! HTTP 中间件
 //!
 //! 本模块提供 Axum 中间件，用于请求处理管道。
-//!
-//! # 计划实现
-//! - `auth` - JWT 认证中间件
-//! - `admin` - 管理员权限检查
-//! - `request_id` - 请求 ID 追踪
-//! - `cors` - 跨域配置
+
+pub mod admin;
+pub mod auth;
+
+pub use admin::admin_middleware;
+pub use auth::auth_middleware;
 
 // 待实现
