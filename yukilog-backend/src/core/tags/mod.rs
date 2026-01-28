@@ -1,5 +1,5 @@
-//! 标签管理服务
-//!
-//! 提供标签相关的业务逻辑。
+pub mod dto;
+pub mod service;
 
-// 待实现
+pub use dto::*;
+pub use service::TagsService;
