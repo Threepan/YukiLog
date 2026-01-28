@@ -33,11 +33,11 @@
 - ✅ `core/auth/service.rs` - login(), refresh_token(), verify_token()
 - ✅ `core/auth/mod.rs` - 模块导出
 
-### Phase 2: UsersService 👤
+### ✅ Phase 2: UsersService 👤
 
-- `core/users/dto.rs` - CreateUserRequest, UpdateProfileRequest, ChangePasswordRequest, UserDetailResponse
-- `core/users/service.rs` - create_user(), update_profile(), change_password(), update_role()
-- `core/users/mod.rs` - 模块导出
+- ✅ `core/users/dto.rs` - CreateUserRequest, UpdateProfileRequest, ChangePasswordRequest, UpdateEmailRequest, UserDetailResponse, UserListItemResponse
+- ✅ `core/users/service.rs` - create_user(), get_user_by_id(), get_users_paginated(), update_profile(), change_password(), update_email(), update_role(), delete_user(), exists_by_username(), exists_by_email()
+- ✅ `core/users/mod.rs` - 模块导出
 
 ### Phase 3: CategoriesService 🏷️
 
