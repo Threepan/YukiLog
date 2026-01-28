@@ -1,5 +1,5 @@
-//! 评论管理服务
-//!
-//! 提供评论相关的业务逻辑，包括评论树构建。
+pub mod dto;
+pub mod service;
 
-// 待实现
+pub use dto::*;
+pub use service::CommentsService;
