@@ -1,0 +1,358 @@
+use sea_orm::{
+    ColumnTrait, ConnectionTrait, DatabaseConnection, EntityTrait, QueryFilter, QueryOrder,
+    QuerySelect,
+};
+use chrono::{DateTime, FixedOffset};
+use serde::{Deserialize, Serialize};
+
+use crate::domain::status::CommentStatus;
+use crate::entities::prelude::Comments;
+use crate::entities::comments::Column as CommentColumn;
+use crate::repo;
+use crate::repo::comments::{CreateComment as RepoCreateComment, UpdateComment as RepoUpdateComment};
+use crate::service::error::{ServiceError, ServiceResult};
+use crate::service::posts;
+
+// ================================
+// DTO 定义
+// ================================
+
+#[derive(Debug, Clone)]
+pub struct Comment {
+    pub id: i64,
+    pub post_id: i64,
+    pub content: String,
+    pub guest_nick: String,
+    pub guest_email: Option<String>,
+    pub guest_website: Option<String>,
+    pub parent_id: Option<i64>,
+    pub root_id: Option<i64>,
+    pub status: CommentStatus,
+    pub ip: Option<String>,
+    pub ua: Option<String>,
+    pub created_at: DateTime<FixedOffset>,
+}
+
+impl From<repo::comments::CommentDto> for Comment {
+    fn from(dto: repo::comments::CommentDto) -> Self {
+        Self {
+            id: dto.id,
+            post_id: dto.post_id.unwrap_or(0),
+            content: dto.content,
+            guest_nick: dto.guest_nick,
+            guest_email: dto.guest_email,
+            guest_website: dto.guest_website,
+            parent_id: dto.parent_id,
+            root_id: dto.root_id,
+            status: dto.status.unwrap_or(CommentStatus::Pending),
+            ip: dto.ip,
+            ua: dto.ua,
+            created_at: dto.created_at.unwrap_or_else(|| chrono::Utc::now().into()),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct CommentNode {
+    pub comment: Comment,
+    pub children: Vec<CommentNode>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CreateCommentInput {
+    pub content: String,
+    pub guest_nick: String,
+    pub guest_email: Option<String>,
+    pub guest_website: Option<String>,
+    pub parent_id: Option<i64>,
+    pub ip: Option<String>,
+    pub ua: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct UpdateCommentInput {
+    pub content: Option<String>,
+    pub guest_nick: Option<String>,
+    pub guest_email: Option<Option<String>>,
+    pub guest_website: Option<Option<String>>,
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct CommentFilter {
+    pub status: Option<CommentStatus>,
+    pub sort_by: Option<CommentSortBy>,
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct AdminCommentFilter {
+    pub post_id: Option<i64>,
+    pub status: Option<CommentStatus>,
+    pub count: Option<u64>,
+    pub page: Option<u64>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum CommentSortBy {
+    CreatedAtAsc,   // 时间正序（评论常用）
+    CreatedAtDesc,  // 时间倒序
+}
+
+// ================================
+// 业务逻辑
+// ================================
+
+/// 1. 创建评论（前台）
+/// 
+/// 逻辑：
+/// - 通过 post_slug 查询 post_id
+/// - 验证文章存在且已发布（draft 不允许评论）
+/// - 如果有 parent_id，验证父评论存在且属于同一文章
+/// - 计算 root_id：无 parent_id -> None，有 parent_id -> parent.root_id ?? parent_id
+/// - status 由 DB 默认为 pending
+pub async fn create_comment(
+    db: &DatabaseConnection,
+    post_slug: &str,
+    input: CreateCommentInput,
+) -> ServiceResult<Comment> {
+    // 1. 获取文章，验证存在且已发布
+    let post = posts::get_published_post_by_slug(db, post_slug).await?;
+
+    // 2. 如果是回复，验证父评论存在且属于同一文章
+    let (parent_id, root_id) = if let Some(pid) = input.parent_id {
+        let parent = repo::comments::get_comment_by_id(db, pid).await?;
+        
+        // 验证父评论属于同一文章
+        if parent.post_id != Some(post.id) {
+            return Err(ServiceError::InvalidInput(
+                "parent comment does not belong to this post".to_string(),
+            ));
+        }
+
+        // 计算 root_id：继承父评论的 root_id，如果没有则父评论本身是根
+        let root = parent.root_id.or(Some(pid));
+        (Some(pid), root)
+    } else {
+        (None, None)
+    };
+
+    // 3. 创建评论
+    let create_input = RepoCreateComment {
+        post_id: Some(post.id),
+        content: input.content,
+        guest_nick: input.guest_nick,
+        guest_email: input.guest_email,
+        guest_website: input.guest_website,
+        parent_id,
+        root_id,
+        ip: input.ip,
+        ua: input.ua,
+    };
+
+    let comment_dto = repo::comments::create_comment(db, create_input).await?;
+    Ok(comment_dto.into())
+}
+
+/// 2. 获取文章评论列表（前台，扁平，仅已审核）
+pub async fn list_post_comments(
+    db: &DatabaseConnection,
+    post_slug: &str,
+    filter: CommentFilter,
+) -> ServiceResult<Vec<Comment>> {
+    // 获取文章 ID
+    let post = posts::get_published_post_by_slug(db, post_slug).await?;
+
+    let mut query = Comments::find()
+        .filter(CommentColumn::PostId.eq(post.id));
+
+    // 筛选状态（前台默认只显示 Approved）
+    let status = filter.status.unwrap_or(CommentStatus::Approved);
+    query = query.filter(CommentColumn::Status.eq(status.as_str()));
+
+    // 排序
+    match filter.sort_by.unwrap_or(CommentSortBy::CreatedAtAsc) {
+        CommentSortBy::CreatedAtAsc => {
+            query = query.order_by_asc(CommentColumn::CreatedAt);
+        }
+        CommentSortBy::CreatedAtDesc => {
+            query = query.order_by_desc(CommentColumn::CreatedAt);
+        }
+    }
+
+    let models = query.all(db).await?;
+    let dtos: Result<Vec<_>, _> = models
+        .into_iter()
+        .map(|m| repo::comments::CommentDto::try_from(m))
+        .collect();
+    Ok(dtos?.into_iter().map(Into::into).collect())
+}
+
+/// 3. 获取文章评论树（前台，树形，仅已审核）
+pub async fn get_post_comment_tree(
+    db: &DatabaseConnection,
+    post_slug: &str,
+) -> ServiceResult<Vec<CommentNode>> {
+    let filter = CommentFilter {
+        status: Some(CommentStatus::Approved),
+        sort_by: Some(CommentSortBy::CreatedAtAsc),
+    };
+    let comments = list_post_comments(db, post_slug, filter).await?;
+    Ok(build_comment_tree(comments))
+}
+
+/// 4. 获取评论详情
+pub async fn get_comment_by_id(
+    db: &DatabaseConnection,
+    id: i64,
+) -> ServiceResult<Comment> {
+    let dto = repo::comments::get_comment_by_id(db, id).await?;
+    Ok(dto.into())
+}
+
+/// 5. 列出所有评论（后台，支持筛选和分页）
+pub async fn list_all_comments(
+    db: &DatabaseConnection,
+    filter: AdminCommentFilter,
+) -> ServiceResult<Vec<Comment>> {
+    let mut query = Comments::find();
+
+    // 按文章筛选
+    if let Some(post_id) = filter.post_id {
+        query = query.filter(CommentColumn::PostId.eq(post_id));
+    }
+
+    // 按状态筛选
+    if let Some(status) = filter.status {
+        query = query.filter(CommentColumn::Status.eq(status.as_str()));
+    }
+
+    // 按创建时间倒序
+    query = query.order_by_desc(CommentColumn::CreatedAt);
+
+    // 分页
+    if let (Some(count), Some(page)) = (filter.count, filter.page) {
+        let offset = (page - 1) * count;
+        query = query.limit(count).offset(offset);
+    }
+
+    let models = query.all(db).await?;
+    let dtos: Result<Vec<_>, _> = models
+        .into_iter()
+        .map(|m| repo::comments::CommentDto::try_from(m))
+        .collect();
+    Ok(dtos?.into_iter().map(Into::into).collect())
+}
+
+/// 6. 审核评论：通过
+pub async fn approve_comment(
+    db: &DatabaseConnection,
+    id: i64,
+) -> ServiceResult<Comment> {
+    let update_input = RepoUpdateComment {
+        status: Some(Some(CommentStatus::Approved)),
+        ..Default::default()
+    };
+    let updated = repo::comments::update_comment(db, id, update_input).await?;
+    Ok(updated.into())
+}
+
+/// 7. 审核评论：拒绝（标记为垃圾）
+pub async fn reject_comment(
+    db: &DatabaseConnection,
+    id: i64,
+) -> ServiceResult<Comment> {
+    let update_input = RepoUpdateComment {
+        status: Some(Some(CommentStatus::Spam)),
+        ..Default::default()
+    };
+    let updated = repo::comments::update_comment(db, id, update_input).await?;
+    Ok(updated.into())
+}
+
+/// 8. 更新评论内容（后台）
+pub async fn update_comment(
+    db: &DatabaseConnection,
+    id: i64,
+    input: UpdateCommentInput,
+) -> ServiceResult<Comment> {
+    let update_input = RepoUpdateComment {
+        content: input.content,
+        guest_nick: input.guest_nick,
+        guest_email: input.guest_email,
+        guest_website: input.guest_website,
+        ..Default::default()
+    };
+    let updated = repo::comments::update_comment(db, id, update_input).await?;
+    Ok(updated.into())
+}
+
+/// 9. 删除评论（后台）
+/// 
+/// 子评论会被 DB CASCADE 删除
+pub async fn delete_comment(
+    db: &DatabaseConnection,
+    id: i64,
+) -> ServiceResult<()> {
+    repo::comments::delete_comment(db, id).await?;
+    Ok(())
+}
+
+/// 10. 获取评论的回复列表（用于懒加载）
+pub async fn list_comment_replies(
+    db: &DatabaseConnection,
+    parent_id: i64,
+) -> ServiceResult<Vec<Comment>> {
+    let models = Comments::find()
+        .filter(CommentColumn::ParentId.eq(parent_id))
+        .filter(CommentColumn::Status.eq(CommentStatus::Approved.as_str()))
+        .order_by_asc(CommentColumn::CreatedAt)
+        .all(db)
+        .await?;
+
+    let dtos: Result<Vec<_>, _> = models
+        .into_iter()
+        .map(|m| repo::comments::CommentDto::try_from(m))
+        .collect();
+    Ok(dtos?.into_iter().map(Into::into).collect())
+}
+
+// ================================
+// 辅助函数
+// ================================
+
+/// 构建评论树（递归算法）
+fn build_comment_tree(comments: Vec<Comment>) -> Vec<CommentNode> {
+    use std::collections::HashMap;
+
+    // 按 parent_id 分组
+    let mut children_map: HashMap<Option<i64>, Vec<Comment>> = HashMap::new();
+    for comment in comments {
+        children_map
+            .entry(comment.parent_id)
+            .or_insert_with(Vec::new)
+            .push(comment);
+    }
+
+    // 递归构建树
+    fn build_nodes(
+        parent_id: Option<i64>,
+        children_map: &HashMap<Option<i64>, Vec<Comment>>,
+    ) -> Vec<CommentNode> {
+        if let Some(children) = children_map.get(&parent_id) {
+            children
+                .iter()
+                .map(|comment| {
+                    let child_nodes = build_nodes(Some(comment.id), children_map);
+                    CommentNode {
+                        comment: comment.clone(),
+                        children: child_nodes,
+                    }
+                })
+                .collect()
+        } else {
+            Vec::new()
+        }
+    }
+
+    build_nodes(None, &children_map)
+}
