@@ -55,3 +55,7 @@ dotenvy = "0.15"
 
 once_cell = "1.19"
 regex = "1.10"
+
+[[bin]]
+name = "hash_password"
+path = "src/bin/hash_password.rs"
