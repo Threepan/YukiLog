@@ -13,6 +13,7 @@
 * 定义 `service` 层与 `handler` 层的通信协议
 * 将 **业务报错** 转换为 **网络错误码**
 * 封装 **管理员的鉴权逻辑**
+* 封装 **JWT 中间件**
 
 ---
 
@@ -151,3 +152,11 @@ pub struct LoginResponse {
     pub expires_in: i64,
 }
 ```
+
+## JWT 认证中间件
+
+源码: [yukilog-backend/src/handler/middleware.rs](../src/handler/middleware.rs)
+
+**这部分比较复杂, 我在设计文档里详细说明:**
+
+[YukiLog 设计文档](./yukilog.md)
