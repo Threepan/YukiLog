@@ -5,6 +5,7 @@
 mod domain;
 mod entities;
 mod repo;
+mod service;
 
 fn main() {
     println!("喵");
