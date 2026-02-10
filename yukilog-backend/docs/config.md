@@ -14,6 +14,8 @@
 
 完整注释请查看示例文件 [.env.example](../env.example)
 
+---
+
 #### (1) `DATABASE_URL`
 
 我的数据库使用了 `postgresql`, 所以这一项的格式就是
@@ -22,6 +24,8 @@
 # 翻译: postgresql://用户名:密码@服务器地址:数据库服务端口/数据库
 DATABASE_URL=postgresql://username:password@localhost:5432/yukilog
 ```
+
+---
 
 #### (2) `SERVER_HOST` <-> `SERVER_PORT`
 
@@ -32,6 +36,8 @@ DATABASE_URL=postgresql://username:password@localhost:5432/yukilog
 SERVER_HOST=127.0.0.1
 SERVER_PORT=3000
 ```
+
+---
 
 #### (3) `JWT_SECRET` <-> `JWT_EXPIRES_IN`
 
@@ -48,6 +54,8 @@ JWT_EXPIRES_IN=604800
 openssl rand -base64 32 # 请至少生成 32 字节
 ```
 
+---
+
 #### (4) `CORS_ALLOWED_ORIGINS`
 
 这一项是允许哪些前端域名访问我们的后端, 是用在浏览器环境的
@@ -55,6 +63,8 @@ openssl rand -base64 32 # 请至少生成 32 字节
 ```ini
 CORS_ALLOWED_ORIGINS=http://localhost:5173,https://yourdomain.com
 ```
+
+---
 
 #### (5) `RUST_LOG`
 
