@@ -7,6 +7,8 @@ use crate::entities::{
     prelude::{Categories, Posts},
 };
 use sea_orm::*;
+use sea_orm::sea_query::Expr;
+use std::collections::HashMap;
 
 /// 分类仓储
 #[derive(Clone)]
@@ -76,19 +78,31 @@ impl CategoriesRepository {
     /// - 用于前台展示分类列表
     pub async fn find_all_with_post_count(&self) -> Result<Vec<(categories::Model, u64)>, DbErr> {
         let categories = self.find_all().await?;
-        let mut result = Vec::new();
 
-        for category in categories {
-            let count = Posts::find()
-                .filter(posts::Column::CategoryId.eq(category.id))
-                .filter(posts::Column::Status.eq("published"))
-                .count(&self.db)
-                .await?;
+        let counts: Vec<(Option<i64>, i64)> = Posts::find()
+            .select_only()
+            .column(posts::Column::CategoryId)
+            .expr_as(Expr::col(posts::Column::Id).count(), "post_count")
+            .filter(posts::Column::Status.eq("published"))
+            .group_by(posts::Column::CategoryId)
+            .into_tuple::<(Option<i64>, i64)>()
+            .all(&self.db)
+            .await?;
 
-            result.push((category, count));
+        let mut count_map: HashMap<i64, u64> = HashMap::new();
+        for (category_id, count) in counts {
+            if let Some(category_id) = category_id {
+                count_map.insert(category_id, count.max(0) as u64);
+            }
         }
 
-        Ok(result)
+        Ok(categories
+            .into_iter()
+            .map(|category| {
+                let count = count_map.get(&category.id).copied().unwrap_or(0);
+                (category, count)
+            })
+            .collect())
     }
 
     /// 检查分类名称是否已存在

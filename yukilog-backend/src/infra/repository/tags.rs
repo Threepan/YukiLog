@@ -8,6 +8,8 @@ use crate::entities::{
     tags,
 };
 use sea_orm::*;
+use sea_orm::sea_query::Expr;
+use std::collections::HashMap;
 
 /// 标签仓储
 #[derive(Clone)]
@@ -72,20 +74,30 @@ impl TagsRepository {
     /// - 按引用次数倒序排列
     pub async fn find_all_with_count(&self) -> Result<Vec<(tags::Model, u64)>, DbErr> {
         let tags = self.find_all().await?;
-        let mut result = Vec::new();
 
-        for tag in tags {
-            let count = PostTags::find()
-                .filter(post_tags::Column::TagId.eq(tag.id))
-                .count(&self.db)
-                .await?;
+        let counts: Vec<(i64, i64)> = PostTags::find()
+            .select_only()
+            .column(post_tags::Column::TagId)
+            .expr_as(Expr::col(post_tags::Column::PostId).count(), "post_count")
+            .group_by(post_tags::Column::TagId)
+            .into_tuple::<(i64, i64)>()
+            .all(&self.db)
+            .await?;
 
-            result.push((tag, count));
+        let mut count_map: HashMap<i64, u64> = HashMap::new();
+        for (tag_id, count) in counts {
+            count_map.insert(tag_id, count.max(0) as u64);
         }
 
-        // 按引用次数倒序排序
-        result.sort_by(|a, b| b.1.cmp(&a.1));
+        let mut result: Vec<(tags::Model, u64)> = tags
+            .into_iter()
+            .map(|tag| {
+                let count = count_map.get(&tag.id).copied().unwrap_or(0);
+                (tag, count)
+            })
+            .collect();
 
+        result.sort_by(|a, b| b.1.cmp(&a.1));
         Ok(result)
     }
 

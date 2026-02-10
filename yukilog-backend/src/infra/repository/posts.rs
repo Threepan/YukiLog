@@ -7,6 +7,7 @@ use crate::entities::{
     prelude::{PostTags, Posts},
 };
 use sea_orm::*;
+use std::collections::HashSet;
 
 /// 文章仓储
 #[derive(Clone)]
@@ -220,12 +221,52 @@ impl PostsRepository {
         post.insert(&self.db).await
     }
 
+    /// 创建文章并同步标签（事务）
+    ///
+    /// # 说明
+    /// - 保证“文章写入”与“标签关系写入”要么都成功，要么都失败
+    pub async fn create_with_tags(
+        &self,
+        post: posts::ActiveModel,
+        tag_ids: Option<Vec<i64>>,
+    ) -> Result<posts::Model, DbErr> {
+        let txn = self.db.begin().await?;
+
+        let created = post.insert(&txn).await?;
+        if let Some(tag_ids) = tag_ids {
+            self.sync_tags_with_conn(&txn, created.id, tag_ids).await?;
+        }
+
+        txn.commit().await?;
+        Ok(created)
+    }
+
     /// 更新文章
     ///
     /// # 参数
     /// - `post`: 包含更新字段的 ActiveModel
     pub async fn update(&self, post: posts::ActiveModel) -> Result<posts::Model, DbErr> {
         post.update(&self.db).await
+    }
+
+    /// 更新文章并同步标签（事务）
+    ///
+    /// # 说明
+    /// - 保证“文章更新”与“标签关系更新”原子一致
+    pub async fn update_with_tags(
+        &self,
+        post: posts::ActiveModel,
+        tag_ids: Option<Vec<i64>>,
+    ) -> Result<posts::Model, DbErr> {
+        let txn = self.db.begin().await?;
+
+        let updated = post.update(&txn).await?;
+        if let Some(tag_ids) = tag_ids {
+            self.sync_tags_with_conn(&txn, updated.id, tag_ids).await?;
+        }
+
+        txn.commit().await?;
+        Ok(updated)
     }
 
     /// 删除文章
@@ -282,21 +323,36 @@ impl PostsRepository {
     ///
     /// # 说明
     /// - 会先删除原有关联，再创建新关联
-    /// - 建议在事务中调用
+    /// - 内部使用事务，避免半成功导致标签关系丢失
     pub async fn sync_tags(&self, post_id: i64, tag_ids: Vec<i64>) -> Result<(), DbErr> {
-        // 删除原有关联
+        let txn = self.db.begin().await?;
+        self.sync_tags_with_conn(&txn, post_id, tag_ids).await?;
+        txn.commit().await?;
+        Ok(())
+    }
+
+    async fn sync_tags_with_conn<C: ConnectionTrait>(
+        &self,
+        conn: &C,
+        post_id: i64,
+        tag_ids: Vec<i64>,
+    ) -> Result<(), DbErr> {
         PostTags::delete_many()
             .filter(post_tags::Column::PostId.eq(post_id))
-            .exec(&self.db)
+            .exec(conn)
             .await?;
 
-        // 创建新关联
+        let mut unique_tag_ids: HashSet<i64> = HashSet::new();
         for tag_id in tag_ids {
+            unique_tag_ids.insert(tag_id);
+        }
+
+        for tag_id in unique_tag_ids {
             let relation = post_tags::ActiveModel {
                 post_id: Set(post_id),
                 tag_id: Set(tag_id),
             };
-            relation.insert(&self.db).await?;
+            relation.insert(conn).await?;
         }
 
         Ok(())

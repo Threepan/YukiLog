@@ -5,6 +5,7 @@ use std::collections::HashMap;
 use crate::core::error::AppError;
 use crate::core::validation::validate_pagination;
 use crate::entities::comments;
+use crate::entities::users;
 use crate::infra::repository::{comments::CommentsRepository, users::UsersRepository};
 
 use super::dto::{
@@ -37,11 +38,7 @@ impl CommentsService {
     pub async fn get_comment_tree(&self, post_id: i64) -> Result<Vec<CommentNode>, AppError> {
         let comments = self.repo.find_approved_by_post_id(post_id).await?;
 
-        // 转换为 CommentResponse
-        let mut responses = Vec::new();
-        for comment in comments {
-            responses.push(self.comment_to_response(comment, false).await?);
-        }
+        let responses = self.comments_to_responses(comments, false).await?;
 
         // 构建树结构
         Ok(self.build_comment_tree(responses))
@@ -177,10 +174,7 @@ impl CommentsService {
             .find_all_paginated(page, size, is_reviewed)
             .await?;
 
-        let mut responses = Vec::new();
-        for comment in comments {
-            responses.push(self.comment_to_response(comment, true).await?);
-        }
+        let responses = self.comments_to_responses(comments, true).await?;
 
         Ok(CommentListResponse {
             comments: responses,
@@ -192,12 +186,7 @@ impl CommentsService {
     pub async fn get_pending_comments(&self) -> Result<Vec<CommentResponse>, AppError> {
         let comments = self.repo.find_pending_review().await?;
 
-        let mut responses = Vec::new();
-        for comment in comments {
-            responses.push(self.comment_to_response(comment, true).await?);
-        }
-
-        Ok(responses)
+        self.comments_to_responses(comments, true).await
     }
 
     /// 获取单个评论
@@ -304,24 +293,14 @@ impl CommentsService {
     pub async fn get_comments_by_ip(&self, ip: &str) -> Result<Vec<CommentResponse>, AppError> {
         let comments = self.repo.find_by_ip(ip).await?;
 
-        let mut responses = Vec::new();
-        for comment in comments {
-            responses.push(self.comment_to_response(comment, true).await?);
-        }
-
-        Ok(responses)
+        self.comments_to_responses(comments, true).await
     }
 
     /// 获取用户的所有评论
     pub async fn get_user_comments(&self, user_id: i64) -> Result<Vec<CommentResponse>, AppError> {
         let comments = self.repo.find_by_user_id(user_id).await?;
 
-        let mut responses = Vec::new();
-        for comment in comments {
-            responses.push(self.comment_to_response(comment, true).await?);
-        }
-
-        Ok(responses)
+        self.comments_to_responses(comments, true).await
     }
 
     // ===== 辅助方法 =====
@@ -335,6 +314,10 @@ impl CommentsService {
         comment: comments::Model,
         include_ip: bool,
     ) -> Result<CommentResponse, AppError> {
+        let post_id = comment
+            .post_id
+            .ok_or_else(|| AppError::Internal("评论数据异常：缺少 post_id".to_string()))?;
+
         // 构建作者信息
         let author = if let Some(user_id) = comment.user_id {
             // 登录用户
@@ -367,7 +350,7 @@ impl CommentsService {
 
         Ok(CommentResponse {
             id: comment.id,
-            post_id: comment.post_id.unwrap_or(0),
+            post_id,
             content: comment.content,
             parent_id: comment.parent_id,
             author,
@@ -380,6 +363,78 @@ impl CommentsService {
                 .map(|dt| dt.to_utc())
                 .unwrap_or_else(Utc::now),
         })
+    }
+
+    async fn comments_to_responses(
+        &self,
+        comments: Vec<comments::Model>,
+        include_ip: bool,
+    ) -> Result<Vec<CommentResponse>, AppError> {
+        let mut user_ids = Vec::new();
+        for comment in &comments {
+            if let Some(user_id) = comment.user_id {
+                user_ids.push(user_id);
+            }
+        }
+
+        user_ids.sort_unstable();
+        user_ids.dedup();
+
+        let users = self.users_repo.find_by_ids(user_ids).await?;
+        let mut user_map: HashMap<i64, users::Model> = HashMap::new();
+        for user in users {
+            user_map.insert(user.id, user);
+        }
+
+        let mut responses = Vec::with_capacity(comments.len());
+        for comment in comments {
+            let post_id = comment
+                .post_id
+                .ok_or_else(|| AppError::Internal("评论数据异常：缺少 post_id".to_string()))?;
+
+            let author = if let Some(user_id) = comment.user_id {
+                if let Some(user) = user_map.get(&user_id) {
+                    super::dto::CommentAuthor::User {
+                        id: user.id,
+                        username: user.username.clone(),
+                        nickname: user.nickname.clone(),
+                        avatar_url: user.avatar_url.clone(),
+                    }
+                } else {
+                    super::dto::CommentAuthor::Guest {
+                        nickname: "已删除用户".to_string(),
+                        email: "deleted@example.com".to_string(),
+                        website: None,
+                    }
+                }
+            } else {
+                super::dto::CommentAuthor::Guest {
+                    nickname: comment.guest_nickname.unwrap_or_else(|| "匿名".to_string()),
+                    email: comment
+                        .guest_email
+                        .unwrap_or_else(|| "anonymous@example.com".to_string()),
+                    website: comment.guest_website,
+                }
+            };
+
+            responses.push(CommentResponse {
+                id: comment.id,
+                post_id,
+                content: comment.content,
+                parent_id: comment.parent_id,
+                author,
+                is_reviewed: comment.is_reviewed.unwrap_or(false),
+                ua: comment.ua,
+                ip: if include_ip { comment.ip } else { None },
+                created_at: comment
+                    .created_at
+                    .as_ref()
+                    .map(|dt| dt.to_utc())
+                    .unwrap_or_else(Utc::now),
+            });
+        }
+
+        Ok(responses)
     }
 
     /// 构建评论树

@@ -211,13 +211,7 @@ impl PostsService {
             ..Default::default()
         };
 
-        let post = self.repo.create(new_post).await?;
-
-        // 同步标签
-        if let Some(tag_ids) = req.tag_ids {
-            self.repo.sync_tags(post.id, tag_ids).await?;
-        }
-
+        let post = self.repo.create_with_tags(new_post, req.tag_ids).await?;
         self.post_to_detail(post).await
     }
 
@@ -288,13 +282,7 @@ impl PostsService {
             post_model.status = ActiveValue::Set(Some(status));
         }
 
-        let updated_post = self.repo.update(post_model).await?;
-
-        // 同步标签
-        if let Some(tag_ids) = req.tag_ids {
-            self.repo.sync_tags(updated_post.id, tag_ids).await?;
-        }
-
+        let updated_post = self.repo.update_with_tags(post_model, req.tag_ids).await?;
         self.post_to_detail(updated_post).await
     }
 

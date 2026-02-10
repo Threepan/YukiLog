@@ -252,17 +252,20 @@ impl IntoResponse for AppError {
         // 获取错误信息
         // 对于数据库错误，不暴露详细信息
         let message = match &self {
+            AppError::Unauthorized(message)
+            | AppError::Forbidden(message)
+            | AppError::NotFound(message)
+            | AppError::BadRequest(message)
+            | AppError::Validation(message)
+            | AppError::Business(message) => message.clone(),
             AppError::Database(_) => {
-                // 记录详细错误到日志
                 tracing::error!("Database error: {:?}", self);
                 "数据库错误，请稍后重试".to_string()
             }
             AppError::Internal(_) => {
-                // 记录详细错误到日志
                 tracing::error!("Internal error: {:?}", self);
                 "服务器内部错误，请稍后重试".to_string()
             }
-            _ => self.to_string(),
         };
 
         // 构造符合 ApiResponse 格式的 JSON
