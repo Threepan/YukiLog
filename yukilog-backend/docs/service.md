@@ -563,3 +563,116 @@ pub struct CommentNode {
 
 ---
 
+## link - 友链
+
+###### 接口定义
+
+```rust
+// src/service/links.rs
+
+/// 1. 提交友链申请（前台调用）
+pub async fn create_link_application(
+    db: &DatabaseConnection,
+    input: CreateLinkInput,
+) -> ServiceResult<Link>
+
+/// 2. 获取已通过的友链列表（前台展示）
+pub async fn list_active_links(
+    db: &DatabaseConnection,
+) -> ServiceResult<Vec<Link>>
+
+/// 3. 获取所有友链（后台分页列表）
+pub async fn list_all_links(
+    db: &DatabaseConnection,
+    offset: u64,
+    limit: u64,
+) -> ServiceResult<(Vec<Link>, u64)>
+
+/// 4. 获取待审核友链列表（后台待审核列表）
+pub async fn list_pending_links(
+    db: &DatabaseConnection,
+) -> ServiceResult<Vec<Link>>
+
+/// 5. 获取单个友链详情（后台编辑页）
+pub async fn get_link_by_id(
+    db: &DatabaseConnection,
+    id: i64,
+) -> ServiceResult<Link>
+
+/// 6. 审核通过友链（后台操作）
+pub async fn approve_link(
+    db: &DatabaseConnection,
+    id: i64,
+) -> ServiceResult<Link>
+
+/// 7. 标记友链失效（后台操作）
+pub async fn mark_link_broken(
+    db: &DatabaseConnection,
+    id: i64,
+) -> ServiceResult<Link>
+
+/// 8. 更新友链信息（后台编辑）
+pub async fn update_link(
+    db: &DatabaseConnection,
+    id: i64,
+    input: UpdateLinkInput,
+) -> ServiceResult<Link>
+
+/// 9. 删除友链（后台删除）
+pub async fn delete_link(
+    db: &DatabaseConnection,
+    id: i64,
+) -> ServiceResult<()>
+```
+
+###### DTO定义
+
+```rust
+// 排序
+pub enum LinkSortBy {
+    CreatedAtAsc,   // 按创建时间正序
+    CreatedAtDesc,  // 按创建时间倒序（默认）
+}
+
+// 输入
+pub struct CreateLinkInput {
+    pub title: String,
+    pub url: String,
+    pub avatar: Option<String>,    // 外部链接
+    pub description: Option<String>,
+}
+
+pub struct UpdateLinkInput {
+    pub title: Option<String>,
+    pub url: Option<String>,
+    pub avatar: Option<Option<String>>,
+    pub description: Option<Option<String>>,
+}
+
+// 输出
+pub struct Link {
+    pub id: i64,
+    pub title: String,
+    pub url: String,
+    pub avatar: Option<String>,
+    pub description: Option<String>,
+    pub status: LinkStatus,  // Active | Pending | Broken
+    pub created_at: DateTime<FixedOffset>,
+}
+```
+
+###### 业务逻辑
+
+| 接口名 | 职责 |
+|-|-|
+| `create_link_application` | 1. URL 格式验证（http/https 前缀）<br> 2. 检查 URL 是否已存在 <br> 3. 若存在且为 broken 状态，更新信息并重置为 pending <br> 4. 若不存在，创建新友链（默认 pending） |
+| `list_active_links` | 仅返回 status = 'active' 的友链 <br> 前台展示用 |
+| `list_all_links` | 返回所有友链（分页）<br> 后台管理用 |
+| `list_pending_links` | 仅返回 status = 'pending' 的友链 <br> 后台待审核列表 |
+| `get_link_by_id` | 通过 ID 获取友链详情 |
+| `approve_link` | 将状态设置为 'active' <br> 审核通过 |
+| `mark_link_broken` | 将状态设置为 'broken' <br> 标记失效 |
+| `update_link` | 更新友链的基本信息 |
+| `delete_link` | 直接删除友链记录 |
+
+---
