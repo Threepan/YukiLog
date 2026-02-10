@@ -16,7 +16,30 @@
 
 ---
 
+## 错误定义
+
+源码: [error.rs](../src/service/error.rs)
+
+这部分简直太简单了, 所以直接给个示例代码吧
+
+```rust
+pub enum ServiceError {
+    #[error("repository error: {0}")]
+    Repo(#[from] RepoError),
+
+    #[error("invalid input: {0}")]
+    InvalidInput(String),
+
+    #[error("not found")]
+    NotFound,
+}
+```
+
+---
+
 #### theme - 主题
+
+源码: [themes.rs](../src/service/themes.rs)
 
 ###### 接口定义
 
@@ -139,6 +162,8 @@ pub struct Theme {
 ---
 
 #### tag - 标签
+
+源码: [tags.rs](../src/service/tags.rs)
 
 ###### 接口定义
 
@@ -273,6 +298,8 @@ pub struct Tag {
 ---
 
 #### post - 文章
+
+源码: [posts.rs](../src/service/posts.rs)
 
 ###### 接口定义
 
@@ -416,6 +443,8 @@ pub struct PostWithRelations {
 ---
 
 #### comment - 评论
+
+源码: [comments](../src/service/comments.rs)
 
 ###### 接口定义
 
@@ -563,7 +592,9 @@ pub struct CommentNode {
 
 ---
 
-## link - 友链
+#### link - 友链
+
+源码: [links.rs](../src/service/links.rs)
 
 ###### 接口定义
 
