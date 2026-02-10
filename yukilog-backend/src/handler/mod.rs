@@ -9,3 +9,6 @@ pub mod auth;
 
 /// 中间件（JWT 认证等）
 pub mod middleware;
+
+/// 工具函数（IP提取、限流、Gravatar）
+pub mod utils;
