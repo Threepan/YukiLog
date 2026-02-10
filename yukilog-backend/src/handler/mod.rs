@@ -6,3 +6,6 @@ pub mod error;
 
 /// JWT 认证和登录
 pub mod auth;
+
+/// 中间件（JWT 认证等）
+pub mod middleware;
