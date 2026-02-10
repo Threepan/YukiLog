@@ -415,3 +415,151 @@ pub struct PostWithRelations {
 
 ---
 
+#### comment - 评论
+
+###### 接口定义
+
+```rust
+// src/service/comments.rs
+
+/// 1. 创建评论（前台）
+pub async fn create_comment(
+    db: &DatabaseConnection,
+    post_slug: &str,
+    input: CreateCommentInput,
+) -> ServiceResult<Comment>
+
+/// 2. 获取文章评论列表（前台，扁平，仅已审核）
+pub async fn list_post_comments(
+    db: &DatabaseConnection,
+    post_slug: &str,
+    filter: CommentFilter,
+) -> ServiceResult<Vec<Comment>>
+
+/// 3. 获取文章评论树（前台，树形，仅已审核）
+pub async fn get_post_comment_tree(
+    db: &DatabaseConnection,
+    post_slug: &str,
+) -> ServiceResult<Vec<CommentNode>>
+
+/// 4. 获取评论详情
+pub async fn get_comment_by_id(
+    db: &DatabaseConnection,
+    id: i64,
+) -> ServiceResult<Comment>
+
+/// 5. 列出所有评论（后台，支持筛选和分页）
+pub async fn list_all_comments(
+    db: &DatabaseConnection,
+    filter: AdminCommentFilter,
+) -> ServiceResult<Vec<Comment>>
+
+/// 6. 审核评论：通过
+pub async fn approve_comment(
+    db: &DatabaseConnection,
+    id: i64,
+) -> ServiceResult<Comment>
+
+/// 7. 审核评论：拒绝（标记为垃圾）
+pub async fn reject_comment(
+    db: &DatabaseConnection,
+    id: i64,
+) -> ServiceResult<Comment>
+
+/// 8. 更新评论内容（后台）
+pub async fn update_comment(
+    db: &DatabaseConnection,
+    id: i64,
+    input: UpdateCommentInput,
+) -> ServiceResult<Comment>
+
+/// 9. 删除评论（后台）
+pub async fn delete_comment(
+    db: &DatabaseConnection,
+    id: i64,
+) -> ServiceResult<()>
+
+/// 10. 获取评论的回复列表（用于懒加载）
+pub async fn list_comment_replies(
+    db: &DatabaseConnection,
+    parent_id: i64,
+) -> ServiceResult<Vec<Comment>>
+```
+
+###### DTO定义
+
+```rust
+// 输入
+pub struct CreateCommentInput {
+    pub content: String,
+    pub guest_nick: String,
+    pub guest_email: Option<String>,
+    pub guest_website: Option<String>,
+    pub parent_id: Option<i64>,     // 回复谁
+    pub ip: Option<String>,         // handler 层提供
+    pub ua: Option<String>,         // handler 层提供
+}
+
+pub struct UpdateCommentInput {
+    pub content: Option<String>,
+    pub guest_nick: Option<String>,
+    pub guest_email: Option<Option<String>>,
+    pub guest_website: Option<Option<String>>,
+}
+
+pub struct CommentFilter {
+    pub status: Option<CommentStatus>,  // 前台默认 Approved
+    pub sort_by: Option<CommentSortBy>, // CreatedAt 升序/降序
+}
+
+pub struct AdminCommentFilter {
+    pub post_id: Option<i64>,
+    pub status: Option<CommentStatus>,
+    pub count: Option<u64>,
+    pub page: Option<u64>,
+}
+
+pub enum CommentSortBy {
+    CreatedAtAsc,   // 时间正序（评论常用）
+    CreatedAtDesc,  // 时间倒序
+}
+
+// 输出
+pub struct Comment {
+    pub id: i64,
+    pub post_id: i64,
+    pub content: String,
+    pub guest_nick: String,
+    pub guest_email: Option<String>,
+    pub guest_website: Option<String>,
+    pub parent_id: Option<i64>,
+    pub root_id: Option<i64>,
+    pub status: CommentStatus,
+    pub ip: Option<String>,
+    pub ua: Option<String>,
+    pub created_at: DateTime<FixedOffset>,
+}
+
+pub struct CommentNode {
+    pub comment: Comment,
+    pub children: Vec<CommentNode>,
+}
+```
+
+###### 业务逻辑
+
+| 接口名 | 职责 |
+|-|-|
+| `create_comment` | 通过 post_slug 查询文章 <br> 验证文章已发布（draft 不允许评论）<br> 验证父评论存在且属于同一文章 <br> 计算 root_id：无 parent_id → None，有 parent_id → parent.root_id ?? parent_id <br> status 由 DB 默认为 pending |
+| `list_post_comments` | 扁平列表，仅已审核 <br> 支持按创建时间正序/倒序 |
+| `get_post_comment_tree` | 树形结构，仅已审核 <br> 递归构建评论树 |
+| `get_comment_by_id` | 直接查询评论详情 |
+| `list_all_comments` | 后台管理，支持按文章/状态筛选 <br> 支持分页 <br> 按创建时间倒序 |
+| `approve_comment` | 修改 status 为 Approved |
+| `reject_comment` | 修改 status 为 Spam |
+| `update_comment` | 更新评论内容和游客信息 |
+| `delete_comment` | 直接删除 <br> 子评论由 DB CASCADE 删除 |
+| `list_comment_replies` | 获取指定评论的回复列表 <br> 用于懒加载子评论 |
+
+---
+
