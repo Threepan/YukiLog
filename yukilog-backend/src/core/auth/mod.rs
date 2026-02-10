@@ -14,7 +14,7 @@
 //!
 //! # 示例
 //!
-//! ```rust
+//! ```rust,ignore
 //! use crate::core::auth::{AuthService, dto::LoginRequest};
 //! use crate::core::auth::jwt::JwtUtils;
 //!

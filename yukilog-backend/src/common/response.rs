@@ -20,7 +20,7 @@ use serde::{Deserialize, Serialize};
 /// - `T`: 响应数据类型，必须实现 `Serialize`
 ///
 /// # 示例
-/// ```rust
+/// ```rust,ignore
 /// // 成功响应
 /// let response = ApiResponse::success(user);
 /// // 返回: { "code": 0, "data": { ... }, "message": "success" }
@@ -59,7 +59,7 @@ impl<T: Serialize> ApiResponse<T> {
     /// - `data`: 要返回的业务数据
     ///
     /// # 示例
-    /// ```rust
+    /// ```rust,ignore
     /// let user = User { id: 1, name: "Alice" };
     /// ApiResponse::success(user)
     /// ```
@@ -81,7 +81,7 @@ impl<T: Serialize> ApiResponse<T> {
     /// - 创建/更新/删除操作需要友好提示
     ///
     /// # 示例
-    /// ```rust
+    /// ```rust,ignore
     /// ApiResponse::success_with_message(user, "用户创建成功")
     /// ```
     pub fn success_with_message(data: T, message: impl Into<String>) -> Self {
@@ -101,7 +101,7 @@ impl ApiResponse<()> {
     /// - 更新操作（不需要返回数据）
     ///
     /// # 示例
-    /// ```rust
+    /// ```rust,ignore
     /// ApiResponse::ok("删除成功")
     /// ```
     pub fn ok(message: impl Into<String>) -> Self {
@@ -119,7 +119,7 @@ impl ApiResponse<()> {
     /// - `message`: 错误描述信息
     ///
     /// # 示例
-    /// ```rust
+    /// ```rust,ignore
     /// ApiResponse::<()>::error(40400, "用户不存在")
     /// ```
     pub fn error(code: i32, message: impl Into<String>) -> Self {

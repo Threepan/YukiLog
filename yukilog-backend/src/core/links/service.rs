@@ -1,6 +1,7 @@
 use sea_orm::{ActiveValue, DatabaseConnection};
 
 use crate::core::error::AppError;
+use crate::core::validation::validate_pagination;
 use crate::entities::links;
 use crate::infra::repository::links::LinksRepository;
 
@@ -15,6 +16,15 @@ pub struct LinksService {
 }
 
 impl LinksService {
+    fn validate_link_status(status: &str) -> Result<(), AppError> {
+        if !["broken", "pending", "active"].contains(&status) {
+            return Err(AppError::BadRequest(
+                "status 必须是 broken/pending/active".to_string(),
+            ));
+        }
+        Ok(())
+    }
+
     pub fn new(db: DatabaseConnection) -> Self {
         Self {
             repo: LinksRepository::new(db),
@@ -67,18 +77,15 @@ impl LinksService {
                     )))
                 }
                 _ => {
-                    // 未知状态，按新申请处理
-                    let new_link = links::ActiveModel {
-                        link_title: ActiveValue::Set(req.link_title),
-                        link_url: ActiveValue::Set(req.link_url),
-                        link_avatar: ActiveValue::Set(req.link_avatar),
-                        link_desc: ActiveValue::Set(req.link_desc),
-                        link_status: ActiveValue::Set("pending".to_string()),
-                        ..Default::default()
-                    };
+                    // 未知状态：不允许 create（会导致 URL 重复/唯一约束冲突），统一更新为 pending
+                    let mut link_model: links::ActiveModel = existing_link.into();
+                    link_model.link_title = ActiveValue::Set(req.link_title);
+                    link_model.link_avatar = ActiveValue::Set(req.link_avatar);
+                    link_model.link_desc = ActiveValue::Set(req.link_desc);
+                    link_model.link_status = ActiveValue::Set("pending".to_string());
 
-                    let link = self.repo.create(new_link).await?;
-                    Ok(self.to_response(link))
+                    let updated_link = self.repo.update(link_model).await?;
+                    Ok(self.to_response(updated_link))
                 }
             }
         } else {
@@ -143,6 +150,10 @@ impl LinksService {
         size: u64,
         status: Option<String>,
     ) -> Result<LinkListResponse, AppError> {
+        validate_pagination(page, size)?;
+        if let Some(ref s) = status {
+            Self::validate_link_status(s)?;
+        }
         let (links, total) = self
             .repo
             .find_paginated(page, size, status.as_deref())
@@ -207,6 +218,7 @@ impl LinksService {
         id: i64,
         req: UpdateStatusRequest,
     ) -> Result<LinkResponse, AppError> {
+        Self::validate_link_status(&req.status)?;
         let updated_link = self.repo.update_status(id, &req.status).await?;
         Ok(self.to_response(updated_link))
     }
@@ -226,6 +238,7 @@ impl LinksService {
         &self,
         req: BatchUpdateStatusRequest,
     ) -> Result<u64, AppError> {
+        Self::validate_link_status(&req.status)?;
         let affected_rows = self.repo.batch_update_status(req.ids, &req.status).await?;
         Ok(affected_rows)
     }

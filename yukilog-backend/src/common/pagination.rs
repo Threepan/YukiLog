@@ -16,7 +16,7 @@ use serde::{Deserialize, Serialize};
 /// - `size`: 每页数量，范围 1-100
 ///
 /// # 使用方式
-/// ```rust
+/// ```rust,ignore
 /// // 从查询字符串解析
 /// // GET /api/posts?page=2&size=20
 /// async fn list_posts(Query(params): Query<PaginationParams>) {
@@ -61,7 +61,7 @@ impl PaginationParams {
     /// 返回规范化后的参数
     ///
     /// # 示例
-    /// ```rust
+    /// ```rust,ignore
     /// let params = PaginationParams { page: 0, size: 200 };
     /// let normalized = params.normalize();
     /// // normalized.page = 1 (修正为最小值)
@@ -84,7 +84,7 @@ impl PaginationParams {
     /// `offset = (page - 1) * size`
     ///
     /// # 示例
-    /// ```rust
+    /// ```rust,ignore
     /// let params = PaginationParams { page: 3, size: 10 };
     /// let offset = params.offset(); // 返回 20
     /// // 意味着跳过前 20 条记录，从第 21 条开始
@@ -100,7 +100,7 @@ impl PaginationParams {
     /// 用户的 page=1 对应 SeaORM 的 page=0
     ///
     /// # 示例
-    /// ```rust
+    /// ```rust,ignore
     /// let params = PaginationParams { page: 1, size: 10 };
     /// let db_page = params.db_page(); // 返回 0
     /// ```
@@ -173,7 +173,7 @@ impl<T> PaginatedResponse<T> {
     /// `total_pages` 会自动计算（向上取整）
     ///
     /// # 示例
-    /// ```rust
+    /// ```rust,ignore
     /// let posts = vec![post1, post2, post3];
     /// let response = PaginatedResponse::new(posts, 100, 1, 10);
     /// // response.total_pages = 10
@@ -203,7 +203,7 @@ impl<T> PaginatedResponse<T> {
     /// - `params`: 分页参数
     ///
     /// # 示例
-    /// ```rust
+    /// ```rust,ignore
     /// let (posts, total) = repo.find_paginated(page, size).await?;
     /// let response = PaginatedResponse::from_tuple((posts, total), &params);
     /// ```

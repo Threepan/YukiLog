@@ -3,6 +3,7 @@ use sea_orm::{ActiveValue, DatabaseConnection};
 use std::collections::HashMap;
 
 use crate::core::error::AppError;
+use crate::core::validation::validate_pagination;
 use crate::entities::comments;
 use crate::infra::repository::{comments::CommentsRepository, users::UsersRepository};
 
@@ -170,6 +171,7 @@ impl CommentsService {
         size: u64,
         is_reviewed: Option<bool>,
     ) -> Result<CommentListResponse, AppError> {
+        validate_pagination(page, size)?;
         let (comments, total) = self
             .repo
             .find_all_paginated(page, size, is_reviewed)
@@ -261,23 +263,19 @@ impl CommentsService {
     /// - 然后删除当前评论
     /// - 如果没有子评论，直接删除
     pub async fn delete_comment(&self, id: i64) -> Result<(), AppError> {
-        // 检查评论是否存在
-        if !self.repo.exists(id).await? {
-            return Err(AppError::NotFound(format!("评论ID {} 不存在", id)));
-        }
-
-        // 查找所有子评论
-        let all_comments = self
+        // 获取评论（避免 exists + unwrap 的竞态崩溃）
+        let comment = self
             .repo
-            .find_all_by_post_id(
-                self.repo
-                    .find_by_id(id)
-                    .await?
-                    .unwrap()
-                    .post_id
-                    .unwrap_or(0),
-            )
-            .await?;
+            .find_by_id(id)
+            .await?
+            .ok_or_else(|| AppError::NotFound(format!("评论ID {} 不存在", id)))?;
+
+        let post_id = comment
+            .post_id
+            .ok_or_else(|| AppError::Internal("评论数据异常：缺少 post_id".to_string()))?;
+
+        // 查找同文章下所有评论，筛选子评论
+        let all_comments = self.repo.find_all_by_post_id(post_id).await?;
 
         let child_comments: Vec<_> = all_comments
             .into_iter()
@@ -294,7 +292,10 @@ impl CommentsService {
         }
 
         // 删除当前评论
-        self.repo.delete(id).await?;
+        let deleted = self.repo.delete(id).await?;
+        if deleted.rows_affected == 0 {
+            return Err(AppError::NotFound(format!("评论ID {} 不存在", id)));
+        }
 
         Ok(())
     }

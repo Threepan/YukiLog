@@ -30,5 +30,7 @@ pub mod posts;
 pub mod tags;
 pub mod users;
 
+pub(crate) mod validation;
+
 // 重导出常用类型
 pub use error::{AppError, Result};

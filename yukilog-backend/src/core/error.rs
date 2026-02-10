@@ -32,7 +32,7 @@ use thiserror::Error;
 ///   - `50001`: 内部错误
 ///
 /// # 使用示例
-/// ```rust
+/// ```rust,ignore
 /// // Service 层抛出错误
 /// if user.is_none() {
 ///     return Err(AppError::NotFound("用户不存在".into()));
@@ -59,7 +59,7 @@ pub enum AppError {
     /// - 提示用户重新登录
     ///
     /// # 示例
-    /// ```rust
+    /// ```rust,ignore
     /// return Err(AppError::Unauthorized("Token 已过期，请重新登录".into()));
     /// ```
     #[error("Unauthorized: {0}")]
@@ -76,7 +76,7 @@ pub enum AppError {
     /// - 不跳转登录页（因为已登录）
     ///
     /// # 示例
-    /// ```rust
+    /// ```rust,ignore
     /// if user.role != "admin" {
     ///     return Err(AppError::Forbidden("需要管理员权限".into()));
     /// }
@@ -95,7 +95,7 @@ pub enum AppError {
     /// - 提示资源已被删除或不存在
     ///
     /// # 示例
-    /// ```rust
+    /// ```rust,ignore
     /// let post = Posts::find_by_id(id).one(&db).await?;
     /// post.ok_or_else(|| AppError::NotFound(format!("文章 {} 不存在", id)))?
     /// ```
@@ -114,7 +114,7 @@ pub enum AppError {
     /// - 高亮错误字段
     ///
     /// # 示例
-    /// ```rust
+    /// ```rust,ignore
     /// if title.is_empty() {
     ///     return Err(AppError::BadRequest("标题不能为空".into()));
     /// }
@@ -134,7 +134,7 @@ pub enum AppError {
     /// - Validation: 参数值不符合业务规则
     ///
     /// # 示例
-    /// ```rust
+    /// ```rust,ignore
     /// if !email.contains('@') {
     ///     return Err(AppError::Validation("邮箱格式不正确".into()));
     /// }
@@ -153,7 +153,7 @@ pub enum AppError {
     /// 这类错误不是参数格式问题，而是业务规则限制
     ///
     /// # 示例
-    /// ```rust
+    /// ```rust,ignore
     /// if username_exists {
     ///     return Err(AppError::Business("用户名已被占用".into()));
     /// }
@@ -178,7 +178,7 @@ pub enum AppError {
     /// 使用 `#[from]` 自动将 `sea_orm::DbErr` 转换为 `AppError::Database`
     ///
     /// # 示例
-    /// ```rust
+    /// ```rust,ignore
     /// // 自动转换
     /// let user = Users::find_by_id(id).one(&db).await?; // DbErr -> AppError
     ///
@@ -205,7 +205,7 @@ pub enum AppError {
     /// - 考虑是否需要告警通知
     ///
     /// # 示例
-    /// ```rust
+    /// ```rust,ignore
     /// let file = std::fs::read("config.toml")
     ///     .map_err(|e| AppError::Internal(format!("配置文件读取失败: {}", e)))?;
     /// ```
@@ -279,7 +279,7 @@ impl IntoResponse for AppError {
 /// Result 类型别名，简化函数签名
 ///
 /// # 使用
-/// ```rust
+/// ```rust,ignore
 /// // 原始写法
 /// async fn get_user(id: i64) -> std::result::Result<User, AppError> { }
 ///

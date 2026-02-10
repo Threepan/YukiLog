@@ -8,7 +8,7 @@ use serde::Deserialize;
 /// 应用总配置
 ///
 /// # 使用方式
-/// ```rust
+/// ```rust,ignore
 /// use crate::config::AppConfig;
 ///
 /// let config = AppConfig::from_env()?;
@@ -40,7 +40,7 @@ impl AppConfig {
     /// - 环境变量格式不正确时返回错误
     ///
     /// # 示例
-    /// ```rust
+    /// ```rust,ignore
     /// dotenvy::dotenv().ok(); // 加载 .env 文件
     /// let config = AppConfig::from_env()?;
     /// ```

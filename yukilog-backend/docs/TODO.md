@@ -19,6 +19,28 @@
 - ✅ `core/error.rs` - 完善业务错误类型
 - ✅ `.env.example` - 环境变量模板
 
+## 🧪 阶段 0：Doctest（文档示例测试）修复计划
+
+> 目标：先让 `cargo test` 能稳定跑通（不被文档示例拖死），再逐步把示例补全成“可编译、可读、可复制粘贴”的真正示例。
+
+### Step A：先止血（示例不参与编译）
+
+- [x] `common/response.rs` 示例标记为 ignore
+- [x] `common/pagination.rs` 示例标记为 ignore
+- [x] `config/app.rs` 示例标记为 ignore
+- [x] `core/error.rs` 示例标记为 ignore
+- [x] `core/auth/mod.rs` 示例标记为 ignore
+- [x] `core/auth/password.rs` 示例标记为 ignore
+- [x] `core/users/mod.rs` 示例标记为 ignore
+- [x] `core/categories/mod.rs` 示例标记为 ignore
+- [x] `api/middleware/auth.rs` 示例标记为 ignore
+- [x] `api/middleware/admin.rs` 示例标记为 ignore
+
+### Step B：再完善（示例可编译）
+
+- [ ] 将示例从 `rust,ignore` 逐个改为 `rust,no_run`，并补齐 `use yukilog_backend::...`、假数据与必要上下文
+- [ ] 含 `await` 的示例改为最小可运行结构（或明确说明为何不 run）
+
 ---
 
 ## 🎯 阶段 2：Service 层（核心业务）

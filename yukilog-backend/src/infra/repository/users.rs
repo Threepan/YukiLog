@@ -148,6 +148,22 @@ impl UsersRepository {
             .await
     }
 
+    /// 批量根据 ID 查询用户
+    ///
+    /// # 说明
+    /// - 用于避免 Service 层 N+1 查询
+    /// - 返回结果不保证顺序
+    pub async fn find_by_ids(&self, ids: Vec<i64>) -> Result<Vec<users::Model>, DbErr> {
+        if ids.is_empty() {
+            return Ok(vec![]);
+        }
+
+        Users::find()
+            .filter(users::Column::Id.is_in(ids))
+            .all(&self.db)
+            .await
+    }
+
     /// 创建新用户
     ///
     /// # 参数

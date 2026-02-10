@@ -8,6 +8,7 @@ use validator::Validate;
 use crate::common::PaginatedResponse;
 use crate::core::auth::password;
 use crate::core::error::AppError;
+use crate::core::validation::validate_pagination;
 use crate::entities::users;
 use crate::infra::repository::UsersRepository;
 
@@ -137,15 +138,27 @@ impl UsersService {
         size: u64,
         role_filter: Option<String>,
     ) -> Result<PaginatedResponse<UserListItemResponse>, AppError> {
+        validate_pagination(page, size)?;
         let (users, total) = if let Some(role) = role_filter {
             // 按角色筛选
             let users = self.user_repo.find_by_role(&role).await?;
             let total = users.len() as u64;
 
             // 手动分页
-            let offset = ((page - 1) * size) as usize;
-            let end = (offset + size as usize).min(users.len());
-            let paginated = users[offset..end].to_vec();
+            let offset = (page - 1)
+                .checked_mul(size)
+                .ok_or_else(|| AppError::BadRequest("page 参数过大".to_string()))?;
+            let offset_usize = usize::try_from(offset)
+                .map_err(|_| AppError::BadRequest("page 参数过大".to_string()))?;
+            let size_usize = usize::try_from(size)
+                .map_err(|_| AppError::BadRequest("size 参数过大".to_string()))?;
+
+            let paginated = if offset_usize >= users.len() {
+                vec![]
+            } else {
+                let end = (offset_usize + size_usize).min(users.len());
+                users[offset_usize..end].to_vec()
+            };
 
             (paginated, total)
         } else {

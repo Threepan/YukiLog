@@ -3,6 +3,7 @@ use sea_orm::{ActiveValue, DatabaseConnection};
 use std::collections::HashMap;
 
 use crate::core::error::AppError;
+use crate::core::validation::validate_pagination;
 use crate::entities::posts;
 use crate::infra::repository::{
     categories::CategoriesRepository, posts::PostsRepository, tags::TagsRepository,
@@ -46,6 +47,7 @@ impl PostsService {
         page: u64,
         size: u64,
     ) -> Result<PostListResponse, AppError> {
+        validate_pagination(page, size)?;
         let (posts, total) = self.repo.find_published_paginated(page, size).await?;
 
         let items = self.posts_to_list_items(posts).await?;
@@ -76,8 +78,12 @@ impl PostsService {
         // 增加浏览量
         self.repo.increment_view_count(post.id).await?;
 
-        // 重新查询以获取更新后的浏览量
-        let post = self.repo.find_by_slug(slug).await?.unwrap();
+        // 重新查询以获取更新后的浏览量（并发/删除场景下不崩溃）
+        let post = self
+            .repo
+            .find_by_slug(slug)
+            .await?
+            .ok_or_else(|| AppError::NotFound(format!("文章 '{}' 不存在", slug)))?;
 
         self.post_to_detail(post).await
     }
@@ -89,6 +95,7 @@ impl PostsService {
         page: u64,
         size: u64,
     ) -> Result<PostListResponse, AppError> {
+        validate_pagination(page, size)?;
         let (posts, total) = self
             .repo
             .find_published_by_category(category_id, page, size)
@@ -109,6 +116,7 @@ impl PostsService {
         page: u64,
         size: u64,
     ) -> Result<PostListResponse, AppError> {
+        validate_pagination(page, size)?;
         let (posts, total) = self.repo.find_published_by_tag(tag_id, page, size).await?;
 
         let items = self.posts_to_list_items(posts).await?;
@@ -387,22 +395,37 @@ impl PostsService {
         size: u64,
         status: Option<String>,
     ) -> Result<PostListResponse, AppError> {
-        let posts = if let Some(status_filter) = status {
-            // 按状态过滤
-            let posts = self.repo.find_by_status(&status_filter).await?;
-            let total = posts.len() as u64;
-            (posts, total)
+        validate_pagination(page, size)?;
+
+        let (posts, total) = if let Some(status_filter) = status {
+            // 按状态过滤（仍然分页，避免一次性返回过多数据）
+            let all = self.repo.find_by_status(&status_filter).await?;
+            let total = all.len() as u64;
+
+            let offset = (page - 1)
+                .checked_mul(size)
+                .ok_or_else(|| AppError::BadRequest("page 参数过大".to_string()))?;
+            let offset_usize = usize::try_from(offset)
+                .map_err(|_| AppError::BadRequest("page 参数过大".to_string()))?;
+            let size_usize = usize::try_from(size)
+                .map_err(|_| AppError::BadRequest("size 参数过大".to_string()))?;
+
+            let items = if offset_usize >= all.len() {
+                vec![]
+            } else {
+                let end = (offset_usize + size_usize).min(all.len());
+                all[offset_usize..end].to_vec()
+            };
+
+            (items, total)
         } else {
             // 获取所有文章
             self.repo.find_all_paginated(page, size).await?
         };
 
-        let items = self.posts_to_list_items(posts.0).await?;
+        let items = self.posts_to_list_items(posts).await?;
 
-        Ok(PostListResponse {
-            posts: items,
-            total: posts.1,
-        })
+        Ok(PostListResponse { posts: items, total })
     }
 
     /// 根据ID获取文章 (管理后台)
@@ -498,22 +521,49 @@ impl PostsService {
         &self,
         posts: Vec<posts::Model>,
     ) -> Result<Vec<PostListItemResponse>, AppError> {
+        // 批量预加载分类/作者，减少 N+1 查询
+        let category_ids: Vec<i64> = posts.iter().filter_map(|p| p.category_id).collect();
+        let user_ids: Vec<i64> = posts.iter().filter_map(|p| p.user_id).collect();
+
+        let categories = self.categories_repo.find_by_ids(category_ids).await?;
+        let users = self.users_repo.find_by_ids(user_ids).await?;
+
+        let categories_map: HashMap<i64, CategoryInfo> = categories
+            .into_iter()
+            .map(|c| {
+                (
+                    c.id,
+                    CategoryInfo {
+                        id: c.id,
+                        name: c.name,
+                        slug: c.slug,
+                    },
+                )
+            })
+            .collect();
+
+        let users_map: HashMap<i64, AuthorInfo> = users
+            .into_iter()
+            .map(|u| {
+                (
+                    u.id,
+                    AuthorInfo {
+                        id: u.id,
+                        username: u.username,
+                        nickname: u.nickname,
+                        avatar_url: u.avatar_url,
+                    },
+                )
+            })
+            .collect();
+
         let mut items = Vec::new();
 
         for post in posts {
             // 获取分类信息
-            let category = if let Some(cat_id) = post.category_id {
-                self.categories_repo
-                    .find_by_id(cat_id)
-                    .await?
-                    .map(|c| CategoryInfo {
-                        id: c.id,
-                        name: c.name,
-                        slug: c.slug,
-                    })
-            } else {
-                None
-            };
+            let category = post
+                .category_id
+                .and_then(|cat_id| categories_map.get(&cat_id).cloned());
 
             // 获取标签信息
             let tag_ids = self.repo.get_tag_ids(post.id).await?;
@@ -528,19 +578,9 @@ impl PostsService {
                 .collect();
 
             // 获取作者信息
-            let author = if let Some(user_id) = post.user_id {
-                self.users_repo
-                    .find_by_id(user_id)
-                    .await?
-                    .map(|u| AuthorInfo {
-                        id: u.id,
-                        username: u.username,
-                        nickname: u.nickname,
-                        avatar_url: u.avatar_url,
-                    })
-            } else {
-                None
-            };
+            let author = post
+                .user_id
+                .and_then(|user_id| users_map.get(&user_id).cloned());
 
             items.push(PostListItemResponse {
                 id: post.id,

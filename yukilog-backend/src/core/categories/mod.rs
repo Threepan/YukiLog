@@ -12,7 +12,7 @@
 //!
 //! # 示例
 //!
-//! ```rust
+//! ```rust,ignore
 //! use crate::core::categories::{CategoriesService, dto::CreateCategoryRequest};
 //!
 //! // 创建服务

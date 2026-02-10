@@ -179,20 +179,35 @@ impl PostsRepository {
     ///
     /// # 说明
     /// - 每次调用增加 1
-    /// - 使用原子操作，避免并发问题
+    /// - 使用数据库原子更新，避免并发丢失更新
     pub async fn increment_view_count(&self, id: i64) -> Result<(), DbErr> {
-        // 获取当前浏览量
-        let post = Posts::find_by_id(id)
-            .one(&self.db)
-            .await?
-            .ok_or(DbErr::RecordNotFound(format!("Post {} not found", id)))?;
+        let backend = self.db.get_database_backend();
 
-        let current_count = post.view_count.unwrap_or(0);
+        // 使用 COALESCE 兼容 view_count 为空的历史数据
+        // 注意：不同数据库占位符不同
+        let (sql, values): (&str, Vec<Value>) = match backend {
+            DatabaseBackend::Postgres => (
+                "UPDATE posts SET view_count = COALESCE(view_count, 0) + 1 WHERE id = $1",
+                vec![id.into()],
+            ),
+            DatabaseBackend::MySql => (
+                "UPDATE posts SET view_count = COALESCE(view_count, 0) + 1 WHERE id = ?",
+                vec![id.into()],
+            ),
+            DatabaseBackend::Sqlite => (
+                "UPDATE posts SET view_count = COALESCE(view_count, 0) + 1 WHERE id = ?",
+                vec![id.into()],
+            ),
+        };
 
-        // 更新浏览量
-        let mut post: posts::ActiveModel = post.into();
-        post.view_count = Set(Some(current_count + 1));
-        post.update(&self.db).await?;
+        let result = self
+            .db
+            .execute(Statement::from_sql_and_values(backend, sql, values))
+            .await?;
+
+        if result.rows_affected() == 0 {
+            return Err(DbErr::RecordNotFound(format!("Post {} not found", id)));
+        }
 
         Ok(())
     }

@@ -251,7 +251,7 @@ pub struct PostListResponse {
 // ===== 嵌套结构 =====
 
 /// 分类信息 (嵌套在文章响应中)
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub struct CategoryInfo {
     pub id: i64,
     pub name: String,
@@ -267,7 +267,7 @@ pub struct TagInfo {
 }
 
 /// 作者信息 (嵌套在文章响应中)
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub struct AuthorInfo {
     pub id: i64,
     pub username: String,

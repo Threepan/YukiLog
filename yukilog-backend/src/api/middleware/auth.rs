@@ -10,7 +10,7 @@
 //! 5. 如果验证失败，返回 401 Unauthorized
 //!
 //! # 使用示例
-//! ```rust
+//! ```rust,ignore
 //! use axum::{Router, routing::get, middleware};
 //!
 //! let protected_routes = Router::new()
@@ -59,7 +59,7 @@ pub async fn auth_middleware(
 /// 从 HTTP Header 提取 Bearer Token
 ///
 /// # 格式
-/// ```
+/// ```text
 /// Authorization: Bearer <token>
 /// ```
 ///

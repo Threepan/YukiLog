@@ -9,7 +9,7 @@
 //! 4. 如果是管理员，继续执行 Handler
 //!
 //! # 使用示例
-//! ```rust
+//! ```rust,ignore
 //! use axum::{Router, routing::get, middleware};
 //!
 //! let admin_routes = Router::new()

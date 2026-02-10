@@ -8,7 +8,7 @@
 //! - 参数可调，可根据服务器性能调整安全级别
 //!
 //! # 示例
-//! ```rust
+//! ```rust,ignore
 //! use crate::core::auth::password;
 //!
 //! // 注册时：哈希密码

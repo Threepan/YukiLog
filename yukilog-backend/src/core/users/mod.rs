@@ -12,7 +12,7 @@
 //!
 //! # 示例
 //!
-//! ```rust
+//! ```rust,ignore
 //! use crate::core::users::{UsersService, dto::CreateUserRequest};
 //!
 //! // 创建服务
