@@ -90,7 +90,7 @@ fn validate_slug(slug: &str) -> ServiceResult<()> {
 // ============================================
 
 /// 1. 创建标签（管理后台）
-pub async fn create_tag(db: &DatabaseConnection, input: CreateTagInput) -> ServiceResult<Tag> {
+pub async fn create_tag<C: ConnectionTrait>(db: &C, input: CreateTagInput) -> ServiceResult<Tag> {
     validate_slug(&input.slug)?;
 
     let repo_input = RepoCreateTag {
@@ -105,8 +105,8 @@ pub async fn create_tag(db: &DatabaseConnection, input: CreateTagInput) -> Servi
 /// 2. 获取或创建标签（发布文章时调用）
 /// 如果 slug 已存在则返回现有标签，否则创建新标签
 /// 注意：如果标签已存在，不会覆盖现有 name
-pub async fn get_or_create_tag(
-    db: &DatabaseConnection,
+pub async fn get_or_create_tag<C: ConnectionTrait>(
+    db: &C,
     name: &str,
     slug: &str,
 ) -> ServiceResult<Tag> {
@@ -314,7 +314,7 @@ pub async fn merge_tags(
 }
 
 /// 8. 增加浏览计数（前台访问标签页时调用）
-pub async fn increment_view_count(db: &DatabaseConnection, tag_id: i64) -> ServiceResult<()> {
+pub async fn increment_view_count<C: ConnectionTrait>(db: &C, tag_id: i64) -> ServiceResult<()> {
     let sql = "UPDATE tags SET view_count = view_count + 1 WHERE id = $1";
     let stmt = Statement::from_sql_and_values(
         sea_orm::DatabaseBackend::Postgres,
@@ -328,8 +328,8 @@ pub async fn increment_view_count(db: &DatabaseConnection, tag_id: i64) -> Servi
 
 /// 9. 调整文章计数（给 post service 调用）
 /// delta: +1 表示文章新增此标签，-1 表示文章移除此标签
-pub async fn adjust_post_count(
-    db: &DatabaseConnection,
+pub async fn adjust_post_count<C: ConnectionTrait>(
+    db: &C,
     tag_id: i64,
     delta: i32,
 ) -> ServiceResult<()> {
@@ -342,4 +342,25 @@ pub async fn adjust_post_count(
 
     db.execute(stmt).await?;
     Ok(())
+}
+
+// ================================
+// 辅助函数（给其他 service 调用）
+// ================================
+
+/// 通过多个 slug 批量获取标签 ID
+pub async fn get_tag_ids_by_slugs<C: ConnectionTrait>(
+    db: &C,
+    slugs: &[String],
+) -> ServiceResult<Vec<i64>> {
+    use crate::entities::prelude::Tags;
+    use crate::entities::tags::Column;
+    use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
+
+    let tags = Tags::find()
+        .filter(Column::Slug.is_in(slugs.iter().cloned()))
+        .all(db)
+        .await?;
+
+    Ok(tags.into_iter().map(|t| t.id).collect())
 }
