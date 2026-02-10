@@ -27,7 +27,26 @@ DATABASE_URL=postgresql://username:password@localhost:5432/yukilog
 
 ---
 
-#### (2) `SERVER_HOST` <-> `SERVER_PORT`
+#### (2) `REDIS_URL`
+
+`Redis` 用于 IP 限流和缓存, 防止恶意刷访问量和评论灌水
+
+```ini
+# 默认无密码
+REDIS_URL=redis://localhost:6379
+
+# 如果 Redis 设置了密码
+# REDIS_URL=redis://:password@localhost:6379/0
+```
+
+**功能说明:**
+- **浏览计数防刷**: 10 分钟内同一 IP 只计数一次
+- **评论频率限制**: 10 秒内只能发一条评论
+- **使用 TTL 自动过期**: 不需要手动清理缓存
+
+---
+
+#### (3) `SERVER_HOST` <-> `SERVER_PORT`
 
 这一项是配置你的后端服务监听哪一块网卡, 哪一个端口
 
@@ -39,7 +58,7 @@ SERVER_PORT=3000
 
 ---
 
-#### (3) `JWT_SECRET` <-> `JWT_EXPIRES_IN`
+#### (4) `JWT_SECRET` <-> `JWT_EXPIRES_IN`
 
 `JWT` 就是在登录成功后给你发一个凭证, 只要持有这个凭证就不用再次登录
 
@@ -56,7 +75,33 @@ openssl rand -base64 32 # 请至少生成 32 字节
 
 ---
 
-#### (4) `CORS_ALLOWED_ORIGINS`
+#### (5) `ADMIN_USERNAME` <-> `ADMIN_PASSWORD_HASH`
+
+管理员凭据, 因为没有做用户表, 所以直接存在配置文件里
+
+```ini
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD_HASH=$argon2id$v=19$m=19456,t=2,p=1$...
+```
+
+**生成密码哈希:**
+7
+```bash
+# 使用我们的密码哈希工具
+cargo run --bin hash_password -- your_password
+
+# 输出会包含 ADMIN_PASSWORD_HASH=... 
+# 复制到 .env 文件即可
+```
+
+**安全建议:**
+- 密码至少 16 字符
+- 包含大小写字母、数字、特殊字符
+- 不要使用常见密码
+
+---
+
+#### (6) `CORS_ALLOWED_ORIGINS`
 
 这一项是允许哪些前端域名访问我们的后端, 是用在浏览器环境的
 
