@@ -138,6 +138,109 @@
 
 ---
 
+## JWT 认证中间件
+
+他的概念是: 在请求处理流程中拦截请求, 在请求到达 `handler` 之前/或之后 执行特定逻辑
+
+这么说还是太枯燥了, 让我列举一个 **请求模型**, 然后用实际例子告诉你: 他在做什么
+
+> **首先我们要明白, 一次请求在表层的模型可以简化为 `客户端` -> `handler层` -> `回到客户端`**
+
+```text
+客户端请求
+    ↓
+[中间件 1: CORS]        ← 检查跨域
+    ↓
+[中间件 2: 日志]         ← 记录请求
+    ↓
+[中间件 3: JWT 认证]     ← 验证令牌（我们要实现的）
+    ↓
+[Handler 函数]          ← 业务处理（如 create_post）
+    ↓
+[中间件响应处理]         ← 可以修改响应
+    ↓
+客户端收到响应
+```
+
+你感受到了吗? JWT 其实就是在做一些必要的验证逻辑, 保证数据在进入后端之前就能 "变得无害"
+
+> **接下来我讲解一下 JWT 认证中间件到底做了什么**
+
+1. **提取 `Authorization Header`**
+
+`Header` 就是我们经常说的 **请求头**, 它包含了很多信息: 我是谁, 我带了什么, 我希望被如何对待
+
+> 科普: **请求体 `Body`** 则包含了实际的业务数据
+
+**这是一个真实的请求头:**
+
+```bash
+GET /api/posts HTTP/1.1                             # 请求类型/路由/协议
+Host: api.yukilog.com                               # 请求地址
+Authorization: Bearer eyJhbGciOiJIUzI1N...          # 给 JWT 看的通信证
+User-Agent: Mozilla/5.0 (wayland; Linux x86_64)     # 我是谁?
+Content-Type: application/json                      # 我发送的格式
+Accept: application/json                            # 我期望的格式
+Origin: https://yukilog.com                         # 我从哪儿来
+```
+
+**JWT 认证中间件** 提取的就是 `Authorization` 那一行
+
+2. **检查格式**
+
+检查 `Bearer <token>` 格式, 然后决定继续验证, 或者抛出 **401 Unauthorized**
+
+3. **验证 Token**
+
+这里使用 `JWT_SECRET` 验证签名和过期时间, 就是你在 [.env](../env.example) 里配置的那一个
+
+要么解析出 `Claims`, 要么抛出 **401 Unauthorized**
+
+4. **将 `Claims` 存入 `Request Extensions`**
+
+`Request Extensions` 就是一个临时信息体, 只在本次请求的生命周期内有效
+
+5. **放行**
+
+检查完毕~你可以去下一层啦!!!
+
+#### 给你完整的举个例子!
+
+```text
+用户登录:
+POST /api/admin/auth/login
+Body: {"username": "admin", "password": "xxx"}
+Response: {"success": true, "data": {"token": "eyJ...", "expires_in": 86400}}
+
+↓ 用户保存 token 到本地
+
+创建文章（需要认证）:
+POST /api/admin/posts
+Headers: 
+  Authorization: Bearer eyJ...
+  Content-Type: application/json
+Body: {"title": "...", "content": "..."}
+
+↓ 请求到达服务器
+
+[中间件 jwt_auth]
+1. 提取 "Bearer eyJ..."
+2. 验证 token → 解析出 Claims {sub: "admin", exp: 1314520}
+3. req.extensions_mut().insert(claims)
+4. next.run(req)
+
+↓
+
+[Handler create_post]
+1. Extension<Claims> 提取出 claims
+2. 知道是 admin 用户在操作
+3. 调用 service 层创建文章
+
+↓ 返回成功响应
+```
+
+---
+
 ## 抱怨
 
 这里用来记录开发过程中遇到的问题, 还有猪鼻恋的臆想
