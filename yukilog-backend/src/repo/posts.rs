@@ -56,6 +56,7 @@ pub struct CreatePost {
     pub summary: Option<String>,
     pub content: String,
     pub cover_image: Option<String>,
+    pub status: Option<String>,
     pub theme_id: Option<i64>,
 }
 
@@ -80,6 +81,7 @@ where
         summary: Set(input.summary),
         content: Set(input.content),
         cover_image: Set(input.cover_image),
+        status: Set(input.status),
         theme_id: Set(input.theme_id),
         ..Default::default()
     };
@@ -170,5 +172,20 @@ where
     if res.rows_affected == 0 {
         return Err(RepoError::NotFound);
     }
+    Ok(())
+}
+
+pub async fn increment_view_count<C>(db: &C, id: i64) -> RepoResult<()>
+where
+    C: ConnectionTrait,
+{
+    use sea_orm::Statement;
+    let sql = "UPDATE posts SET view_count = view_count + 1 WHERE id = $1";
+    let stmt = Statement::from_sql_and_values(
+        sea_orm::DatabaseBackend::Postgres,
+        sql,
+        vec![id.into()],
+    );
+    db.execute(stmt).await?;
     Ok(())
 }
