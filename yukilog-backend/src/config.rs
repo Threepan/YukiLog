@@ -8,6 +8,9 @@ pub struct AppConfig {
     /// 数据库连接 URL
     pub database_url: String,
     
+    /// Redis 连接 URL
+    pub redis_url: String,
+    
     /// 服务器监听地址
     pub server_host: String,
     
@@ -43,6 +46,9 @@ impl AppConfig {
         let config = Self {
             database_url: env::var("DATABASE_URL")
                 .context("DATABASE_URL 未设置")?,
+            
+            redis_url: env::var("REDIS_URL")
+                .unwrap_or_else(|_| "redis://localhost:6379".to_string()),
             
             server_host: env::var("SERVER_HOST")
                 .unwrap_or_else(|_| "127.0.0.1".to_string()),
@@ -122,6 +128,7 @@ mod tests {
     fn test_server_addr() {
         let config = AppConfig {
             database_url: "".to_string(),
+            redis_url: "redis://localhost:6379".to_string(),
             server_host: "0.0.0.0".to_string(),
             server_port: 8080,
             jwt_secret: "test-secret-key-at-least-16-chars".to_string(),
