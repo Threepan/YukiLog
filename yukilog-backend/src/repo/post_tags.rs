@@ -99,3 +99,19 @@ where
 
     Ok(())
 }
+
+pub async fn get_tags_by_post_id<C>(db: &C, post_id: i64) -> RepoResult<Vec<crate::repo::tags::TagDto>>
+where
+    C: ConnectionTrait,
+{
+    use crate::entities::{prelude::Tags, tags};
+    use sea_orm::JoinType;
+
+    let tags_models = Tags::find()
+        .inner_join(post_tags::Entity)
+        .filter(post_tags::Column::PostId.eq(post_id))
+        .all(db)
+        .await?;
+
+    Ok(tags_models.into_iter().map(crate::repo::tags::TagDto::from).collect())
+}
