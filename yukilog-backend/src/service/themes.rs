@@ -107,7 +107,7 @@ pub async fn create_theme(
 }
 
 /// 2. 获取主题详情（前台/后台）
-pub async fn get_theme_by_slug(db: &DatabaseConnection, slug: &str) -> ServiceResult<Theme> {
+pub async fn get_theme_by_slug<C: ConnectionTrait>(db: &C, slug: &str) -> ServiceResult<Theme> {
     let dto = repo_themes::get_theme_by_slug(db, slug)
         .await
         .map_err(|e| match e {
@@ -194,8 +194,8 @@ pub async fn delete_theme(db: &DatabaseConnection, slug: &str) -> ServiceResult<
 }
 
 /// 6. 增加浏览计数（前台访问主题页时调用）
-pub async fn increment_view_count(
-    db: &DatabaseConnection,
+pub async fn increment_view_count<C: ConnectionTrait>(
+    db: &C,
     theme_id: i64,
 ) -> ServiceResult<()> {
     let sql = "UPDATE themes SET view_count = view_count + 1 WHERE id = $1";
@@ -211,8 +211,8 @@ pub async fn increment_view_count(
 
 /// 7. 调整文章计数（给 post service 调用）
 /// delta: +1 表示新文章绑定此主题，-1 表示文章解绑/删除
-pub async fn adjust_post_count(
-    db: &DatabaseConnection,
+pub async fn adjust_post_count<C: ConnectionTrait>(
+    db: &C,
     theme_id: i64,
     delta: i32,
 ) -> ServiceResult<()> {
@@ -225,4 +225,34 @@ pub async fn adjust_post_count(
 
     db.execute(stmt).await?;
     Ok(())
+}
+
+// ================================
+// 辅助函数（给其他 service 调用）
+// ================================
+
+/// 通过 ID 获取主题
+pub async fn get_theme_by_id<C: ConnectionTrait>(
+    db: &C,
+    theme_id: i64,
+) -> ServiceResult<Theme> {
+    let dto = repo_themes::get_theme_by_id(db, theme_id).await?;
+    Ok(dto.into())
+}
+
+/// 通过多个 slug 批量获取主题 ID
+pub async fn get_theme_ids_by_slugs<C: ConnectionTrait>(
+    db: &C,
+    slugs: &[String],
+) -> ServiceResult<Vec<i64>> {
+    use crate::entities::prelude::Themes;
+    use crate::entities::themes::Column;
+    use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
+
+    let themes = Themes::find()
+        .filter(Column::Slug.is_in(slugs.iter().cloned()))
+        .all(db)
+        .await?;
+
+    Ok(themes.into_iter().map(|t| t.id).collect())
 }
