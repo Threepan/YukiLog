@@ -39,8 +39,10 @@
 ## 📖 文档 (Docs)
 
 [YukiLog 设计文档](./yukilog-backend/docs/yukilog.md)
-[YukiLog 数据库入口文档](./yukilog-backend/docs/orm.md)
-[YukiLog 业务层入口文档](./yukilog-backend/docs/service.md)
+[YukiLog 数据库映射文档](./yukilog-backend/docs/orm.md)
+[YukiLog 仓储层定义文档](./yukilog-backend/docs/repo.md)
+[YukiLog 业务层封装文档](./yukilog-backend/docs/service.md)
+[YukiLog 运行时配置文档](./yukilog-backend/docs/config.md)
 
 ---
 
