@@ -9,10 +9,6 @@
 
 ---
 
-我觉得应该一边做开发一边写博客 ...
-
----
-
 ## 🏗️ 整体架构 (Architecture)
 
 **YukiLog** 采用前后端分离架构，通过 **RESTful API** 进行通信，确保系统的高可扩展性。
@@ -39,6 +35,11 @@
 - **Database:** `PostgreSQL`
 
 ---
+
+## 📖 文档 (Docs)
+
+[YukiLog 数据库入口文档](./yukilog-backend/docs/orm.md)
+[YukiLog 业务层入口文档](./yukilog-backend/docs/service.md)
 
 ---
 
