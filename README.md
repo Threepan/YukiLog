@@ -38,6 +38,7 @@
 
 ## 📖 文档 (Docs)
 
+[YukiLog 设计文档](./yukilog-backend/docs/yukilog.md)
 [YukiLog 数据库入口文档](./yukilog-backend/docs/orm.md)
 [YukiLog 业务层入口文档](./yukilog-backend/docs/service.md)
 
