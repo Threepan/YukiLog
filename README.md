@@ -60,6 +60,8 @@
 
 [YukiLog 应用层文档](./yukilog-backend/docs/axum.md)
 
+[YukiLog 网络路由文档](./yukilog-backend/docs/route.md)
+
 ---
 
 ## 📄 License
