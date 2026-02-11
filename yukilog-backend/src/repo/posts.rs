@@ -1,6 +1,6 @@
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, EntityTrait, IntoActiveModel, PaginatorTrait,
-    QueryFilter, Set,
+    QueryFilter, QueryOrder, QuerySelect, Set,
 };
 
 use crate::{
@@ -214,4 +214,87 @@ where
     );
     db.execute(stmt).await?;
     Ok(())
+}
+
+/// 按条件筛选文章列表（支持排序和分页）
+pub async fn list_posts_filtered<C>(
+    db: &C,
+    theme_ids: Option<Vec<i64>>,
+    post_ids: Option<Vec<i64>>,
+    status: Option<&str>,
+    sort_by: &str,
+    count: Option<u64>,
+    page: Option<u64>,
+) -> RepoResult<Vec<PostDto>>
+where
+    C: ConnectionTrait,
+{
+    let mut query = posts::Entity::find();
+
+    if let Some(ids) = theme_ids {
+        query = query.filter(posts::Column::ThemeId.is_in(ids));
+    }
+    if let Some(ids) = post_ids {
+        query = query.filter(posts::Column::Id.is_in(ids));
+    }
+    if let Some(s) = status {
+        query = query.filter(posts::Column::Status.eq(s));
+    }
+
+    let (column, order) = match sort_by {
+        "updated_at" => (posts::Column::UpdatedAt, sea_orm::Order::Desc),
+        "view_count" => (posts::Column::ViewCount, sea_orm::Order::Desc),
+        _ => (posts::Column::CreatedAt, sea_orm::Order::Desc),
+    };
+    query = query.order_by(column, order);
+
+    if let (Some(count), Some(page)) = (count, page) {
+        let offset = (page - 1) * count;
+        query = query.limit(count).offset(offset);
+    }
+
+    let models = query.all(db).await?;
+    models
+        .into_iter()
+        .map(PostDto::try_from)
+        .collect::<Result<Vec<_>, _>>()
+}
+
+/// 获取同时拥有所有指定标签的文章 ID（AND 逻辑）
+pub async fn get_post_ids_with_all_tags<C>(
+    db: &C,
+    tag_ids: &[i64],
+    required_count: i64,
+) -> RepoResult<Vec<i64>>
+where
+    C: ConnectionTrait,
+{
+    use sea_orm::{FromQueryResult, Statement};
+
+    #[derive(FromQueryResult)]
+    struct PostIdResult {
+        post_id: i64,
+    }
+
+    let placeholders: Vec<String> = (1..=tag_ids.len()).map(|i| format!("${}", i)).collect();
+    let sql = format!(
+        "SELECT post_id FROM post_tags WHERE tag_id IN ({}) GROUP BY post_id HAVING COUNT(DISTINCT tag_id) = ${}",
+        placeholders.join(", "),
+        tag_ids.len() + 1
+    );
+
+    let mut values: Vec<sea_orm::Value> = tag_ids.iter().map(|&id| id.into()).collect();
+    values.push(required_count.into());
+
+    let stmt = Statement::from_sql_and_values(
+        sea_orm::DatabaseBackend::Postgres,
+        &sql,
+        values,
+    );
+
+    let results = PostIdResult::find_by_statement(stmt)
+        .all(db)
+        .await?;
+
+    Ok(results.into_iter().map(|r| r.post_id).collect())
 }
