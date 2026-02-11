@@ -1,6 +1,6 @@
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, EntityTrait, IntoActiveModel, PaginatorTrait,
-    QueryFilter, Set,
+    QueryFilter, QueryOrder, QuerySelect, Set,
 };
 
 use crate::{
@@ -211,4 +211,65 @@ where
         return Err(RepoError::NotFound);
     }
     Ok(())
+}
+
+/// 按条件筛选评论列表（支持排序和分页）
+pub async fn list_comments_filtered<C>(
+    db: &C,
+    post_id: Option<i64>,
+    status: Option<&str>,
+    sort_asc: bool,
+    count: Option<u64>,
+    page: Option<u64>,
+) -> RepoResult<Vec<CommentDto>>
+where
+    C: ConnectionTrait,
+{
+    let mut query = comments::Entity::find();
+
+    if let Some(pid) = post_id {
+        query = query.filter(comments::Column::PostId.eq(pid));
+    }
+    if let Some(s) = status {
+        query = query.filter(comments::Column::Status.eq(s));
+    }
+
+    if sort_asc {
+        query = query.order_by_asc(comments::Column::CreatedAt);
+    } else {
+        query = query.order_by_desc(comments::Column::CreatedAt);
+    }
+
+    if let (Some(count), Some(page)) = (count, page) {
+        let offset = (page - 1) * count;
+        query = query.limit(count).offset(offset);
+    }
+
+    let models = query.all(db).await?;
+    models
+        .into_iter()
+        .map(CommentDto::try_from)
+        .collect::<Result<Vec<_>, _>>()
+}
+
+/// 获取指定评论的已审核回复列表
+pub async fn list_comment_replies<C>(
+    db: &C,
+    parent_id: i64,
+    approved_status: &str,
+) -> RepoResult<Vec<CommentDto>>
+where
+    C: ConnectionTrait,
+{
+    let models = comments::Entity::find()
+        .filter(comments::Column::ParentId.eq(parent_id))
+        .filter(comments::Column::Status.eq(approved_status))
+        .order_by_asc(comments::Column::CreatedAt)
+        .all(db)
+        .await?;
+
+    models
+        .into_iter()
+        .map(CommentDto::try_from)
+        .collect::<Result<Vec<_>, _>>()
 }
