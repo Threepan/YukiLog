@@ -90,6 +90,7 @@ where
     PostDto::try_from(model)
 }
 
+#[allow(dead_code)]
 pub async fn get_post_by_id<C>(db: &C, id: i64) -> RepoResult<PostDto>
 where
     C: ConnectionTrait,
@@ -115,6 +116,7 @@ where
     PostDto::try_from(model)
 }
 
+#[allow(dead_code)]
 pub async fn list_posts<C>(db: &C) -> RepoResult<Vec<PostDto>>
 where
     C: ConnectionTrait,

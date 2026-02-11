@@ -87,6 +87,7 @@ where
     Ok(ThemeDto::from(model))
 }
 
+#[allow(dead_code)]
 pub async fn list_themes<C>(db: &C) -> RepoResult<Vec<ThemeDto>>
 where
     C: ConnectionTrait,

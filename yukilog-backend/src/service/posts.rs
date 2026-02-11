@@ -45,6 +45,7 @@ impl From<repo::posts::PostDto> for Post {
     }
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct PostWithRelations {
     pub post: Post,
@@ -194,6 +195,7 @@ pub async fn get_post_by_slug(
     Ok(post_dto.into())
 }
 
+#[allow(dead_code)]
 /// 4. 获取文章及其关联数据
 pub async fn get_post_with_relations(
     db: &DatabaseConnection,

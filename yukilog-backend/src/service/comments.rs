@@ -189,6 +189,7 @@ pub async fn get_post_comment_tree(
     Ok(build_comment_tree(comments))
 }
 
+#[allow(dead_code)]
 /// 4. 获取评论详情
 pub async fn get_comment_by_id(
     db: &DatabaseConnection,

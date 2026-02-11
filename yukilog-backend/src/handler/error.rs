@@ -48,6 +48,7 @@ impl IntoResponse for ServiceError {
 // ================================
 
 #[derive(Debug)]
+#[allow(dead_code)]
 pub enum AuthError {
     /// 无效的令牌
     InvalidToken,

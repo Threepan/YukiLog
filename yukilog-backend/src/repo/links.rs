@@ -74,6 +74,7 @@ where
     LinkDto::try_from(model)
 }
 
+#[allow(dead_code)]
 pub async fn get_link_by_id<C>(db: &C, id: i64) -> RepoResult<LinkDto>
 where
     C: ConnectionTrait,
@@ -99,6 +100,7 @@ where
     LinkDto::try_from(model)
 }
 
+#[allow(dead_code)]
 pub async fn list_links<C>(db: &C) -> RepoResult<Vec<LinkDto>>
 where
     C: ConnectionTrait,

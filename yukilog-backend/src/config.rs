@@ -114,6 +114,7 @@ impl AppConfig {
         Ok(())
     }
     
+    #[allow(dead_code)]
     /// 获取服务器监听地址
     pub fn server_addr(&self) -> String {
         format!("{}:{}", self.server_host, self.server_port)

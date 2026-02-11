@@ -200,6 +200,7 @@ pub async fn adjust_post_count<C: ConnectionTrait>(
 // 辅助函数（给其他 service 调用）
 // ================================
 
+#[allow(dead_code)]
 /// 通过 ID 获取主题
 pub async fn get_theme_by_id<C: ConnectionTrait>(
     db: &C,

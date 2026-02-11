@@ -169,6 +169,7 @@ pub async fn list_pending_links(
     list_all_links(db, filter).await
 }
 
+#[allow(dead_code)]
 /// 5. 获取友链详情
 pub async fn get_link_by_id(
     db: &DatabaseConnection,

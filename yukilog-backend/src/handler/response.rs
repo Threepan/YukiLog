@@ -39,6 +39,7 @@ impl<T> ApiResponse<T> {
 }
 
 impl ApiResponse<()> {
+    #[allow(dead_code)]
     /// 创建错误响应
     pub fn error(message: impl Into<String>) -> Self {
         Self {
@@ -94,6 +95,7 @@ impl<T> PagedData<T> {
         }
     }
 
+    #[allow(dead_code)]
     /// 获取总页数
     pub fn total_pages(&self) -> u64 {
         self.total_pages
@@ -109,6 +111,7 @@ pub fn ok<T: Serialize>(data: T) -> Json<ApiResponse<T>> {
     Json(ApiResponse::success(data))
 }
 
+#[allow(dead_code)]
 /// 返回成功响应（带数据和消息）
 pub fn ok_with_message<T: Serialize>(
     data: T,
@@ -117,6 +120,7 @@ pub fn ok_with_message<T: Serialize>(
     Json(ApiResponse::success_with_message(data, message))
 }
 
+#[allow(dead_code)]
 /// 返回错误响应
 pub fn error(message: impl Into<String>) -> Json<ApiResponse<()>> {
     Json(ApiResponse::error(message))

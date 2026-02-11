@@ -82,6 +82,7 @@ where
     Ok(TagDto::from(model))
 }
 
+#[allow(dead_code)]
 pub async fn list_tags<C>(db: &C) -> RepoResult<Vec<TagDto>>
 where
     C: ConnectionTrait,

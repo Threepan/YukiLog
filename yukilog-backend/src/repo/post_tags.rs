@@ -39,6 +39,7 @@ where
     Ok(PostTagDto::from(model))
 }
 
+#[allow(dead_code)]
 pub async fn get_post_tag<C>(db: &C, post_id: i64, tag_id: i64) -> RepoResult<PostTagDto>
 where
     C: ConnectionTrait,
@@ -51,6 +52,7 @@ where
     Ok(PostTagDto::from(model))
 }
 
+#[allow(dead_code)]
 pub async fn list_post_tags<C>(db: &C) -> RepoResult<Vec<PostTagDto>>
 where
     C: ConnectionTrait,
@@ -59,6 +61,7 @@ where
     Ok(models.into_iter().map(PostTagDto::from).collect())
 }
 
+#[allow(dead_code)]
 pub async fn list_post_tags_by_post_id<C>(db: &C, post_id: i64) -> RepoResult<Vec<PostTagDto>>
 where
     C: ConnectionTrait,
@@ -71,6 +74,7 @@ where
     Ok(models.into_iter().map(PostTagDto::from).collect())
 }
 
+#[allow(dead_code)]
 pub async fn list_post_tags_by_tag_id<C>(db: &C, tag_id: i64) -> RepoResult<Vec<PostTagDto>>
 where
     C: ConnectionTrait,

@@ -110,6 +110,7 @@ where
     CommentDto::try_from(model)
 }
 
+#[allow(dead_code)]
 pub async fn list_comments<C>(db: &C) -> RepoResult<Vec<CommentDto>>
 where
     C: ConnectionTrait,
@@ -122,6 +123,7 @@ where
         .collect::<Result<Vec<_>, _>>()
 }
 
+#[allow(dead_code)]
 pub async fn list_comments_by_post_id<C>(db: &C, post_id: i64) -> RepoResult<Vec<CommentDto>>
 where
     C: ConnectionTrait,
