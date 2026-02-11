@@ -51,36 +51,36 @@ POST    /api/admin/login    -> auth::login
 
 **Themes 主题 (3个)**
 ```rust
-GET     /api/themes              -> public::themes::list_themes
-GET     /api/themes/:slug        -> public::themes::get_theme
-POST    /api/themes/:slug/view   -> public::themes::increment_theme_view
+GET     /api/public/themes              -> public::themes::list_themes
+GET     /api/public/themes/:slug        -> public::themes::get_theme
+POST    /api/public/themes/:slug/view   -> public::themes::increment_theme_view
 ```
 
 **Tags 标签 (3个)**
 ```rust
-GET     /api/tags                -> public::tags::list_tags
-GET     /api/tags/:slug          -> public::tags::get_tag
-POST    /api/tags/:slug/view     -> public::tags::increment_tag_view
+GET     /api/public/tags                -> public::tags::list_tags
+GET     /api/public/tags/:slug          -> public::tags::get_tag
+POST    /api/public/tags/:slug/view     -> public::tags::increment_tag_view
 ```
 
 **Posts 文章 (3个)**
 ```rust
-GET     /api/posts               -> public::posts::list_posts
-GET     /api/posts/:slug         -> public::posts::get_post
-POST    /api/posts/:slug/view    -> public::posts::increment_post_view
+GET     /api/public/posts               -> public::posts::list_posts
+GET     /api/public/posts/:slug         -> public::posts::get_post
+POST    /api/public/posts/:slug/view    -> public::posts::increment_post_view
 ```
 
 **Comments 评论 (3个)**
 ```rust
-GET     /api/posts/:slug/comments           -> public::comments::get_post_comments
-POST    /api/posts/:slug/comments           -> public::comments::create_comment
-GET     /api/posts/:slug/comments/:id       -> public::comments::get_comment_replies
+GET     /api/public/posts/:slug/comments           -> public::comments::get_post_comments
+POST    /api/public/posts/:slug/comments           -> public::comments::create_comment
+GET     /api/public/posts/:slug/comments/:id       -> public::comments::get_comment_replies
 ```
 
 **Links 友链 (2个)**
 ```rust
-GET     /api/links               -> public::links::list_links
-POST    /api/links/submit        -> public::links::submit_link
+GET     /api/public/links               -> public::links::list_links
+POST    /api/public/links/submit        -> public::links::submit_link
 ```
 
 #### 3. 管理路由 `admin_routes()`
@@ -214,8 +214,8 @@ pub fn auth_routes() -> Router<AppState> {
 /// 公开路由（前台，无需认证）
 pub fn public_routes() -> Router<AppState> {
     Router::new()
-        .route("/api/themes", get(public::themes::list_themes))
-        .route("/api/tags", get(public::tags::list_tags))
+        .route("/api/public/themes", get(public::themes::list_themes))
+        .route("/api/public/tags", get(public::tags::list_tags))
         // ... 其他路由
 }
 
