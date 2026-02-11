@@ -9,6 +9,8 @@ mod handler;
 mod repo;
 mod service;
 
+use std::net::SocketAddr;
+
 use axum::http::{header::{AUTHORIZATION, CONTENT_TYPE}, Method};
 use tower_http::cors::CorsLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
@@ -99,7 +101,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing::info!("🎉 YukiLog backend server listening on http://{}", addr);
     tracing::info!("📝 Press Ctrl+C to shutdown");
 
-    axum::serve(listener, app.into_make_service())
+    axum::serve(listener, app.into_make_service_with_connect_info::<SocketAddr>())
         .await?;
 
     Ok(())
