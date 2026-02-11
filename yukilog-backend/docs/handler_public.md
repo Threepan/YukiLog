@@ -69,11 +69,11 @@ pub fn generate_gravatar_url(email: &str) -> String
 
 源码: 
 
-* [yukilog-backend/src/handler/public/themes.rs]
-* [yukilog-backend/src/handler/public/tags.rs]
-* [yukilog-backend/src/handler/public/posts.rs]
-* [yukilog-backend/src/handler/public/comments.rs]
-* [yukilog-backend/src/handler/public/links.rs]
+* [yukilog-backend/src/handler/public/themes.rs](../src/handler/public/themes.rs)
+* [yukilog-backend/src/handler/public/tags.rs](../src/handler/public/tags.rs)
+* [yukilog-backend/src/handler/public/posts.rs](../src/handler/public/posts.rs)
+* [yukilog-backend/src/handler/public/comments.rs](../src/handler/public/comments.rs)
+* [yukilog-backend/src/handler/public/links.rs](../src/handler/public/links.rs)
 
 ---
 
