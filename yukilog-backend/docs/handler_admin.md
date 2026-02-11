@@ -133,8 +133,6 @@ pub struct CreateTagRequest {
     pub name: String,
     /// 标签 slug
     pub slug: String,
-    /// 描述
-    pub description: Option<String>,
 }
 
 pub struct UpdateTagRequest {
@@ -142,8 +140,6 @@ pub struct UpdateTagRequest {
     pub name: Option<String>,
     /// 标签 slug
     pub slug: Option<String>,
-    /// 描述
-    pub description: Option<Option<String>>,
 }
 
 pub struct MergeTagsRequest {
