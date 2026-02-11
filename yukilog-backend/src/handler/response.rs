@@ -72,25 +72,31 @@ pub struct PagedData<T> {
     
     /// 每页大小
     pub page_size: u64,
+    
+    /// 总页数
+    pub total_pages: u64,
 }
 
 impl<T> PagedData<T> {
     /// 创建分页数据
     pub fn new(items: Vec<T>, total: u64, page: u64, page_size: u64) -> Self {
+        let total_pages = if page_size == 0 {
+            0
+        } else {
+            (total + page_size - 1) / page_size
+        };
         Self {
             items,
             total,
             page,
             page_size,
+            total_pages,
         }
     }
 
-    /// 计算总页数
+    /// 获取总页数
     pub fn total_pages(&self) -> u64 {
-        if self.page_size == 0 {
-            return 0;
-        }
-        (self.total + self.page_size - 1) / self.page_size
+        self.total_pages
     }
 }
 
@@ -119,6 +125,23 @@ pub fn error(message: impl Into<String>) -> Json<ApiResponse<()>> {
 /// 返回纯成功响应（无数据）
 pub fn no_content() -> Json<ApiResponse<()>> {
     Json(ApiResponse::ok())
+}
+
+/// 返回分页数据响应
+pub fn paged<T: Serialize>(
+    items: Vec<T>,
+    total: u64,
+    page: u64,
+    page_size: u64,
+    total_pages: u64,
+) -> Json<ApiResponse<PagedData<T>>> {
+    Json(ApiResponse::success(PagedData {
+        items,
+        total,
+        page,
+        page_size,
+        total_pages,
+    }))
 }
 
 #[cfg(test)]
