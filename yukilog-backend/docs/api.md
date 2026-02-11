@@ -502,7 +502,7 @@ GET /api/public/posts/:slug/comments
 **说明：** 获取某条评论的直接回复列表（按评论 id）。
 
 ```bash
-GET /api/public/comments/:id/replies
+GET /api/public/posts/:slug/comments/:id
 ```
 
 **请求**
@@ -619,7 +619,7 @@ GET /api/public/links
 **说明：** 申请添加友链（提交后通常为 pending，等待管理员审核）。
 
 ```bash
-POST /api/public/links
+POST /api/public/links/submit
 ```
 
 **请求（JSON Body）**
