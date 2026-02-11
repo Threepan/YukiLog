@@ -46,6 +46,9 @@
 [YukiLog 处理层规范文档](./yukilog-backend/docs/handler.md)
 [YukiLog 公共接口文档](./yukilog-backend/docs/handler_public.md)
 
+
+[YukiLog 应用层文档](./yukilog-backend/docs/axum.md)
+
 ---
 
 ## 📄 License
