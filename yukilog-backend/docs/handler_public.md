@@ -212,7 +212,7 @@ pub struct ListPostsQuery {
 
 ```bash
 GET    /api/public/posts/:slug/comments        - 评论树
-GET    /api/public/comments/:id/replies        - 懒加载回复
+GET    /api/public/posts/:slug/comments/:id   - 懒加载回复
 POST   /api/public/posts/:slug/comments        - 发表评论 (频率限制 10秒 + Gravatar)
 ```
 
@@ -228,7 +228,7 @@ pub async fn get_post_comments(
 /// 获取评论的所有回复（延迟加载）
 pub async fn get_comment_replies(
     State(state): State<AppState>,
-    Path(id): Path<i64>,
+    Path((_slug, id)): Path<(String, i64)>,
 ) -> Result<Json<ApiResponse<Vec<Comment>>>, ServiceError>
 
 /// 创建评论
