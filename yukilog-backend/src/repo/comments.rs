@@ -1,6 +1,6 @@
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, ConnectionTrait, EntityTrait, IntoActiveModel, QueryFilter,
-    Set,
+    ActiveModelTrait, ColumnTrait, ConnectionTrait, EntityTrait, IntoActiveModel, PaginatorTrait,
+    QueryFilter, Set,
 };
 
 use crate::{
@@ -135,6 +135,28 @@ where
         .into_iter()
         .map(CommentDto::try_from)
         .collect::<Result<Vec<_>, _>>()
+}
+
+/// 按条件统计评论数量（SELECT COUNT(*)）
+pub async fn count_comments<C>(
+    db: &C,
+    post_id: Option<i64>,
+    status: Option<&str>,
+) -> RepoResult<u64>
+where
+    C: ConnectionTrait,
+{
+    let mut query = comments::Entity::find();
+
+    if let Some(pid) = post_id {
+        query = query.filter(comments::Column::PostId.eq(pid));
+    }
+    if let Some(s) = status {
+        query = query.filter(comments::Column::Status.eq(s));
+    }
+
+    let count = query.count(db).await?;
+    Ok(count)
 }
 
 pub async fn update_comment<C>(db: &C, id: i64, patch: UpdateComment) -> RepoResult<CommentDto>
