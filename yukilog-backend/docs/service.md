@@ -361,6 +361,13 @@ pub async fn get_post_tags<C: ConnectionTrait>(
     db: &C,
     post_id: i64,
 ) -> ServiceResult<Vec<Tag>>
+
+/// 10. 统计文章数量（SELECT COUNT(*)）
+/// 使用与 list_posts 相同的筛选条件，通过 repo::posts::count_posts 执行
+pub async fn count_posts(
+    db: &DatabaseConnection,
+    filter: PostFilter,
+) -> ServiceResult<u64>
 ```
 
 ###### DTO定义
@@ -439,6 +446,7 @@ pub struct PostWithRelations {
 | `delete_post` | 如果 status=published：同步 theme/tags 计数 -1 <br> 删除文章（post_tags 由 DB CASCADE 删除）|
 | `increment_view_count` | `UPDATE posts SET view_count = view_count + 1 WHERE id = ?` |
 | `get_post_tags` | 通过 post_tags JOIN tags 查询标签列表 |
+| `count_posts` | 使用与 list_posts 相同的筛选条件 <br> 通过 repo::posts::count_posts 执行 SELECT COUNT(*) <br> 用于分页接口计算 total |
 
 ---
 
@@ -513,6 +521,13 @@ pub async fn list_comment_replies(
     db: &DatabaseConnection,
     parent_id: i64,
 ) -> ServiceResult<Vec<Comment>>
+
+/// 11. 统计评论数量（SELECT COUNT(*)）
+/// 使用与 list_all_comments 相同的筛选条件，通过 repo::comments::count_comments 执行
+pub async fn count_all_comments(
+    db: &DatabaseConnection,
+    filter: AdminCommentFilter,
+) -> ServiceResult<u64>
 ```
 
 ###### DTO定义
@@ -589,6 +604,7 @@ pub struct CommentNode {
 | `update_comment` | 更新评论内容和游客信息 |
 | `delete_comment` | 直接删除 <br> 子评论由 DB CASCADE 删除 |
 | `list_comment_replies` | 获取指定评论的回复列表 <br> 用于懒加载子评论 |
+| `count_all_comments` | 使用与 list_all_comments 相同的筛选条件 <br> 通过 repo::comments::count_comments 执行 SELECT COUNT(*) <br> 用于分页接口计算 total |
 
 ---
 
