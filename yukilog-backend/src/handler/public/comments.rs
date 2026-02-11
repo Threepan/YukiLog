@@ -97,12 +97,13 @@ pub async fn get_post_comments(
     Ok(ok(comments))
 }
 
-/// GET /api/public/comments/:id/replies
+/// GET /api/public/posts/:slug/comments/:id
 ///
 /// 获取评论的所有回复（延迟加载）
 ///
 /// # 路径参数
 ///
+/// - `slug`: 文章 slug（未使用，仅用于 RESTful 路径语义）
 /// - `id`: 评论 ID
 ///
 /// # 响应
@@ -124,7 +125,7 @@ pub async fn get_post_comments(
 /// ```
 pub async fn get_comment_replies(
     State(state): State<AppState>,
-    Path(id): Path<i64>,
+    Path((_slug, id)): Path<(String, i64)>,
 ) -> Result<Json<ApiResponse<Vec<Comment>>>, ServiceError> {
     let replies = service::comments::list_comment_replies(&state.db, id).await?;
     Ok(ok(replies))
