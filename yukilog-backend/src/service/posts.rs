@@ -1,11 +1,7 @@
-use sea_orm::{
-    ColumnTrait, ConnectionTrait, DatabaseConnection, DatabaseTransaction,
-    EntityTrait, QueryFilter, QueryOrder, QuerySelect, TransactionTrait,
-};
+use sea_orm::{ConnectionTrait, DatabaseConnection, TransactionTrait};
 use chrono::{DateTime, FixedOffset};
 
 use crate::domain::status::PostStatus;
-use crate::entities::prelude::{PostTags, Posts};
 use crate::repo;
 use crate::repo::posts::{CreatePost, UpdatePost as RepoUpdatePost};
 use crate::service::error::{ServiceError, ServiceResult};
@@ -121,7 +117,7 @@ pub async fn create_post(
         ));
     }
 
-    let txn: DatabaseTransaction = db.begin().await?;
+    let txn = db.begin().await?;
 
     // 1. 获取/创建标签
     let mut tag_ids = Vec::new();
@@ -230,59 +226,48 @@ pub async fn list_posts(
     db: &DatabaseConnection,
     filter: PostFilter,
 ) -> ServiceResult<Vec<Post>> {
-    use crate::entities::posts::Column as PostColumn;
-
-    let mut query = Posts::find();
-
-    // 筛选主题
-    if let Some(theme_slugs) = &filter.theme_slugs {
+    // 解析主题 slug → ID
+    let theme_ids = if let Some(theme_slugs) = &filter.theme_slugs {
         if !theme_slugs.is_empty() {
-            let theme_ids = crate::service::themes::get_theme_ids_by_slugs(db, theme_slugs).await?;
-            query = query.filter(PostColumn::ThemeId.is_in(theme_ids));
+            Some(crate::service::themes::get_theme_ids_by_slugs(db, theme_slugs).await?)
+        } else {
+            None
         }
-    }
+    } else {
+        None
+    };
 
-    // 筛选标签（AND 逻辑）
-    if let Some(tag_slugs) = &filter.tag_slugs {
+    // 解析标签 slug → 文章 ID（AND 逻辑）
+    let post_ids = if let Some(tag_slugs) = &filter.tag_slugs {
         if !tag_slugs.is_empty() {
-            let post_ids = get_post_ids_with_all_tags(db, tag_slugs).await?;
-            if post_ids.is_empty() {
+            let tag_ids = crate::service::tags::get_tag_ids_by_slugs(db, tag_slugs).await?;
+            if tag_ids.len() != tag_slugs.len() {
                 return Ok(vec![]);
             }
-            query = query.filter(PostColumn::Id.is_in(post_ids));
+            let ids = repo::posts::get_post_ids_with_all_tags(db, &tag_ids, tag_slugs.len() as i64).await?;
+            if ids.is_empty() {
+                return Ok(vec![]);
+            }
+            Some(ids)
+        } else {
+            None
         }
-    }
+    } else {
+        None
+    };
 
-    // 筛选状态
-    if let Some(status) = &filter.status {
-        query = query.filter(PostColumn::Status.eq(status.as_str()));
-    }
+    let status_str = filter.status.as_ref().map(|s| s.as_str());
+    let sort_by = match filter.sort_by.unwrap_or(PostSortBy::CreatedAt) {
+        PostSortBy::CreatedAt => "created_at",
+        PostSortBy::UpdatedAt => "updated_at",
+        PostSortBy::ViewCount => "view_count",
+    };
 
-    // 排序
-    match filter.sort_by.unwrap_or(PostSortBy::CreatedAt) {
-        PostSortBy::CreatedAt => {
-            query = query.order_by_desc(PostColumn::CreatedAt);
-        }
-        PostSortBy::UpdatedAt => {
-            query = query.order_by_desc(PostColumn::UpdatedAt);
-        }
-        PostSortBy::ViewCount => {
-            query = query.order_by_desc(PostColumn::ViewCount);
-        }
-    }
+    let dtos = repo::posts::list_posts_filtered(
+        db, theme_ids, post_ids, status_str, sort_by, filter.count, filter.page,
+    ).await?;
 
-    // 分页
-    if let (Some(count), Some(page)) = (filter.count, filter.page) {
-        let offset = (page - 1) * count;
-        query = query.limit(count).offset(offset);
-    }
-
-    let models = query.all(db).await?;
-    let dtos: Result<Vec<_>, _> = models
-        .into_iter()
-        .map(|m| repo::posts::PostDto::try_from(m))
-        .collect();
-    Ok(dtos?.into_iter().map(Into::into).collect())
+    Ok(dtos.into_iter().map(Into::into).collect())
 }
 
 /// 6. 更新文章
@@ -305,7 +290,7 @@ pub async fn update_post(
         }
     }
 
-    let txn: DatabaseTransaction = db.begin().await?;
+    let txn = db.begin().await?;
 
     // 获取当前文章
     let current_post = repo::posts::get_post_by_slug(&txn, current_slug).await?;
@@ -427,7 +412,7 @@ pub async fn delete_post(
     db: &DatabaseConnection,
     slug: &str,
 ) -> ServiceResult<()> {
-    let txn: DatabaseTransaction = db.begin().await?;
+    let txn = db.begin().await?;
 
     let post = repo::posts::get_post_by_slug(&txn, slug).await?;
 
@@ -464,8 +449,6 @@ pub async fn count_posts(
     db: &DatabaseConnection,
     filter: PostFilter,
 ) -> ServiceResult<u64> {
-    use crate::entities::posts::Column as PostColumn;
-
     // 解析主题 slug → ID
     let theme_ids = if let Some(theme_slugs) = &filter.theme_slugs {
         if !theme_slugs.is_empty() {
@@ -480,7 +463,11 @@ pub async fn count_posts(
     // 解析标签 slug → 文章 ID（AND 逻辑）
     let post_ids = if let Some(tag_slugs) = &filter.tag_slugs {
         if !tag_slugs.is_empty() {
-            let ids = get_post_ids_with_all_tags(db, tag_slugs).await?;
+            let tag_ids = crate::service::tags::get_tag_ids_by_slugs(db, tag_slugs).await?;
+            if tag_ids.len() != tag_slugs.len() {
+                return Ok(0);
+            }
+            let ids = repo::posts::get_post_ids_with_all_tags(db, &tag_ids, tag_slugs.len() as i64).await?;
             if ids.is_empty() {
                 return Ok(0);
             }
@@ -515,50 +502,4 @@ fn is_valid_slug(slug: &str) -> bool {
         && slug
             .chars()
             .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_')
-}
-
-/// 获取包含所有指定标签的文章 ID（AND 逻辑）
-async fn get_post_ids_with_all_tags<C: ConnectionTrait>(
-    db: &C,
-    tag_slugs: &[String],
-) -> ServiceResult<Vec<i64>> {
-    if tag_slugs.is_empty() {
-        return Ok(vec![]);
-    }
-
-    // 获取所有标签 ID
-    let tag_ids = crate::service::tags::get_tag_ids_by_slugs(db, tag_slugs).await?;
-    if tag_ids.len() != tag_slugs.len() {
-        return Ok(vec![]);  // 有标签不存在，返回空
-    }
-
-    // 使用原生 SQL 查询同时拥有所有标签的文章
-    use sea_orm::{FromQueryResult, Statement};
-    
-    #[derive(FromQueryResult)]
-    struct PostIdResult {
-        post_id: i64,
-    }
-
-    let placeholders: Vec<String> = (1..=tag_ids.len()).map(|i| format!("${}", i)).collect();
-    let sql = format!(
-        "SELECT post_id FROM post_tags WHERE tag_id IN ({}) GROUP BY post_id HAVING COUNT(DISTINCT tag_id) = ${}",
-        placeholders.join(", "),
-        tag_ids.len() + 1
-    );
-
-    let mut values: Vec<sea_orm::Value> = tag_ids.into_iter().map(|id| id.into()).collect();
-    values.push((tag_slugs.len() as i64).into());
-
-    let stmt = Statement::from_sql_and_values(
-        sea_orm::DatabaseBackend::Postgres,
-        &sql,
-        values,
-    );
-
-    let results = PostIdResult::find_by_statement(stmt)
-        .all(db)
-        .await?;
-
-    Ok(results.into_iter().map(|r| r.post_id).collect())
 }
