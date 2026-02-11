@@ -1,6 +1,6 @@
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, ConnectionTrait, EntityTrait, IntoActiveModel, QueryFilter,
-    Set,
+    ActiveModelTrait, ColumnTrait, ConnectionTrait, EntityTrait, IntoActiveModel, PaginatorTrait,
+    QueryFilter, Set,
 };
 
 use crate::{
@@ -173,6 +173,32 @@ where
         return Err(RepoError::NotFound);
     }
     Ok(())
+}
+
+/// 按条件统计文章数量（SELECT COUNT(*)）
+pub async fn count_posts<C>(
+    db: &C,
+    theme_ids: Option<Vec<i64>>,
+    post_ids: Option<Vec<i64>>,
+    status: Option<&str>,
+) -> RepoResult<u64>
+where
+    C: ConnectionTrait,
+{
+    let mut query = posts::Entity::find();
+
+    if let Some(ids) = theme_ids {
+        query = query.filter(posts::Column::ThemeId.is_in(ids));
+    }
+    if let Some(ids) = post_ids {
+        query = query.filter(posts::Column::Id.is_in(ids));
+    }
+    if let Some(s) = status {
+        query = query.filter(posts::Column::Status.eq(s));
+    }
+
+    let count = query.count(db).await?;
+    Ok(count)
 }
 
 pub async fn increment_view_count<C>(db: &C, id: i64) -> RepoResult<()>
