@@ -133,15 +133,8 @@ pub fn paged<T: Serialize>(
     total: u64,
     page: u64,
     page_size: u64,
-    total_pages: u64,
 ) -> Json<ApiResponse<PagedData<T>>> {
-    Json(ApiResponse::success(PagedData {
-        items,
-        total,
-        page,
-        page_size,
-        total_pages,
-    }))
+    Json(ApiResponse::success(PagedData::new(items, total, page, page_size)))
 }
 
 #[cfg(test)]
