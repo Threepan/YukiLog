@@ -456,6 +456,47 @@ pub async fn increment_view_count(
     Ok(())
 }
 
+/// 10. 统计文章数量（SELECT COUNT(*）
+///
+/// 使用与 list_posts 相同的筛选条件，但不执行排序和分页，
+/// 通过 repo::posts::count_posts 执行 SELECT COUNT(*) 查询。
+pub async fn count_posts(
+    db: &DatabaseConnection,
+    filter: PostFilter,
+) -> ServiceResult<u64> {
+    use crate::entities::posts::Column as PostColumn;
+
+    // 解析主题 slug → ID
+    let theme_ids = if let Some(theme_slugs) = &filter.theme_slugs {
+        if !theme_slugs.is_empty() {
+            Some(crate::service::themes::get_theme_ids_by_slugs(db, theme_slugs).await?)
+        } else {
+            None
+        }
+    } else {
+        None
+    };
+
+    // 解析标签 slug → 文章 ID（AND 逻辑）
+    let post_ids = if let Some(tag_slugs) = &filter.tag_slugs {
+        if !tag_slugs.is_empty() {
+            let ids = get_post_ids_with_all_tags(db, tag_slugs).await?;
+            if ids.is_empty() {
+                return Ok(0);
+            }
+            Some(ids)
+        } else {
+            None
+        }
+    } else {
+        None
+    };
+
+    let status_str = filter.status.as_ref().map(|s| s.as_str());
+    let count = repo::posts::count_posts(db, theme_ids, post_ids, status_str).await?;
+    Ok(count)
+}
+
 /// 9. 获取文章的所有标签
 pub async fn get_post_tags<C: ConnectionTrait>(
     db: &C,
