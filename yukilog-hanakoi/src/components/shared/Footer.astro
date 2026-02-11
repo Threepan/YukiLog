@@ -1,0 +1,95 @@
+---
+// ================================
+// 页脚组件
+// ================================
+
+import { siteConfig } from '../../lib/config.ts';
+import { getSiteUptime } from '../../lib/utils.ts';
+
+const currentYear = new Date().getFullYear();
+const uptime = getSiteUptime(siteConfig.startDate);
+---
+
+<footer class="footer">
+  <div class="footer-container">
+    <div class="footer-content">
+      <p class="footer-copyright">
+        © {currentYear} {siteConfig.author.name}. All rights reserved.
+      </p>
+      
+      <p class="footer-info">
+        运行时长：{uptime}
+      </p>
+      
+      <p class="footer-tech">
+        <span>Powered by</span>
+        <a href="https://astro.build" target="_blank" rel="noopener">Astro</a>
+        <span>+</span>
+        <a href="https://www.rust-lang.org" target="_blank" rel="noopener">Rust</a>
+      </p>
+      
+      <p class="footer-license">
+        <a href="https://github.com/Yueosa/YukiLog" target="_blank" rel="noopener">
+          源码开放于 GitHub (AGPL-3.0)
+        </a>
+      </p>
+    </div>
+  </div>
+</footer>
+
+<style lang="scss">
+.footer {
+  background: $lian-white;
+  border-top: 1px solid $lian-border;
+  padding: $spacing-xl 0;
+  margin-top: $spacing-xxl;
+}
+
+.footer-container {
+  max-width: $container-xl;
+  margin: 0 auto;
+  padding: 0 $spacing-lg;
+}
+
+.footer-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-sm;
+  text-align: center;
+  
+  p {
+    margin: 0;
+    font-size: $font-size-sm;
+    color: $lian-text-light;
+    line-height: 1.8;
+  }
+  
+  a {
+    color: $lian-blue;
+    text-decoration: none;
+    transition: color $transition-fast $ease-out;
+    
+    &:hover {
+      color: darken($lian-blue, 10%);
+    }
+  }
+}
+
+.footer-tech {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+}
+
+// 响应式
+@media (max-width: $container-sm) {
+  .footer {
+    padding: $spacing-lg 0;
+  }
+  
+  .footer-container {
+    padding: 0 $spacing-md;
+  }
+}
+</style>

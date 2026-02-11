@@ -1,0 +1,76 @@
+---
+// ================================
+// 导航项组件
+// 左图标 + 右文字，支持滑入动画
+// ================================
+
+interface Props {
+  label: string;
+  href: string;
+  icon?: string;
+  index: number;
+}
+
+const { label, href, icon, index } = Astro.props;
+const isActive = Astro.url.pathname === href;
+---
+
+<a
+  href={href}
+  class:list={['nav-item', { active: isActive }]}
+  style={`--index: ${index}`}
+>
+  {icon && <span class="nav-icon" data-icon={icon}></span>}
+  <span class="nav-label">{label}</span>
+</a>
+
+<style lang="scss">
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-md;
+  color: $lian-text;
+  font-weight: $font-weight-medium;
+  font-size: $font-size-base;
+  text-decoration: none;
+  transition: 
+    background-color $transition-fast $ease-out,
+    color $transition-fast $ease-out,
+    transform $transition-fast $ease-out;
+  
+  // 滑入动画（从右往左 40px）
+  .navbar:hover & {
+    animation: nav-item-slide-in $transition-base $ease-gentle calc(var(--index) * 50ms) both;
+  }
+  
+  &:hover {
+    background: $lian-bg;
+    transform: translateY(-2px);
+  }
+  
+  &.active {
+    color: $lian-blue;
+    background: rgba($lian-blue, 0.1);
+  }
+}
+
+.nav-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  // 图标占位（后期用 SVG 替换）
+  &::before {
+    content: attr(data-icon);
+    font-size: $font-size-xs;
+  }
+}
+
+.nav-label {
+  line-height: 1;
+}
+</style>

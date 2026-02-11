@@ -1,0 +1,94 @@
+---
+// ================================
+// 导航栏组件
+// 鼠标靠近后浮出，带圆角和阴影
+// ================================
+
+import { navItems } from '../../lib/config.ts';
+import NavItem from './NavItem.astro';
+---
+
+<nav class="navbar" id="navbar">
+  <div class="navbar-container">
+    {navItems.map((item, index) => (
+      <NavItem {...item} index={index} />
+    ))}
+  </div>
+</nav>
+
+<style lang="scss">
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 7vh;
+  z-index: $z-nav;
+  opacity: 0;
+  transition: opacity $transition-base $ease-gentle;
+  pointer-events: none;
+  
+  &:hover,
+  &.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  
+  &.sticky {
+    opacity: 1;
+    pointer-events: auto;
+    background: rgba($lian-white, 0.95);
+    backdrop-filter: blur(10px);
+    box-shadow: $shadow-sm;
+  }
+}
+
+.navbar-container {
+  max-width: $container-xl;
+  height: 100%;
+  margin: 0 auto;
+  padding: 0 $spacing-lg;
+  display: flex;
+  align-items: center;
+  gap: $spacing-lg;
+}
+
+// 响应式
+@media (max-width: $container-md) {
+  .navbar {
+    height: 60px;
+  }
+  
+  .navbar-container {
+    padding: 0 $spacing-md;
+    gap: $spacing-md;
+  }
+}
+</style>
+
+<script>
+  // 导航栏显隐逻辑
+  const navbar = document.getElementById('navbar');
+  if (!navbar) throw new Error('Navbar not found');
+
+  // 监听滚动，判断是否需要 sticky 样式
+  window.addEventListener('scroll', () => {
+    const scrollY = window.scrollY;
+    
+    // 滚动超过 1080px (第二屏) 后变为 sticky
+    if (scrollY > 1080) {
+      navbar.classList.add('sticky');
+    } else {
+      navbar.classList.remove('sticky');
+    }
+  });
+
+  // 鼠标靠近顶部时显示
+  document.addEventListener('mousemove', (e) => {
+    if (e.clientY < 100 && window.scrollY < 1080) {
+      navbar.classList.add('visible');
+    } else if (window.scrollY < 1080) {
+      navbar.classList.remove('visible');
+    }
+  });
+</script>

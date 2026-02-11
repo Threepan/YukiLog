@@ -1,0 +1,196 @@
+// ================================
+// 动画定义 - 恋的温柔动画系统
+// ================================
+
+@use './variables.scss' as *;
+
+// 导航栏渐入
+@keyframes nav-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// 导航项滑入（从右往左 40px）
+@keyframes nav-item-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+// 组件从左侧滑入（60px，用于个人信息/站点信息）
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-60px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+// 组件从右侧滑入（60px）
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(60px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+// 组件从上方滑入
+@keyframes slide-in-top {
+  from {
+    opacity: 0;
+    transform: translateY(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// 组件从下方滑入
+@keyframes slide-in-bottom {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// 通用淡入
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// 脉冲（非常轻微，用于提示）
+@keyframes pulse-gentle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+// ================================
+// Mixins - 便捷使用动画
+// ================================
+
+// 淡入动画
+@mixin fade-in($duration: $transition-base, $delay: 0s) {
+  opacity: 0;
+  animation: fade-in $duration $ease-gentle $delay forwards;
+}
+
+// 从左滑入
+@mixin slide-in-left($duration: $transition-base, $delay: 0s) {
+  opacity: 0;
+  animation: slide-in-left $duration $ease-gentle $delay forwards;
+}
+
+// 从右滑入
+@mixin slide-in-right($duration: $transition-base, $delay: 0s) {
+  opacity: 0;
+  animation: slide-in-right $duration $ease-gentle $delay forwards;
+}
+
+// 从上滑入
+@mixin slide-in-top($duration: $transition-base, $delay: 0s) {
+  opacity: 0;
+  animation: slide-in-top $duration $ease-gentle $delay forwards;
+}
+
+// 从下滑入
+@mixin slide-in-bottom($duration: $transition-base, $delay: 0s) {
+  opacity: 0;
+  animation: slide-in-bottom $duration $ease-gentle $delay forwards;
+}
+
+// 悬停轻微上浮（2px，柔和）
+@mixin hover-lift($distance: -2px) {
+  transition: 
+    transform $transition-fast $ease-out, 
+    box-shadow $transition-fast $ease-out;
+  
+  &:hover {
+    transform: translateY($distance);
+    box-shadow: $shadow-md;
+  }
+}
+
+// 悬停放大（轻微）
+@mixin hover-scale($scale: 1.02) {
+  transition: transform $transition-fast $ease-out;
+  
+  &:hover {
+    transform: scale($scale);
+  }
+}
+
+// 悬停增强阴影
+@mixin hover-shadow-enhance {
+  transition: box-shadow $transition-fast $ease-out;
+  
+  &:hover {
+    box-shadow: $shadow-hover;
+  }
+}
+
+// 柔和的颜色过渡
+@mixin color-transition($properties...) {
+  $transitions: ();
+  @each $prop in $properties {
+    $transitions: append($transitions, #{$prop} $transition-base $ease-gentle, comma);
+  }
+  transition: $transitions;
+}
+
+// 交互反馈（按下效果，非常轻微）
+@mixin active-scale($scale: 0.98) {
+  &:active {
+    transform: scale($scale);
+  }
+}
+
+// 加载骨架屏动画（温柔的闪烁）
+@keyframes skeleton-loading {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@mixin skeleton {
+  background: linear-gradient(
+    90deg,
+    $lian-bg 0%,
+    lighten($lian-bg, 2%) 50%,
+    $lian-bg 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+}

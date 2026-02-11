@@ -5,5 +5,5 @@ target/
 .env
 
 # 开发用
-TODO.md
+TODO*.md
 .vscode/

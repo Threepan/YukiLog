@@ -1,0 +1,33 @@
+---
+// ================================
+// 基础布局 - 所有页面的根布局
+// ================================
+
+interface Props {
+  title: string;
+  description?: string;
+  keywords?: string[];
+  ogImage?: string;
+}
+
+import SEO from '../components/shared/SEO.astro';
+import '../styles/global.scss';
+
+const { title, description, keywords, ogImage } = Astro.props;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <SEO
+      title={title}
+      description={description}
+      keywords={keywords}
+      ogImage={ogImage}
+    />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>
+

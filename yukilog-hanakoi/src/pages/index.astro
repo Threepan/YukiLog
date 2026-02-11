@@ -1,0 +1,126 @@
+---
+// ================================
+// 首页（临时测试页面）
+// ================================
+
+import BlogLayout from '../layouts/BlogLayout.astro';
+---
+
+<BlogLayout title="YukiLog">
+  <div class="test-page">
+    <h1>YukiLog 基础设施已就绪 ✨</h1>
+    <p>恋的温柔博客系统</p>
+    
+    <div class="status-cards">
+      <div class="card">
+        <h3>✅ 样式系统</h3>
+        <ul>
+          <li>SCSS 变量（恋的配色方案）</li>
+          <li>动画系统（温柔的过渡）</li>
+          <li>排版样式</li>
+          <li>工具类</li>
+        </ul>
+      </div>
+      
+      <div class="card">
+        <h3>✅ TypeScript 类型</h3>
+        <ul>
+          <li>API 响应类型</li>
+          <li>博客数据类型</li>
+          <li>前端配置类型</li>
+        </ul>
+      </div>
+      
+      <div class="card">
+        <h3>✅ API 封装</h3>
+        <ul>
+          <li>文章 API</li>
+          <li>主题 API</li>
+          <li>标签 API</li>
+          <li>评论 API</li>
+          <li>友链 API</li>
+        </ul>
+      </div>
+      
+      <div class="card">
+        <h3>✅ 基础组件</h3>
+        <ul>
+          <li>导航栏（支持滑入动画）</li>
+          <li>页脚</li>
+          <li>SEO Meta</li>
+          <li>布局系统</li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="next-steps">
+      <h2>下一步：开始实现页面 🚀</h2>
+      <p>所有基础设施已经准备好，可以开始构建实际页面了！</p>
+    </div>
+  </div>
+</BlogLayout>
+
+<style lang="scss">
+.test-page {
+  padding: $spacing-xxl $spacing-lg;
+  max-width: $container-xl;
+  margin: 0 auto;
+  
+  h1 {
+    text-align: center;
+    margin-bottom: $spacing-sm;
+    color: $lian-blue;
+  }
+  
+  > p {
+    text-align: center;
+    color: $lian-text-light;
+    margin-bottom: $spacing-xxl;
+  }
+}
+
+.status-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: $spacing-lg;
+  margin-bottom: $spacing-xxl;
+  
+  .card {
+    h3 {
+      margin-bottom: $spacing-md;
+      color: $lian-pink;
+    }
+    
+    ul {
+      list-style: none;
+      padding: 0;
+      
+      li {
+        padding: $spacing-xs 0;
+        color: $lian-text;
+        
+        &::before {
+          content: '→ ';
+          color: $lian-blue;
+          margin-right: $spacing-xs;
+        }
+      }
+    }
+  }
+}
+
+.next-steps {
+  text-align: center;
+  padding: $spacing-xl;
+  background: linear-gradient(135deg, rgba($lian-blue, 0.1), rgba($lian-pink, 0.1));
+  border-radius: $radius-lg;
+  
+  h2 {
+    margin-bottom: $spacing-md;
+  }
+  
+  p {
+    color: $lian-text-light;
+  }
+}
+</style>

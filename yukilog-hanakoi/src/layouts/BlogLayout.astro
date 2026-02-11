@@ -1,0 +1,39 @@
+---
+// ================================
+// 博客布局 - 带导航栏和页脚的标准页面布局
+// ================================
+
+interface Props {
+  title: string;
+  description?: string;
+  keywords?: string[];
+  ogImage?: string;
+}
+
+import BaseLayout from './BaseLayout.astro';
+import NavBar from '../components/navigation/NavBar.astro';
+import Footer from '../components/shared/Footer.astro';
+
+const { title, description, keywords, ogImage } = Astro.props;
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  keywords={keywords}
+  ogImage={ogImage}
+>
+  <NavBar />
+  
+  <main>
+    <slot />
+  </main>
+  
+  <Footer />
+</BaseLayout>
+
+<style lang="scss">
+  main {
+    min-height: calc(100vh - 200px); // 减去导航栏和页脚高度
+  }
+</style>
