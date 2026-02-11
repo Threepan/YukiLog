@@ -148,7 +148,7 @@ pub async fn list_all_themes(
 /// 4. 更新主题信息（管理后台，允许修改 slug）
 pub async fn update_theme(
     db: &DatabaseConnection,
-    current_slug: &str,
+    id: i64,
     input: UpdateThemeInput,
 ) -> ServiceResult<Theme> {
     // 如果要修改 slug，先校验新 slug 格式
@@ -156,8 +156,8 @@ pub async fn update_theme(
         validate_slug(new_slug)?;
     }
 
-    // 先通过 current_slug 获取主题 id
-    let current = repo_themes::get_theme_by_slug(db, current_slug)
+    // 确保主题存在
+    repo_themes::get_theme_by_id(db, id)
         .await
         .map_err(|e| match e {
             RepoError::NotFound => ServiceError::NotFound,
@@ -170,20 +170,13 @@ pub async fn update_theme(
         description: input.description,
     };
 
-    let dto = repo_themes::update_theme(db, current.id, repo_patch).await?;
+    let dto = repo_themes::update_theme(db, id, repo_patch).await?;
     Ok(Theme::from(dto))
 }
 
 /// 5. 删除主题（管理后台）
-pub async fn delete_theme(db: &DatabaseConnection, slug: &str) -> ServiceResult<()> {
-    let theme = repo_themes::get_theme_by_slug(db, slug)
-        .await
-        .map_err(|e| match e {
-            RepoError::NotFound => ServiceError::NotFound,
-            other => ServiceError::Repo(other),
-        })?;
-
-    repo_themes::delete_theme(db, theme.id)
+pub async fn delete_theme(db: &DatabaseConnection, id: i64) -> ServiceResult<()> {
+    repo_themes::delete_theme(db, id)
         .await
         .map_err(|e| match e {
             RepoError::NotFound => ServiceError::NotFound,

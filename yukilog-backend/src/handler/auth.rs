@@ -4,7 +4,7 @@ use chrono::{Duration, Utc};
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
 
-use crate::config::AppConfig;
+use crate::handler::state::AppState;
 
 use super::error::AuthError;
 use super::response::ApiResponse;
@@ -142,17 +142,17 @@ pub fn verify_password(password: &str, hash: &str) -> Result<bool, argon2::passw
 /// }
 /// ```
 pub async fn login(
-    State(config): State<AppConfig>,
+    State(state): State<AppState>,
     Json(req): Json<LoginRequest>,
 ) -> Result<Json<ApiResponse<LoginResponse>>, AuthError> {
     // 1. 验证用户名
-    if req.username != config.admin_username {
+    if req.username != state.config.admin_username {
         tracing::warn!("Login attempt with invalid username: {}", req.username);
         return Err(AuthError::InvalidCredentials);
     }
 
     // 2. 验证密码
-    match verify_password(&req.password, &config.admin_password_hash) {
+    match verify_password(&req.password, &state.config.admin_password_hash) {
         Ok(true) => {
             // 密码正确
         }
@@ -167,13 +167,17 @@ pub async fn login(
     }
 
     // 3. 生成 JWT 令牌
-    let token = generate_token(&req.username, &config.jwt_secret, config.jwt_expires_in)?;
+    let token = generate_token(
+        &req.username,
+        &state.config.jwt_secret,
+        state.config.jwt_expires_in,
+    )?;
 
     tracing::info!("User {} logged in successfully", req.username);
 
     Ok(Json(ApiResponse::success(LoginResponse {
         token,
-        expires_in: config.jwt_expires_in,
+        expires_in: state.config.jwt_expires_in,
     })))
 }
 

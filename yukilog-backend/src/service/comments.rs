@@ -87,6 +87,7 @@ pub struct CommentFilter {
 pub struct AdminCommentFilter {
     pub post_id: Option<i64>,
     pub status: Option<CommentStatus>,
+    pub sort_by: Option<CommentSortBy>,
     pub count: Option<u64>,
     pub page: Option<u64>,
 }
@@ -226,8 +227,15 @@ pub async fn list_all_comments(
         query = query.filter(CommentColumn::Status.eq(status.as_str()));
     }
 
-    // 按创建时间倒序
-    query = query.order_by_desc(CommentColumn::CreatedAt);
+    // 排序
+    match filter.sort_by.unwrap_or(CommentSortBy::CreatedAtDesc) {
+        CommentSortBy::CreatedAtAsc => {
+            query = query.order_by_asc(CommentColumn::CreatedAt);
+        }
+        CommentSortBy::CreatedAtDesc => {
+            query = query.order_by_desc(CommentColumn::CreatedAt);
+        }
+    }
 
     // 分页
     if let (Some(count), Some(page)) = (filter.count, filter.page) {

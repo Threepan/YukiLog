@@ -177,18 +177,14 @@ pub async fn list_all_tags(
 }
 
 /// 5. 更新标签信息（管理后台，允许修改 slug）
-pub async fn update_tag(
-    db: &DatabaseConnection,
-    current_slug: &str,
-    input: UpdateTagInput,
-) -> ServiceResult<Tag> {
+pub async fn update_tag(db: &DatabaseConnection, id: i64, input: UpdateTagInput) -> ServiceResult<Tag> {
     // 如果要修改 slug，先校验新 slug 格式
     if let Some(ref new_slug) = input.slug {
         validate_slug(new_slug)?;
     }
 
-    // 先通过 current_slug 获取标签 id
-    let current = repo_tags::get_tag_by_slug(db, current_slug)
+    // 确保标签存在
+    repo_tags::get_tag_by_id(db, id)
         .await
         .map_err(|e| match e {
             RepoError::NotFound => ServiceError::NotFound,
@@ -200,20 +196,13 @@ pub async fn update_tag(
         slug: input.slug,
     };
 
-    let dto = repo_tags::update_tag(db, current.id, repo_patch).await?;
+    let dto = repo_tags::update_tag(db, id, repo_patch).await?;
     Ok(Tag::from(dto))
 }
 
 /// 6. 删除标签（管理后台）
-pub async fn delete_tag(db: &DatabaseConnection, slug: &str) -> ServiceResult<()> {
-    let tag = repo_tags::get_tag_by_slug(db, slug)
-        .await
-        .map_err(|e| match e {
-            RepoError::NotFound => ServiceError::NotFound,
-            other => ServiceError::Repo(other),
-        })?;
-
-    repo_tags::delete_tag(db, tag.id)
+pub async fn delete_tag(db: &DatabaseConnection, id: i64) -> ServiceResult<()> {
+    repo_tags::delete_tag(db, id)
         .await
         .map_err(|e| match e {
             RepoError::NotFound => ServiceError::NotFound,
@@ -224,93 +213,90 @@ pub async fn delete_tag(db: &DatabaseConnection, slug: &str) -> ServiceResult<()
 }
 
 /// 7. 合并标签（管理后台）
-/// 将 from_slug 的所有文章转移到 to_slug，然后删除 from_slug
+/// 将 source_ids 的所有文章关联迁移到 target_id，然后删除 source_ids
 pub async fn merge_tags(
     db: &DatabaseConnection,
-    from_slug: &str,
-    to_slug: &str,
-) -> ServiceResult<()> {
-    // 获取源标签和目标标签
-    let from_tag = repo_tags::get_tag_by_slug(db, from_slug)
-        .await
-        .map_err(|e| match e {
-            RepoError::NotFound => ServiceError::NotFound,
-            other => ServiceError::Repo(other),
-        })?;
-
-    let to_tag = repo_tags::get_tag_by_slug(db, to_slug)
-        .await
-        .map_err(|e| match e {
-            RepoError::NotFound => ServiceError::NotFound,
-            other => ServiceError::Repo(other),
-        })?;
-
-    if from_tag.id == to_tag.id {
+    target_id: i64,
+    source_ids: &[i64],
+) -> ServiceResult<Tag> {
+    if source_ids.is_empty() {
+        return Err(ServiceError::InvalidInput("source_ids cannot be empty".to_string()));
+    }
+    if source_ids.iter().any(|&id| id == target_id) {
         return Err(ServiceError::InvalidInput(
             "cannot merge a tag into itself".to_string(),
         ));
     }
 
+    // 确保目标标签存在
+    repo_tags::get_tag_by_id(db, target_id)
+        .await
+        .map_err(|e| match e {
+            RepoError::NotFound => ServiceError::NotFound,
+            other => ServiceError::Repo(other),
+        })?;
+
+    // 事务：迁移关联 -> 删除源标签 -> 纠正 target 的 post_count
     let txn: DatabaseTransaction = db.begin().await?;
 
-    // 1. 更新 post_tags：将 from_tag_id 的关联改为 to_tag_id
-    //    忽略重复关联（如果某篇文章同时有这两个标签）
-    let update_sql = r#"
-        UPDATE post_tags 
-        SET tag_id = $1 
-        WHERE tag_id = $2 
-        AND post_id NOT IN (
-            SELECT post_id FROM post_tags WHERE tag_id = $1
+    for &source_id in source_ids {
+        // 将 source_id 的关联复制到 target_id（主键冲突时忽略）
+        let insert_sql = r#"
+            INSERT INTO post_tags (post_id, tag_id)
+            SELECT post_id, $1
+            FROM post_tags
+            WHERE tag_id = $2
+            ON CONFLICT DO NOTHING
+        "#;
+        let insert_stmt = Statement::from_sql_and_values(
+            sea_orm::DatabaseBackend::Postgres,
+            insert_sql,
+            vec![target_id.into(), source_id.into()],
+        );
+        txn.execute(insert_stmt).await?;
+
+        // 删除源标签的关联
+        let delete_rel_sql = r#"DELETE FROM post_tags WHERE tag_id = $1"#;
+        let delete_rel_stmt = Statement::from_sql_and_values(
+            sea_orm::DatabaseBackend::Postgres,
+            delete_rel_sql,
+            vec![source_id.into()],
+        );
+        txn.execute(delete_rel_stmt).await?;
+
+        // 删除源标签本体
+        repo_tags::delete_tag(&txn, source_id)
+            .await
+            .map_err(|e| match e {
+                RepoError::NotFound => ServiceError::NotFound,
+                other => ServiceError::Repo(other),
+            })?;
+    }
+
+    // 重新计算 target 的 post_count
+    let fix_count_sql = r#"
+        UPDATE tags
+        SET post_count = (
+            SELECT COUNT(*) FROM post_tags WHERE tag_id = $1
         )
+        WHERE id = $1
     "#;
-
-    let stmt = Statement::from_sql_and_values(
+    let fix_count_stmt = Statement::from_sql_and_values(
         sea_orm::DatabaseBackend::Postgres,
-        update_sql,
-        vec![to_tag.id.into(), from_tag.id.into()],
+        fix_count_sql,
+        vec![target_id.into()],
     );
-
-    txn.execute(stmt).await?;
-
-    // 2. 删除剩余的 from_tag 关联（重复的部分）
-    let delete_sql = "DELETE FROM post_tags WHERE tag_id = $1";
-    let stmt = Statement::from_sql_and_values(
-        sea_orm::DatabaseBackend::Postgres,
-        delete_sql,
-        vec![from_tag.id.into()],
-    );
-
-    txn.execute(stmt).await?;
-
-    // 3. 同步目标标签的文章计数
-    let count_sql = "SELECT COUNT(*) FROM post_tags WHERE tag_id = $1";
-    let stmt = Statement::from_sql_and_values(
-        sea_orm::DatabaseBackend::Postgres,
-        count_sql,
-        vec![to_tag.id.into()],
-    );
-
-    use sea_orm::QueryResult;
-    let result: Option<QueryResult> = txn.query_one(stmt).await?;
-    let new_count: i64 = result
-        .ok_or_else(|| ServiceError::InvalidInput("failed to count posts".to_string()))?
-        .try_get("", "count")?;
-
-    let update_count_sql = "UPDATE tags SET post_count = $1 WHERE id = $2";
-    let stmt = Statement::from_sql_and_values(
-        sea_orm::DatabaseBackend::Postgres,
-        update_count_sql,
-        vec![(new_count as i32).into(), to_tag.id.into()],
-    );
-
-    txn.execute(stmt).await?;
-
-    // 4. 删除源标签
-    repo_tags::delete_tag(&txn, from_tag.id).await?;
+    txn.execute(fix_count_stmt).await?;
 
     txn.commit().await?;
 
-    Ok(())
+    let dto = repo_tags::get_tag_by_id(db, target_id)
+        .await
+        .map_err(|e| match e {
+            RepoError::NotFound => ServiceError::NotFound,
+            other => ServiceError::Repo(other),
+        })?;
+    Ok(Tag::from(dto))
 }
 
 /// 8. 增加浏览计数（前台访问标签页时调用）

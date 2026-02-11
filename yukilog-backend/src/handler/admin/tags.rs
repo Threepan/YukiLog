@@ -21,8 +21,6 @@ pub struct CreateTagRequest {
     pub name: String,
     /// 标签 slug
     pub slug: String,
-    /// 描述
-    pub description: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -31,8 +29,6 @@ pub struct UpdateTagRequest {
     pub name: Option<String>,
     /// 标签 slug
     pub slug: Option<String>,
-    /// 描述
-    pub description: Option<Option<String>>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -56,8 +52,7 @@ pub struct MergeTagsRequest {
 /// ```json
 /// {
 ///   "name": "Rust",
-///   "slug": "rust",
-///   "description": "Rust 编程语言"
+///   "slug": "rust"
 /// }
 /// ```
 ///
@@ -70,7 +65,6 @@ pub struct MergeTagsRequest {
 ///     "id": 1,
 ///     "name": "Rust",
 ///     "slug": "rust",
-///     "description": "Rust 编程语言",
 ///     "post_count": 0,
 ///     "view_count": 0,
 ///     "created_at": "2024-01-01T00:00:00Z"
@@ -87,7 +81,6 @@ pub async fn create_tag(
     let input = CreateTagInput {
         name: req.name,
         slug: req.slug,
-        description: req.description,
     };
 
     let tag = service::tags::create_tag(&state.db, input).await?;
@@ -106,8 +99,7 @@ pub async fn create_tag(
 ///
 /// ```json
 /// {
-///   "name": "Rust Lang",
-///   "description": "更新后的描述"
+///   "name": "Rust Lang"
 /// }
 /// ```
 ///
@@ -120,7 +112,6 @@ pub async fn create_tag(
 ///     "id": 1,
 ///     "name": "Rust Lang",
 ///     "slug": "rust",
-///     "description": "更新后的描述",
 ///     "post_count": 5,
 ///     "view_count": 500,
 ///     "created_at": "2024-01-01T00:00:00Z"
@@ -138,7 +129,6 @@ pub async fn update_tag(
     let input = UpdateTagInput {
         name: req.name,
         slug: req.slug,
-        description: req.description,
     };
 
     let tag = service::tags::update_tag(&state.db, id, input).await?;
@@ -164,8 +154,7 @@ pub async fn update_tag(
 ///
 /// # 说明
 ///
-/// - 删除标签前会检查是否有关联的文章
-/// - 如果有关联文章，将返回错误
+/// - 删除标签会级联删除 post_tags 关联（数据库约束）
 pub async fn delete_tag(
     State(state): State<AppState>,
     Extension(claims): Extension<Claims>,
@@ -199,7 +188,6 @@ pub async fn delete_tag(
 ///     "id": 1,
 ///     "name": "Rust",
 ///     "slug": "rust",
-///     "description": "Rust 编程语言",
 ///     "post_count": 15,
 ///     "view_count": 1500,
 ///     "created_at": "2024-01-01T00:00:00Z"

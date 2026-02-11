@@ -11,7 +11,7 @@ use crate::handler::{
 };
 use crate::service::{
     self,
-    comments::{Comment, CommentFilter, CommentSortBy, UpdateCommentInput},
+    comments::{AdminCommentFilter, Comment, CommentSortBy, UpdateCommentInput},
     error::ServiceError,
 };
 
@@ -82,8 +82,13 @@ pub async fn list_comments(
     let page = params.page.unwrap_or(1).max(1);
     let page_size = params.page_size.unwrap_or(10).min(100).max(1);
 
-    let filter = CommentFilter {
-        post_slug: params.post_slug,
+    let post_id = match params.post_slug.as_deref() {
+        Some(slug) => Some(service::posts::get_post_by_slug(&state.db, slug).await?.id),
+        None => None,
+    };
+
+    let filter = AdminCommentFilter {
+        post_id,
         status: None, // 管理员可以看到所有状态
         sort_by: params.sort,
         count: Some(page_size),
@@ -94,7 +99,7 @@ pub async fn list_comments(
     let comments = service::comments::list_all_comments(&state.db, filter.clone()).await?;
 
     // 获取总数
-    let filter_for_count = CommentFilter {
+    let filter_for_count = AdminCommentFilter {
         count: None,
         page: None,
         ..filter
@@ -133,8 +138,8 @@ pub async fn list_pending_comments(
 ) -> Result<Json<ApiResponse<Vec<Comment>>>, ServiceError> {
     tracing::debug!("Admin {} listing pending comments", claims.sub);
 
-    let filter = CommentFilter {
-        post_slug: None,
+    let filter = AdminCommentFilter {
+        post_id: None,
         status: Some(crate::domain::status::CommentStatus::Pending),
         sort_by: Some(CommentSortBy::CreatedAtAsc),
         count: None,

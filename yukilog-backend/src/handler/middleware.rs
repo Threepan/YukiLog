@@ -6,8 +6,8 @@ use axum::{
     response::Response,
 };
 
-use crate::config::AppConfig;
-use crate::handler::auth::{validate_token, Claims};
+use crate::handler::auth::validate_token;
+use crate::handler::state::AppState;
 
 /// JWT 认证中间件
 ///
@@ -60,7 +60,7 @@ use crate::handler::auth::{validate_token, Claims};
 /// }
 /// ```
 pub async fn jwt_auth(
-    State(config): State<AppConfig>,
+    State(state): State<AppState>,
     mut req: Request<Body>,
     next: Next,
 ) -> Result<Response, StatusCode> {
@@ -74,7 +74,7 @@ pub async fn jwt_auth(
     };
 
     // 2. 验证 token 并解析 Claims
-    let claims = match validate_token(token, &config.jwt_secret) {
+    let claims = match validate_token(token, &state.config.jwt_secret) {
         Ok(c) => c,
         Err(e) => {
             tracing::warn!("JWT validation failed: {:?}", e);
