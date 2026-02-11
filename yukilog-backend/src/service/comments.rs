@@ -1,13 +1,8 @@
-use sea_orm::{
-    ColumnTrait, ConnectionTrait, DatabaseConnection, EntityTrait, QueryFilter, QueryOrder,
-    QuerySelect,
-};
+use sea_orm::DatabaseConnection;
 use chrono::{DateTime, FixedOffset};
 use serde::{Deserialize, Serialize};
 
 use crate::domain::status::CommentStatus;
-use crate::entities::prelude::Comments;
-use crate::entities::comments::Column as CommentColumn;
 use crate::repo;
 use crate::repo::comments::{CreateComment as RepoCreateComment, UpdateComment as RepoUpdateComment};
 use crate::service::error::{ServiceError, ServiceResult};
@@ -163,29 +158,22 @@ pub async fn list_post_comments(
     // 获取文章 ID
     let post = posts::get_published_post_by_slug(db, post_slug).await?;
 
-    let mut query = Comments::find()
-        .filter(CommentColumn::PostId.eq(post.id));
-
-    // 筛选状态（前台默认只显示 Approved）
+    // 状态（前台默认只显示 Approved）
     let status = filter.status.unwrap_or(CommentStatus::Approved);
-    query = query.filter(CommentColumn::Status.eq(status.as_str()));
+    let sort_asc = match filter.sort_by.unwrap_or(CommentSortBy::CreatedAtAsc) {
+        CommentSortBy::CreatedAtAsc => true,
+        CommentSortBy::CreatedAtDesc => false,
+    };
 
-    // 排序
-    match filter.sort_by.unwrap_or(CommentSortBy::CreatedAtAsc) {
-        CommentSortBy::CreatedAtAsc => {
-            query = query.order_by_asc(CommentColumn::CreatedAt);
-        }
-        CommentSortBy::CreatedAtDesc => {
-            query = query.order_by_desc(CommentColumn::CreatedAt);
-        }
-    }
-
-    let models = query.all(db).await?;
-    let dtos: Result<Vec<_>, _> = models
-        .into_iter()
-        .map(|m| repo::comments::CommentDto::try_from(m))
-        .collect();
-    Ok(dtos?.into_iter().map(Into::into).collect())
+    let dtos = repo::comments::list_comments_filtered(
+        db,
+        Some(post.id),
+        Some(status.as_str()),
+        sort_asc,
+        None,
+        None,
+    ).await?;
+    Ok(dtos.into_iter().map(Into::into).collect())
 }
 
 /// 3. 获取文章评论树（前台，树形，仅已审核）
@@ -215,40 +203,21 @@ pub async fn list_all_comments(
     db: &DatabaseConnection,
     filter: AdminCommentFilter,
 ) -> ServiceResult<Vec<Comment>> {
-    let mut query = Comments::find();
+    let status_str = filter.status.as_ref().map(|s| s.as_str());
+    let sort_asc = match filter.sort_by.unwrap_or(CommentSortBy::CreatedAtDesc) {
+        CommentSortBy::CreatedAtAsc => true,
+        CommentSortBy::CreatedAtDesc => false,
+    };
 
-    // 按文章筛选
-    if let Some(post_id) = filter.post_id {
-        query = query.filter(CommentColumn::PostId.eq(post_id));
-    }
-
-    // 按状态筛选
-    if let Some(status) = filter.status {
-        query = query.filter(CommentColumn::Status.eq(status.as_str()));
-    }
-
-    // 排序
-    match filter.sort_by.unwrap_or(CommentSortBy::CreatedAtDesc) {
-        CommentSortBy::CreatedAtAsc => {
-            query = query.order_by_asc(CommentColumn::CreatedAt);
-        }
-        CommentSortBy::CreatedAtDesc => {
-            query = query.order_by_desc(CommentColumn::CreatedAt);
-        }
-    }
-
-    // 分页
-    if let (Some(count), Some(page)) = (filter.count, filter.page) {
-        let offset = (page - 1) * count;
-        query = query.limit(count).offset(offset);
-    }
-
-    let models = query.all(db).await?;
-    let dtos: Result<Vec<_>, _> = models
-        .into_iter()
-        .map(|m| repo::comments::CommentDto::try_from(m))
-        .collect();
-    Ok(dtos?.into_iter().map(Into::into).collect())
+    let dtos = repo::comments::list_comments_filtered(
+        db,
+        filter.post_id,
+        status_str,
+        sort_asc,
+        filter.count,
+        filter.page,
+    ).await?;
+    Ok(dtos.into_iter().map(Into::into).collect())
 }
 
 /// 6. 审核评论：通过
@@ -310,18 +279,12 @@ pub async fn list_comment_replies(
     db: &DatabaseConnection,
     parent_id: i64,
 ) -> ServiceResult<Vec<Comment>> {
-    let models = Comments::find()
-        .filter(CommentColumn::ParentId.eq(parent_id))
-        .filter(CommentColumn::Status.eq(CommentStatus::Approved.as_str()))
-        .order_by_asc(CommentColumn::CreatedAt)
-        .all(db)
-        .await?;
-
-    let dtos: Result<Vec<_>, _> = models
-        .into_iter()
-        .map(|m| repo::comments::CommentDto::try_from(m))
-        .collect();
-    Ok(dtos?.into_iter().map(Into::into).collect())
+    let dtos = repo::comments::list_comment_replies(
+        db,
+        parent_id,
+        CommentStatus::Approved.as_str(),
+    ).await?;
+    Ok(dtos.into_iter().map(Into::into).collect())
 }
 
 /// 11. 统计评论数量（SELECT COUNT(*)）
