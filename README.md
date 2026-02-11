@@ -44,6 +44,8 @@
 
 [YukiLog API文档](./yukilog-backend/docs/api.md)
 
+[YukiLog 保留接口文档](./yukilog-backend/docs/_api.md)
+
 [YukiLog 数据库映射文档](./yukilog-backend/docs/orm.md)
 
 [YukiLog 仓储层定义文档](./yukilog-backend/docs/repo.md)
