@@ -1,6 +1,6 @@
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, EntityTrait, IntoActiveModel, QueryFilter,
-    Set,
+    QueryOrder, Set,
 };
 
 use crate::{
@@ -151,4 +151,32 @@ where
         return Err(RepoError::NotFound);
     }
     Ok(())
+}
+
+/// 按条件筛选友链列表（支持按状态筛选和排序）
+pub async fn list_links_filtered<C>(
+    db: &C,
+    status: Option<&str>,
+    sort_asc: bool,
+) -> RepoResult<Vec<LinkDto>>
+where
+    C: ConnectionTrait,
+{
+    let mut query = links::Entity::find();
+
+    if let Some(s) = status {
+        query = query.filter(links::Column::Status.eq(s));
+    }
+
+    if sort_asc {
+        query = query.order_by_asc(links::Column::CreatedAt);
+    } else {
+        query = query.order_by_desc(links::Column::CreatedAt);
+    }
+
+    let models = query.all(db).await?;
+    models
+        .into_iter()
+        .map(LinkDto::try_from)
+        .collect::<Result<Vec<_>, _>>()
 }
