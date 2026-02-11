@@ -123,6 +123,22 @@ pub enum AuthError {
 
 源码: [yukilog-backend/src/handler/auth.rs](../src/handler/auth.rs)
 
+#### 登录接口
+
+```bash
+POST    /api/admin/login  - 管理员登录
+```
+
+#### 接口定义
+
+```rust
+/// 管理员登录接口
+pub async fn login(
+    State(state): State<AppState>,
+    Json(req): Json<LoginRequest>,
+) -> Result<Json<ApiResponse<LoginResponse>>, AuthError>
+```
+
 #### DTO 定义
 
 **JWT 令牌声明**
