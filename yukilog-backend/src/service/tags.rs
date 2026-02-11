@@ -1,11 +1,9 @@
-use sea_orm::{
-    ConnectionTrait, DatabaseConnection, DatabaseTransaction, Order, QueryOrder, Statement,
-    TransactionTrait,
-};
+use sea_orm::{ConnectionTrait, DatabaseConnection, TransactionTrait};
 use serde::{Deserialize, Serialize};
 
 use crate::repo::{
     error::RepoError,
+    post_tags as repo_post_tags,
     tags::{self as repo_tags, CreateTag as RepoCreateTag, UpdateTag as RepoUpdateTag},
 };
 
@@ -147,33 +145,16 @@ pub async fn list_all_tags(
     count: Option<u64>,
     page: Option<u64>,
 ) -> ServiceResult<Vec<Tag>> {
-    use crate::entities::tags::{Column, Entity};
-    use sea_orm::{EntityTrait, PaginatorTrait};
-
     let sort = sort_by.unwrap_or(TagSortBy::PostCount);
-
-    let query = match sort {
-        TagSortBy::PostCount => Entity::find().order_by(Column::PostCount, Order::Desc),
-        TagSortBy::ViewCount => Entity::find().order_by(Column::ViewCount, Order::Desc),
-        TagSortBy::CreatedAt => Entity::find().order_by(Column::CreatedAt, Order::Desc),
-        TagSortBy::Name => Entity::find().order_by(Column::Name, Order::Asc),
+    let (sort_column, order_desc) = match sort {
+        TagSortBy::PostCount => ("post_count", true),
+        TagSortBy::ViewCount => ("view_count", true),
+        TagSortBy::CreatedAt => ("created_at", true),
+        TagSortBy::Name => ("name", false),
     };
 
-    // 分页处理
-    let models = match (count, page) {
-        (Some(per_page), Some(page_num)) if page_num > 0 => {
-            let paginator = query.paginate(db, per_page);
-            paginator.fetch_page(page_num - 1).await?
-        }
-        _ => query.all(db).await?,
-    };
-
-    let tags = models
-        .into_iter()
-        .map(|model| Tag::from(repo_tags::TagDto::from(model)))
-        .collect();
-
-    Ok(tags)
+    let dtos = repo_tags::list_tags_sorted(db, sort_column, order_desc, count, page).await?;
+    Ok(dtos.into_iter().map(Tag::from).collect())
 }
 
 /// 5. 更新标签信息（管理后台，允许修改 slug）
@@ -237,32 +218,14 @@ pub async fn merge_tags(
         })?;
 
     // 事务：迁移关联 -> 删除源标签 -> 纠正 target 的 post_count
-    let txn: DatabaseTransaction = db.begin().await?;
+    let txn = db.begin().await?;
 
     for &source_id in source_ids {
         // 将 source_id 的关联复制到 target_id（主键冲突时忽略）
-        let insert_sql = r#"
-            INSERT INTO post_tags (post_id, tag_id)
-            SELECT post_id, $1
-            FROM post_tags
-            WHERE tag_id = $2
-            ON CONFLICT DO NOTHING
-        "#;
-        let insert_stmt = Statement::from_sql_and_values(
-            sea_orm::DatabaseBackend::Postgres,
-            insert_sql,
-            vec![target_id.into(), source_id.into()],
-        );
-        txn.execute(insert_stmt).await?;
+        repo_post_tags::migrate_post_tags(&txn, source_id, target_id).await?;
 
         // 删除源标签的关联
-        let delete_rel_sql = r#"DELETE FROM post_tags WHERE tag_id = $1"#;
-        let delete_rel_stmt = Statement::from_sql_and_values(
-            sea_orm::DatabaseBackend::Postgres,
-            delete_rel_sql,
-            vec![source_id.into()],
-        );
-        txn.execute(delete_rel_stmt).await?;
+        repo_post_tags::delete_post_tags_by_tag(&txn, source_id).await?;
 
         // 删除源标签本体
         repo_tags::delete_tag(&txn, source_id)
@@ -274,19 +237,7 @@ pub async fn merge_tags(
     }
 
     // 重新计算 target 的 post_count
-    let fix_count_sql = r#"
-        UPDATE tags
-        SET post_count = (
-            SELECT COUNT(*) FROM post_tags WHERE tag_id = $1
-        )
-        WHERE id = $1
-    "#;
-    let fix_count_stmt = Statement::from_sql_and_values(
-        sea_orm::DatabaseBackend::Postgres,
-        fix_count_sql,
-        vec![target_id.into()],
-    );
-    txn.execute(fix_count_stmt).await?;
+    repo_tags::recount_post_count(&txn, target_id).await?;
 
     txn.commit().await?;
 
@@ -301,14 +252,7 @@ pub async fn merge_tags(
 
 /// 8. 增加浏览计数（前台访问标签页时调用）
 pub async fn increment_view_count<C: ConnectionTrait>(db: &C, tag_id: i64) -> ServiceResult<()> {
-    let sql = "UPDATE tags SET view_count = view_count + 1 WHERE id = $1";
-    let stmt = Statement::from_sql_and_values(
-        sea_orm::DatabaseBackend::Postgres,
-        sql,
-        vec![tag_id.into()],
-    );
-
-    db.execute(stmt).await?;
+    repo_tags::increment_view_count(db, tag_id).await?;
     Ok(())
 }
 
@@ -319,14 +263,7 @@ pub async fn adjust_post_count<C: ConnectionTrait>(
     tag_id: i64,
     delta: i32,
 ) -> ServiceResult<()> {
-    let sql = "UPDATE tags SET post_count = post_count + $1 WHERE id = $2";
-    let stmt = Statement::from_sql_and_values(
-        sea_orm::DatabaseBackend::Postgres,
-        sql,
-        vec![delta.into(), tag_id.into()],
-    );
-
-    db.execute(stmt).await?;
+    repo_tags::adjust_post_count(db, tag_id, delta).await?;
     Ok(())
 }
 
@@ -339,14 +276,6 @@ pub async fn get_tag_ids_by_slugs<C: ConnectionTrait>(
     db: &C,
     slugs: &[String],
 ) -> ServiceResult<Vec<i64>> {
-    use crate::entities::prelude::Tags;
-    use crate::entities::tags::Column;
-    use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
-
-    let tags = Tags::find()
-        .filter(Column::Slug.is_in(slugs.iter().cloned()))
-        .all(db)
-        .await?;
-
-    Ok(tags.into_iter().map(|t| t.id).collect())
+    let ids = repo_tags::get_tag_ids_by_slugs(db, slugs).await?;
+    Ok(ids)
 }
