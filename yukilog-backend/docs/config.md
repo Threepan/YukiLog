@@ -1,6 +1,6 @@
 <div align="center">
 
-# YukiLog Handler 层文档
+# YukiLog Config 配置文档
 
 这一层是具体的网络接口封装, 但是这个文档我只想说明 config 运行时配置部分
 
@@ -85,10 +85,10 @@ ADMIN_PASSWORD_HASH=$argon2id$v=19$m=19456,t=2,p=1$...
 ```
 
 **生成密码哈希:**
-7
+
 ```bash
 # 使用我们的密码哈希工具
-cargo run --bin hash_password -* your_password
+cargo run --bin hash_password -- your_password
 
 # 输出会包含 ADMIN_PASSWORD_HASH=... 
 # 复制到 .env 文件即可
@@ -111,7 +111,7 @@ CORS_ALLOWED_ORIGINS=http://localhost:5173,https://yourdomain.com
 
 ---
 
-#### (5) `RUST_LOG`
+#### (7) `RUST_LOG`
 
 这一项配置日志级别, 其实你不太可能来看日志(
 
