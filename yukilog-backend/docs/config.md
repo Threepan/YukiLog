@@ -12,7 +12,7 @@
 
 接下来我简单讲解 `.env` 文件的配置项
 
-完整注释请查看示例文件 [.env.example](../env.example)
+完整注释请查看示例文件 [.env.example](../.env.example)
 
 ---
 
