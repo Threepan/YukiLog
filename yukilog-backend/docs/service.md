@@ -67,7 +67,7 @@ pub async fn list_all_themes(
 /// 4. 更新主题信息（管理后台，允许修改 slug）
 pub async fn update_theme(
     db: &DatabaseConnection,
-    current_slug: &str,  // 用当前 slug 定位
+    id: i64,
     input: UpdateThemeInput,
 ) -> ServiceResult<Theme>
 
@@ -75,7 +75,7 @@ pub async fn update_theme(
 /// 数据库已设 ON DELETE SET NULL，直接删即可
 pub async fn delete_theme(
     db: &DatabaseConnection,
-    slug: &str,
+    id: i64,
 ) -> ServiceResult<()>
 
 /// 6. 增加浏览计数（前台访问主题页时调用）
@@ -149,7 +149,7 @@ pub struct Theme {
 
 | 接口名 | 职责 |
 |-|-|
-| `create_theme` | slug 格式校验: 字母数字-下划线 <br> 唯一性由 DB 约束保证 |
+| `create_theme` | slug 格式校验: 字母数字-下划线-连字符 <br> 唯一性由 DB 约束保证 |
 | `get_theme_by_slug` | 直接查询 |
 | `list_all_themes` | 按 `post_count` `view_count` `created_at` 排序 |
 | `update_theme` | 校验新 slug 格式 <br> 唯一性冲突由 DB 返回错误 |
@@ -203,7 +203,7 @@ pub async fn list_all_tags(
 /// 5. 更新标签信息（管理后台，允许修改 slug）
 pub async fn update_tag(
     db: &DatabaseConnection,
-    current_slug: &str,
+    id: i64,
     input: UpdateTagInput,
 ) -> ServiceResult<Tag>
 
@@ -211,16 +211,16 @@ pub async fn update_tag(
 /// 数据库已设 ON DELETE CASCADE，会自动删除 post_tags 关联
 pub async fn delete_tag(
     db: &DatabaseConnection,
-    slug: &str,
+    id: i64,
 ) -> ServiceResult<()>
 
 /// 7. 合并标签（管理后台）
-/// 将 from_slug 的所有文章转移到 to_slug，然后删除 from_slug
+/// 将 source_ids 的所有文章关联迁移到 target_id，然后删除 source_ids
 pub async fn merge_tags(
     db: &DatabaseConnection,
-    from_slug: &str,
-    to_slug: &str,
-) -> ServiceResult<()>
+    target_id: i64,
+    source_ids: &[i64],
+) -> ServiceResult<Tag>
 
 /// 8. 增加浏览计数（前台访问标签页时调用）
 pub async fn increment_view_count<C: ConnectionTrait>(
@@ -290,7 +290,7 @@ pub struct Tag {
 | `list_all_tags` | 支持 4 种排序 + 分页 <br> count/page 为 None 时返回全部 |
 | `update_tag` | 校验新 slug 格式 <br> 唯一性冲突由 DB 返回错误 |
 | `delete_tag` | 直接删除 <br> post_tags 会被 DB 级联删除 |
-| `merge_tags` | 转移 post_tags 关联到目标标签 <br> 同步计数后删除源标签 |
+| `merge_tags` | 将 source_ids 的 post_tags 迁移到 target_id（冲突忽略）<br> 删除 source_ids 标签本体 <br> 重新计算并修正 target 的 post_count <br> 返回更新后的目标标签 |
 | `increment_view_count` | `UPDATE tags SET view_count = view_count + 1 WHERE id = ?` |
 | `adjust_post_count` | `UPDATE tags SET post_count = post_count + ? WHERE id = ?` |
 | `get_tag_ids_by_slugs` | 辅助函数：批量获取标签 ID（给 post service 筛选使用）|
