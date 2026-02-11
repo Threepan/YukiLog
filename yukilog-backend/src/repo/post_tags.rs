@@ -104,8 +104,7 @@ pub async fn get_tags_by_post_id<C>(db: &C, post_id: i64) -> RepoResult<Vec<crat
 where
     C: ConnectionTrait,
 {
-    use crate::entities::{prelude::Tags, tags};
-    use sea_orm::JoinType;
+    use crate::entities::prelude::Tags;
 
     let tags_models = Tags::find()
         .inner_join(post_tags::Entity)
@@ -114,4 +113,42 @@ where
         .await?;
 
     Ok(tags_models.into_iter().map(crate::repo::tags::TagDto::from).collect())
+}
+
+/// 将 source tag 的所有文章关联迁移到 target tag（主键冲突时忽略）
+pub async fn migrate_post_tags<C>(
+    db: &C,
+    source_tag_id: i64,
+    target_tag_id: i64,
+) -> RepoResult<()>
+where
+    C: ConnectionTrait,
+{
+    use sea_orm::Statement;
+    let sql = r#"
+        INSERT INTO post_tags (post_id, tag_id)
+        SELECT post_id, $1
+        FROM post_tags
+        WHERE tag_id = $2
+        ON CONFLICT DO NOTHING
+    "#;
+    let stmt = Statement::from_sql_and_values(
+        sea_orm::DatabaseBackend::Postgres,
+        sql,
+        vec![target_tag_id.into(), source_tag_id.into()],
+    );
+    db.execute(stmt).await?;
+    Ok(())
+}
+
+/// 删除指定标签的所有关联记录
+pub async fn delete_post_tags_by_tag<C>(db: &C, tag_id: i64) -> RepoResult<()>
+where
+    C: ConnectionTrait,
+{
+    post_tags::Entity::delete_many()
+        .filter(post_tags::Column::TagId.eq(tag_id))
+        .exec(db)
+        .await?;
+    Ok(())
 }
