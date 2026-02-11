@@ -43,6 +43,8 @@
 [YukiLog 仓储层定义文档](./yukilog-backend/docs/repo.md)
 [YukiLog 业务层封装文档](./yukilog-backend/docs/service.md)
 [YukiLog 运行时配置文档](./yukilog-backend/docs/config.md)
+[YukiLog 处理层规范文档](./yukilog-backend/docs/handler.md)
+[YukiLog 公共接口文档](./yukilog-backend/docs/handler_public.md)
 
 ---
 
