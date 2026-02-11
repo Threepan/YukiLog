@@ -17,6 +17,31 @@
 
 ---
 
+## AppState 统一注入
+
+为了避免出现多个 State（比如一部分 handler 注入配置，一部分 handler 注入 DB），本项目在 handler 层统一使用 `State<AppState>`。
+
+源码: [yukilog-backend/src/handler/state.rs](../src/handler/state.rs)
+
+```rust
+pub struct AppState {
+    /// 应用配置
+    pub config: AppConfig,
+    /// SeaORM 数据库连接
+    pub db: DatabaseConnection,
+    /// Redis 客户端（用于限流和缓存）
+    pub redis: redis::Client,
+}
+```
+
+使用约定:
+
+* **auth 登录**: 通过 `state.config` 读取 `ADMIN_USERNAME` / `ADMIN_PASSWORD_HASH` / `JWT_SECRET` / `JWT_EXPIRES_IN`
+* **JWT 中间件**: 通过 `state.config.jwt_secret` 验证 token
+* **业务 handler**: 通过 `state.db` 调用 service；需要限流/防刷时使用 `state.redis`
+
+---
+
 ## 统一响应格式
 
 这里说的是, 所有 `handler` 层接口都应该返回指定格式的数据, 方便前端解析
