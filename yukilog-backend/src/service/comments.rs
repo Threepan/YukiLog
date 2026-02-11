@@ -17,7 +17,7 @@ use crate::service::posts;
 // DTO 定义
 // ================================
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Comment {
     pub id: i64,
     pub post_id: i64,
@@ -52,7 +52,7 @@ impl From<repo::comments::CommentDto> for Comment {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct CommentNode {
     pub comment: Comment,
     pub children: Vec<CommentNode>,

@@ -13,7 +13,7 @@ use crate::service::error::{ServiceError, ServiceResult};
 // DTO 定义
 // ================================
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Link {
     pub id: i64,
     pub title: String,

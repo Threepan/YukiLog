@@ -16,7 +16,7 @@ use crate::service::themes::Theme;
 // DTO 定义
 // ================================
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Post {
     pub id: i64,
     pub title: String,
@@ -90,7 +90,8 @@ pub struct PostFilter {
     pub page: Option<u64>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum PostSortBy {
     CreatedAt,   // 按创建时间倒序（最新文章）
     UpdatedAt,   // 按更新时间倒序（最近更新）
