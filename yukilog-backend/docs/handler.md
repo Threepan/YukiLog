@@ -44,6 +44,8 @@ pub struct PagedData<T> {
     pub page: u64,
     /// 每页大小
     pub page_size: u64,
+    /// 总页数
+    pub total_pages: u64,
 }
 ```
 
