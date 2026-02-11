@@ -271,7 +271,7 @@ pub struct CreateCommentResponse {
 
 ```bash
 GET    /api/public/links            - 友链列表 (仅 active)
-POST   /api/public/links            - 申请友链
+POST   /api/public/links/submit       - 申请友链
 ```
 
 #### 接口定义
