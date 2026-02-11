@@ -85,9 +85,9 @@ pub struct PagedData<T> {
 #### ServiceError 映射
 
 * `NotFound` -> **404 NOT_FOUND**
-* `invalidinput` -> **400 BAD_REQUEST**
+* `InvalidInput` -> **400 BAD_REQUEST**
 * `Repo(Db(_))` -> **500 INTERNAL_SERVER_ERROR**
-* `Repo(NotFound)` -> **404 NOT_FUNOD**
+* `Repo(NotFound)` -> **404 NOT_FOUND**
 * `Repo(InvalidStatus)` -> **400 BAD_REQUEST**
 
 
