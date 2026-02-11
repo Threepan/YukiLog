@@ -1,10 +1,8 @@
-use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, QueryOrder};
+use sea_orm::DatabaseConnection;
 use chrono::{DateTime, FixedOffset};
 use serde::{Deserialize, Serialize};
 
 use crate::domain::status::LinkStatus;
-use crate::entities::prelude::Links;
-use crate::entities::links::Column as LinkColumn;
 use crate::repo;
 use crate::repo::links::{CreateLink as RepoCreateLink, UpdateLink as RepoUpdateLink};
 use crate::service::error::{ServiceError, ServiceResult};
@@ -133,17 +131,12 @@ pub async fn create_link_application(
 pub async fn list_active_links(
     db: &DatabaseConnection,
 ) -> ServiceResult<Vec<Link>> {
-    let models = Links::find()
-        .filter(LinkColumn::Status.eq(LinkStatus::Active.as_str()))
-        .order_by_desc(LinkColumn::CreatedAt)
-        .all(db)
-        .await?;
-
-    let dtos: Result<Vec<_>, _> = models
-        .into_iter()
-        .map(|m| repo::links::LinkDto::try_from(m))
-        .collect();
-    Ok(dtos?.into_iter().map(Into::into).collect())
+    let dtos = repo::links::list_links_filtered(
+        db,
+        Some(LinkStatus::Active.as_str()),
+        false,
+    ).await?;
+    Ok(dtos.into_iter().map(Into::into).collect())
 }
 
 /// 3. 列出所有友链（后台）
@@ -153,29 +146,14 @@ pub async fn list_all_links(
     db: &DatabaseConnection,
     filter: LinkFilter,
 ) -> ServiceResult<Vec<Link>> {
-    let mut query = Links::find();
+    let status_str = filter.status.as_ref().map(|s| s.as_str());
+    let sort_asc = match filter.sort_by.unwrap_or(LinkSortBy::CreatedAtDesc) {
+        LinkSortBy::CreatedAtAsc => true,
+        LinkSortBy::CreatedAtDesc => false,
+    };
 
-    // 按状态筛选
-    if let Some(status) = filter.status {
-        query = query.filter(LinkColumn::Status.eq(status.as_str()));
-    }
-
-    // 排序
-    match filter.sort_by.unwrap_or(LinkSortBy::CreatedAtDesc) {
-        LinkSortBy::CreatedAtAsc => {
-            query = query.order_by_asc(LinkColumn::CreatedAt);
-        }
-        LinkSortBy::CreatedAtDesc => {
-            query = query.order_by_desc(LinkColumn::CreatedAt);
-        }
-    }
-
-    let models = query.all(db).await?;
-    let dtos: Result<Vec<_>, _> = models
-        .into_iter()
-        .map(|m| repo::links::LinkDto::try_from(m))
-        .collect();
-    Ok(dtos?.into_iter().map(Into::into).collect())
+    let dtos = repo::links::list_links_filtered(db, status_str, sort_asc).await?;
+    Ok(dtos.into_iter().map(Into::into).collect())
 }
 
 /// 4. 获取待审核友链列表（后台）
