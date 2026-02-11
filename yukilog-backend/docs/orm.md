@@ -22,9 +22,10 @@ ORM 是用 `sea-orm-cli` 做的, 目录在 [entities](../src/entities/)
 
 我的 `repo` 放在 [yukilog-backend/src/repo](../src/repo)，它的目标是：
 
-* 只负责“数据访问”（CRUD、简单查询），不掺杂业务流程
+* 只负责“数据访问”（CRUD、简单查询、筛选/排序/分页、计数更新），不掺杂业务流程
 * 把数据库里的“弱类型字段”（如 `status: VARCHAR`）在 Rust 侧封装成强类型（enum），避免业务层到处写字符串
 * 给上层（service/handler）提供稳定、好用、可测试的原子接口
+* **所有 SQL（包括原生 SQL 和 SeaORM 查询構建）都封装在 repo 层，service 层不直接操作数据库**
 
 #### 目录与职责
 
@@ -38,9 +39,11 @@ ORM 是用 `sea-orm-cli` 做的, 目录在 [entities](../src/entities/)
 	* 统一错误类型： [yukilog-backend/src/repo/error.rs](../src/repo/error.rs)
 	* 每张表一个文件：例如 [yukilog-backend/src/repo/posts.rs](../src/repo/posts.rs)
 
-#### CRUD 模板 (以 posts 为例)
+#### CRUD 模板 + 高级查询 (以 posts 为例)
 
 在 [yukilog-backend/src/repo/posts.rs](../src/repo/posts.rs) 中已实现：
+
+CRUD 基础接口：
 
 * `create_post(db, CreatePost) -> RepoResult<PostDto>`: (创建一条 post 记录)
 * `get_post_by_id(db, id) -> RepoResult<PostDto>`: (用 id 获取 post 记录)
@@ -48,6 +51,13 @@ ORM 是用 `sea-orm-cli` 做的, 目录在 [entities](../src/entities/)
 * `list_posts(db) -> RepoResult<Vec<PostDto>>`: (获取所有 post 记录)
 * `update_post(db, id, UpdatePost) -> RepoResult<PostDto>`: (用 id 更新一条 post 记录)
 * `delete_post(db, id) -> RepoResult<()>`: (用 id 删除一条记录)
+
+高级查询接口：
+
+* `count_posts(db, theme_ids, post_ids, status) -> RepoResult<u64>`: (按条件统计文章数量)
+* `increment_view_count(db, id) -> RepoResult<()>`: (将指定文章的 view_count + 1)
+* `list_posts_filtered(db, theme_ids, post_ids, status, sort_by, count, page) -> RepoResult<Vec<PostDto>>`: (按条件筛选文章列表)
+* `get_post_ids_with_all_tags(db, tag_ids, required_count) -> RepoResult<Vec<i64>>`: (获取同时拥有所有指定标签的文章 ID)
 
 数据结构介绍:
 
