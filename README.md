@@ -38,7 +38,11 @@
 
 ## 📖 文档 (Docs)
 
+#### | YukiLog-BackEnd 后端
+
 [YukiLog 设计文档](./yukilog-backend/docs/yukilog.md)
+
+[YukiLog API文档](./yukilog-backend/docs/api.md)
 
 [YukiLog 数据库映射文档](./yukilog-backend/docs/orm.md)
 
