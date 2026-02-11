@@ -111,17 +111,15 @@ pub async fn list_posts(
     // 获取文章列表
     let posts = service::posts::list_posts(&state.db, filter.clone()).await?;
 
-    // 获取总数（移除分页参数）
-    let filter_for_count = PostFilter {
+    // 获取总数（SELECT COUNT(*)）
+    let count_filter = PostFilter {
         count: None,
         page: None,
         ..filter
     };
-    let all_posts = service::posts::list_posts(&state.db, filter_for_count).await?;
-    let total = all_posts.len() as u64;
-    let total_pages = (total as f64 / page_size as f64).ceil() as u64;
+    let total = service::posts::count_posts(&state.db, count_filter).await?;
 
-    Ok(paged(posts, total, page, page_size, total_pages))
+    Ok(paged(posts, total, page, page_size))
 }
 
 /// GET /api/public/posts/:slug
