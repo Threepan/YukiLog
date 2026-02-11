@@ -151,13 +151,13 @@ pub struct Theme {
 |-|-|
 | `create_theme` | slug 格式校验: 字母数字-下划线-连字符 <br> 唯一性由 DB 约束保证 |
 | `get_theme_by_slug` | 直接查询 |
-| `list_all_themes` | 按 `post_count` `view_count` `created_at` 排序 |
+| `list_all_themes` | 按 `post_count` `view_count` `created_at` 排序 <br> 通过 repo::themes::list_themes_sorted 执行 |
 | `update_theme` | 校验新 slug 格式 <br> 唯一性冲突由 DB 返回错误 |
 | `delete_theme` | 直接删除 <br> posts.theme_id 会被 DB 置 NULL |
-| `increment_view_count` | `UPDATE themes SET view_count = view_count + 1 WHERE id = ?` |
-| `adjust_post_count` | `UPDATE themes SET post_count = post_count + ? WHERE id = ?` |
+| `increment_view_count` | 通过 repo::themes::increment_view_count 执行 |
+| `adjust_post_count` | 通过 repo::themes::adjust_post_count 执行 |
 | `get_theme_by_id` | 辅助函数：通过 ID 查询主题（给 post service 调用）|
-| `get_theme_ids_by_slugs` | 辅助函数：批量获取主题 ID（给 post service 筛选使用）|
+| `get_theme_ids_by_slugs` | 辅助函数：通过 repo::themes::get_theme_ids_by_slugs 批量获取 ID|
 
 ---
 
@@ -287,13 +287,13 @@ pub struct Tag {
 | `create_tag` | slug 格式校验: 字母数字-下划线连字符 <br> 唯一性由 DB 约束保证 |
 | `get_or_create_tag` | 先查询，不存在则创建 <br> 已存在时不覆盖 name |
 | `get_tag_by_slug` | 直接查询 |
-| `list_all_tags` | 支持 4 种排序 + 分页 <br> count/page 为 None 时返回全部 |
+| `list_all_tags` | 支持 4 种排序 + 分页 <br> 通过 repo::tags::list_tags_sorted 执行 <br> count/page 为 None 时返回全部 |
 | `update_tag` | 校验新 slug 格式 <br> 唯一性冲突由 DB 返回错误 |
 | `delete_tag` | 直接删除 <br> post_tags 会被 DB 级联删除 |
-| `merge_tags` | 将 source_ids 的 post_tags 迁移到 target_id（冲突忽略）<br> 删除 source_ids 标签本体 <br> 重新计算并修正 target 的 post_count <br> 返回更新后的目标标签 |
-| `increment_view_count` | `UPDATE tags SET view_count = view_count + 1 WHERE id = ?` |
-| `adjust_post_count` | `UPDATE tags SET post_count = post_count + ? WHERE id = ?` |
-| `get_tag_ids_by_slugs` | 辅助函数：批量获取标签 ID（给 post service 筛选使用）|
+| `merge_tags` | 通过 repo::post_tags::migrate_post_tags 迁移关联（冲突忽略）<br> 通过 repo::post_tags::delete_post_tags_by_tag 删除源关联 <br> 通过 repo::tags::recount_post_count 修正 post_count <br> 返回更新后的目标标签 |
+| `increment_view_count` | 通过 repo::tags::increment_view_count 执行 |
+| `adjust_post_count` | 通过 repo::tags::adjust_post_count 执行 |
+| `get_tag_ids_by_slugs` | 通过 repo::tags::get_tag_ids_by_slugs 批量获取 ID|
 
 ---
 
@@ -441,10 +441,10 @@ pub struct PostWithRelations {
 | `get_published_post_by_slug` | 查询文章并验证 status=published <br> 前台访问专用 |
 | `get_post_by_slug` | 直接查询文章 <br> 后台访问专用，包括草稿 |
 | `get_post_with_relations` | 获取文章 + 主题 + 所有标签 <br> 根据 include_draft 控制草稿访问 |
-| `list_posts` | 支持按 theme/tag/status 筛选 <br> 标签筛选用 AND 逻辑 <br> 支持 3 种排序 + 分页 |
+| `list_posts` | 支持按 theme/tag/status 筛选 <br> 标签筛选用 AND 逻辑（通过 repo::posts::get_post_ids_with_all_tags）<br> 通过 repo::posts::list_posts_filtered 执行查询 <br> 支持 3 种排序 + 分页 |
 | `update_post` | 统一更新接口（包括 slug） <br> 处理主题变化：旧主题 -1，新主题 +1 <br> 处理标签变化：diff 计算，增删关联 <br> 处理状态变化：draft↔published 同步计数 <br> 仅在 published 状态同步计数 |
 | `delete_post` | 如果 status=published：同步 theme/tags 计数 -1 <br> 删除文章（post_tags 由 DB CASCADE 删除）|
-| `increment_view_count` | `UPDATE posts SET view_count = view_count + 1 WHERE id = ?` |
+| `increment_view_count` | 通过 repo::posts::increment_view_count 执行 |
 | `get_post_tags` | 通过 post_tags JOIN tags 查询标签列表 |
 | `count_posts` | 使用与 list_posts 相同的筛选条件 <br> 通过 repo::posts::count_posts 执行 SELECT COUNT(*) <br> 用于分页接口计算 total |
 
@@ -595,15 +595,15 @@ pub struct CommentNode {
 | 接口名 | 职责 |
 |-|-|
 | `create_comment` | 通过 post_slug 查询文章 <br> 验证文章已发布（draft 不允许评论）<br> 验证父评论存在且属于同一文章 <br> 计算 root_id：无 parent_id → None，有 parent_id → parent.root_id ?? parent_id <br> status 由 DB 默认为 pending |
-| `list_post_comments` | 扁平列表，仅已审核 <br> 支持按创建时间正序/倒序 |
+| `list_post_comments` | 通过 repo::comments::list_comments_filtered 执行 <br> 扁平列表，仅已审核 <br> 支持按创建时间正序/倒序 |
 | `get_post_comment_tree` | 树形结构，仅已审核 <br> 递归构建评论树 |
 | `get_comment_by_id` | 直接查询评论详情 |
-| `list_all_comments` | 后台管理，支持按文章/状态筛选 <br> 支持分页 <br> 按创建时间倒序 |
+| `list_all_comments` | 通过 repo::comments::list_comments_filtered 执行 <br> 后台管理，支持按文章/状态筛选 <br> 支持分页 <br> 按创建时间倒序 |
 | `approve_comment` | 修改 status 为 Approved |
 | `reject_comment` | 修改 status 为 Spam |
 | `update_comment` | 更新评论内容和游客信息 |
 | `delete_comment` | 直接删除 <br> 子评论由 DB CASCADE 删除 |
-| `list_comment_replies` | 获取指定评论的回复列表 <br> 用于懒加载子评论 |
+| `list_comment_replies` | 通过 repo::comments::list_comment_replies 执行 <br> 获取指定评论的回复列表 <br> 用于懒加载子评论 |
 | `count_all_comments` | 使用与 list_all_comments 相同的筛选条件 <br> 通过 repo::comments::count_comments 执行 SELECT COUNT(*) <br> 用于分页接口计算 total |
 
 ---
@@ -713,8 +713,8 @@ pub struct Link {
 | 接口名 | 职责 |
 |-|-|
 | `create_link_application` | 1. URL 格式验证（http/https 前缀）<br> 2. 检查 URL 是否已存在 <br> 3. 若存在且为 broken 状态，更新信息并重置为 pending <br> 4. 若不存在，创建新友链（默认 pending） |
-| `list_active_links` | 仅返回 status = 'active' 的友链 <br> 前台展示用 |
-| `list_all_links` | 返回所有友链（分页）<br> 后台管理用 |
+| `list_active_links` | 通过 repo::links::list_links_filtered 执行 <br> 仅返回 status = 'active' 的友链 <br> 前台展示用 |
+| `list_all_links` | 通过 repo::links::list_links_filtered 执行 <br> 支持按 status 筛选 + 排序 <br> 后台管理用 |
 | `list_pending_links` | 仅返回 status = 'pending' 的友链 <br> 后台待审核列表 |
 | `get_link_by_id` | 通过 ID 获取友链详情 |
 | `approve_link` | 将状态设置为 'active' <br> 审核通过 |
