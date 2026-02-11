@@ -192,7 +192,7 @@ Origin: https://yukilog.com                         # 我从哪儿来
 
 3. **验证 Token**
 
-这里使用 `JWT_SECRET` 验证签名和过期时间, 就是你在 [.env](../env.example) 里配置的那一个
+这里使用 `JWT_SECRET` 验证签名和过期时间, 就是你在 [.env](../.env.example) 里配置的那一个
 
 要么解析出 `Claims`, 要么抛出 **401 Unauthorized**
 
