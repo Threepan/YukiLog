@@ -324,6 +324,19 @@ pub async fn list_comment_replies(
     Ok(dtos?.into_iter().map(Into::into).collect())
 }
 
+/// 11. 统计评论数量（SELECT COUNT(*)）
+///
+/// 使用与 list_all_comments 相同的筛选条件，但不执行排序和分页，
+/// 通过 repo::comments::count_comments 执行 SELECT COUNT(*) 查询。
+pub async fn count_all_comments(
+    db: &DatabaseConnection,
+    filter: AdminCommentFilter,
+) -> ServiceResult<u64> {
+    let status_str = filter.status.as_ref().map(|s| s.as_str());
+    let count = repo::comments::count_comments(db, filter.post_id, status_str).await?;
+    Ok(count)
+}
+
 // ================================
 // 辅助函数
 // ================================
