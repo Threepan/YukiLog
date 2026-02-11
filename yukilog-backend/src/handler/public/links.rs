@@ -71,7 +71,7 @@ pub async fn list_links(
     Ok(ok(links))
 }
 
-/// POST /api/public/links
+/// POST /api/public/links/submit
 ///
 /// 提交友链申请
 ///
