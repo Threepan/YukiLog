@@ -1,4 +1,4 @@
-use sea_orm::{ConnectionTrait, DatabaseConnection, Order, QueryOrder, Statement};
+use sea_orm::{ConnectionTrait, DatabaseConnection};
 use serde::{Deserialize, Serialize};
 
 use crate::repo::{
@@ -124,25 +124,15 @@ pub async fn list_all_themes(
     db: &DatabaseConnection,
     sort_by: Option<ThemeSortBy>,
 ) -> ServiceResult<Vec<Theme>> {
-    use crate::entities::themes::{Column, Entity};
-    use sea_orm::EntityTrait;
-
     let sort = sort_by.unwrap_or(ThemeSortBy::PostCount);
-
-    let query = match sort {
-        ThemeSortBy::PostCount => Entity::find().order_by(Column::PostCount, Order::Desc),
-        ThemeSortBy::ViewCount => Entity::find().order_by(Column::ViewCount, Order::Desc),
-        ThemeSortBy::CreatedAt => Entity::find().order_by(Column::CreatedAt, Order::Desc),
+    let (sort_column, order_desc) = match sort {
+        ThemeSortBy::PostCount => ("post_count", true),
+        ThemeSortBy::ViewCount => ("view_count", true),
+        ThemeSortBy::CreatedAt => ("created_at", true),
     };
 
-    let models = query.all(db).await?;
-
-    let themes = models
-        .into_iter()
-        .map(|model| Theme::from(repo_themes::ThemeDto::from(model)))
-        .collect();
-
-    Ok(themes)
+    let dtos = repo_themes::list_themes_sorted(db, sort_column, order_desc).await?;
+    Ok(dtos.into_iter().map(Theme::from).collect())
 }
 
 /// 4. 更新主题信息（管理后台，允许修改 slug）
@@ -191,14 +181,7 @@ pub async fn increment_view_count<C: ConnectionTrait>(
     db: &C,
     theme_id: i64,
 ) -> ServiceResult<()> {
-    let sql = "UPDATE themes SET view_count = view_count + 1 WHERE id = $1";
-    let stmt = Statement::from_sql_and_values(
-        sea_orm::DatabaseBackend::Postgres,
-        sql,
-        vec![theme_id.into()],
-    );
-
-    db.execute(stmt).await?;
+    repo_themes::increment_view_count(db, theme_id).await?;
     Ok(())
 }
 
@@ -209,14 +192,7 @@ pub async fn adjust_post_count<C: ConnectionTrait>(
     theme_id: i64,
     delta: i32,
 ) -> ServiceResult<()> {
-    let sql = "UPDATE themes SET post_count = post_count + $1 WHERE id = $2";
-    let stmt = Statement::from_sql_and_values(
-        sea_orm::DatabaseBackend::Postgres,
-        sql,
-        vec![delta.into(), theme_id.into()],
-    );
-
-    db.execute(stmt).await?;
+    repo_themes::adjust_post_count(db, theme_id, delta).await?;
     Ok(())
 }
 
@@ -238,14 +214,6 @@ pub async fn get_theme_ids_by_slugs<C: ConnectionTrait>(
     db: &C,
     slugs: &[String],
 ) -> ServiceResult<Vec<i64>> {
-    use crate::entities::prelude::Themes;
-    use crate::entities::themes::Column;
-    use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
-
-    let themes = Themes::find()
-        .filter(Column::Slug.is_in(slugs.iter().cloned()))
-        .all(db)
-        .await?;
-
-    Ok(themes.into_iter().map(|t| t.id).collect())
+    let ids = repo_themes::get_theme_ids_by_slugs(db, slugs).await?;
+    Ok(ids)
 }
