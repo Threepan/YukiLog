@@ -98,17 +98,15 @@ pub async fn list_comments(
     // 获取评论列表
     let comments = service::comments::list_all_comments(&state.db, filter.clone()).await?;
 
-    // 获取总数
-    let filter_for_count = AdminCommentFilter {
+    // 获取总数（SELECT COUNT(*)）
+    let count_filter = AdminCommentFilter {
         count: None,
         page: None,
         ..filter
     };
-    let all_comments = service::comments::list_all_comments(&state.db, filter_for_count).await?;
-    let total = all_comments.len() as u64;
-    let total_pages = (total as f64 / page_size as f64).ceil() as u64;
+    let total = service::comments::count_all_comments(&state.db, count_filter).await?;
 
-    Ok(paged(comments, total, page, page_size, total_pages))
+    Ok(paged(comments, total, page, page_size))
 }
 
 /// GET /api/admin/comments/pending
