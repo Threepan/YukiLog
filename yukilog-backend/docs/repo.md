@@ -80,6 +80,13 @@ Repo 会在 `Model -> Dto` 时执行 `TryFrom<&str>` 校验：
 * `update_post(db, id, UpdatePost) -> RepoResult<PostDto>`: (更新一条 post 记录)
 * `delete_post(db, id) -> RepoResult<()>`: (删除一条 post 记录)
 
+##### 高级查询
+
+* `count_posts(db, theme_ids, post_ids, status) -> RepoResult<u64>`: (按条件统计文章数量，SELECT COUNT(*))
+* `increment_view_count(db, id) -> RepoResult<()>`: (将指定文章的 view_count + 1)
+* `list_posts_filtered(db, theme_ids, post_ids, status, sort_by, count, page) -> RepoResult<Vec<PostDto>>`: (按条件筛选文章列表，支持排序和分页)
+* `get_post_ids_with_all_tags(db, tag_ids, required_count) -> RepoResult<Vec<i64>>`: (获取同时拥有所有指定标签的文章 ID，AND 逻辑)
+
 ##### 数据结构
 
 * `PostDto`：所有 CUR 接口的标准返回结构
@@ -100,6 +107,12 @@ Repo 会在 `Model -> Dto` 时执行 `TryFrom<&str>` 校验：
 * `list_comments_by_post_id(db, post_id) -> RepoResult<Vec<CommentDto>>`: (获取某篇文章下的所有评论)
 * `update_comment(db, id, UpdateComment) -> RepoResult<CommentDto>`: (更新一条 comment 记录)
 * `delete_comment(db, id) -> RepoResult<()>`: (删除一条 comment 记录)
+
+##### 高级查询
+
+* `count_comments(db, post_id, status) -> RepoResult<u64>`: (按条件统计评论数量，SELECT COUNT(*))
+* `list_comments_filtered(db, post_id, status, sort_asc, count, page) -> RepoResult<Vec<CommentDto>>`: (按条件筛选评论列表，支持排序和分页)
+* `list_comment_replies(db, parent_id, approved_status) -> RepoResult<Vec<CommentDto>>`: (获取指定评论的已审核回复列表)
 
 ##### 数据结构
 
@@ -122,6 +135,10 @@ Repo 会在 `Model -> Dto` 时执行 `TryFrom<&str>` 校验：
 * `update_link(db, id, UpdateLink) -> RepoResult<LinkDto>`: (更新一条 link 记录)
 * `delete_link(db, id) -> RepoResult<()>`: (删除一条 link 记录)
 
+##### 高级查询
+
+* `list_links_filtered(db, status, sort_asc) -> RepoResult<Vec<LinkDto>>`: (按条件筛选友链列表，支持按状态筛选和排序)
+
 ##### 数据结构
 
 * `LinkDto`：返回结构（包含 `status: Option<LinkStatus>`）
@@ -143,6 +160,14 @@ Repo 会在 `Model -> Dto` 时执行 `TryFrom<&str>` 校验：
 * `update_tag(db, id, UpdateTag) -> RepoResult<TagDto>`: (更新一条 tag 记录)
 * `delete_tag(db, id) -> RepoResult<()>`: (删除一条 tag 记录)
 
+##### 高级查询
+
+* `list_tags_sorted(db, sort_by, order_desc, count, page) -> RepoResult<Vec<TagDto>>`: (按指定列排序获取标签列表，支持分页)
+* `increment_view_count(db, id) -> RepoResult<()>`: (将指定标签的 view_count + 1)
+* `adjust_post_count(db, id, delta) -> RepoResult<()>`: (调整指定标签的 post_count)
+* `recount_post_count(db, tag_id) -> RepoResult<()>`: (重新计算指定标签的 post_count)
+* `get_tag_ids_by_slugs(db, slugs) -> RepoResult<Vec<i64>>`: (通过多个 slug 批量获取标签 ID)
+
 ##### 数据结构
 
 * `TagDto`
@@ -163,6 +188,13 @@ Repo 会在 `Model -> Dto` 时执行 `TryFrom<&str>` 校验：
 * `list_themes(db) -> RepoResult<Vec<ThemeDto>>`: (获取所有 theme 记录)
 * `update_theme(db, id, UpdateTheme) -> RepoResult<ThemeDto>`: (更新一条 theme 记录)
 * `delete_theme(db, id) -> RepoResult<()>`: (删除一条 theme 记录)
+
+##### 高级查询
+
+* `list_themes_sorted(db, sort_by, order_desc) -> RepoResult<Vec<ThemeDto>>`: (按指定列排序获取所有主题)
+* `increment_view_count(db, id) -> RepoResult<()>`: (将指定主题的 view_count + 1)
+* `adjust_post_count(db, id, delta) -> RepoResult<()>`: (调整指定主题的 post_count)
+* `get_theme_ids_by_slugs(db, slugs) -> RepoResult<Vec<i64>>`: (通过多个 slug 批量获取主题 ID)
 
 ##### 数据结构
 
@@ -186,6 +218,12 @@ Repo 会在 `Model -> Dto` 时执行 `TryFrom<&str>` 校验：
 * `list_post_tags_by_post_id(db, post_id) -> RepoResult<Vec<PostTagDto>>`: (获取某篇文章绑定的所有 tag 关联)
 * `list_post_tags_by_tag_id(db, tag_id) -> RepoResult<Vec<PostTagDto>>`: (获取某个 tag 关联的所有文章)
 * `delete_post_tag(db, post_id, tag_id) -> RepoResult<()>`: (删除一条关联记录)
+
+##### 高级查询
+
+* `get_tags_by_post_id(db, post_id) -> RepoResult<Vec<TagDto>>`: (通过 post_tags JOIN tags 获取某篇文章的所有标签)
+* `migrate_post_tags(db, source_tag_id, target_tag_id) -> RepoResult<()>`: (将 source tag 的所有关联迁移到 target tag，主键冲突时忽略)
+* `delete_post_tags_by_tag(db, tag_id) -> RepoResult<()>`: (删除指定标签的所有关联记录)
 
 ##### 数据结构
 
