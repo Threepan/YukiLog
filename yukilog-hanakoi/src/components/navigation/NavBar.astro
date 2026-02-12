@@ -6,6 +6,7 @@
 // ================================
 
 import { contentConfig, navItems } from '../../lib/config.ts';
+import { svgIcons } from '../../lib/svg-icons';
 import NavItem from './NavItem.astro';
 
 interface Props {
@@ -14,20 +15,18 @@ interface Props {
 
 const { stickyOnly = false } = Astro.props;
 
-// 导入右侧图标
-const lightIcon = await import('../../assets/icon/ui/light.svg?raw');
-const dartIcon = await import('../../assets/icon/ui/dart.svg?raw');
-const searchIcon = await import('../../assets/icon/ui/search.svg?raw');
-
 // 为固定元素的SVG生成唯一ID，避免与navbar内部SVG的mask ID冲突
 function deduplicateSvgIds(svg: string, suffix: string): string {
   return svg
     .replace(/id='([^']+)'/g, (_, id) => `id='${id}${suffix}'`)
     .replace(/url\(#([^)]+)\)/g, (_, id) => `url(#${id}${suffix})`);
 }
-const lightIconFixed = deduplicateSvgIds(lightIcon.default, '_fixed');
-const searchIconFixed = deduplicateSvgIds(searchIcon.default, '_fixed');
 const brandText = contentConfig.components.navbar.brand;
+
+const lightIcon = svgIcons.light;
+const searchIcon = svgIcons.search;
+const lightIconFixed = deduplicateSvgIds(lightIcon, '_fixed');
+const searchIconFixed = deduplicateSvgIds(searchIcon, '_fixed');
 ---
 
 <nav class="navbar" id="navbar" data-sticky-only={stickyOnly ? 'true' : undefined}>
@@ -42,10 +41,10 @@ const brandText = contentConfig.components.navbar.brand;
     
     <div class="navbar-inner-actions">
       <button class="navbar-action-btn" aria-label="切换主题">
-        <span set:html={lightIcon.default}></span>
+        <span set:html={lightIcon}></span>
       </button>
       <button class="navbar-action-btn" aria-label="搜索">
-        <span set:html={searchIcon.default}></span>
+        <span set:html={searchIcon}></span>
       </button>
     </div>
   </div>

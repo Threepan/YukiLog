@@ -6,6 +6,7 @@
 // ================================
 
 import type { PostCardData } from "../../types";
+import { svgIcons } from "../../lib/svg-icons";
 
 interface Props {
   post: PostCardData;
@@ -47,7 +48,7 @@ const coverSrc = post.cover_image || placeholderCover;
     <div class="article-meta">
       {post.theme && (
         <a href={`/themes/${post.theme.slug}`} class="article-theme">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h7l2 2h9v16H3z"/><path d="M3 3v18"/></svg>
+          <span class="article-theme-icon" set:html={svgIcons.folderOpen}></span>
           {post.theme.name}
         </a>
       )}

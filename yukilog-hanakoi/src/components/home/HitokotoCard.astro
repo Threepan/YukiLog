@@ -5,6 +5,8 @@
 // 动画: 从右往左滑入 100px + 淡入
 // ================================
 
+import { svgIcons } from '../../lib/svg-icons';
+
 // 引用括号图标
 const openQuote = await import('../../assets/icon/ui/opening-quotation-mark.svg?raw');
 const closeQuote = await import('../../assets/icon/ui/closing-quotation-mark.svg?raw');
@@ -15,10 +17,7 @@ const closeQuote = await import('../../assets/icon/ui/closing-quotation-mark.svg
   <div class="hitokoto-header">
     <span class="hitokoto-label">一言</span>
     <button class="hitokoto-refresh" id="hitokoto-refresh" aria-label="换一条" title="换一条">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="1 4 1 10 7 10"/>
-        <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
-      </svg>
+      <span class="hitokoto-refresh-icon" set:html={svgIcons.refreshCcw}></span>
     </button>
   </div>
 

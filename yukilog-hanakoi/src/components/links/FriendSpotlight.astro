@@ -12,6 +12,8 @@ interface Props {
   message: string; // 寄语
 }
 
+import { svgIcons } from '../../lib/svg-icons';
+
 const { name, description, avatar, url, message } = Astro.props;
 ---
 
@@ -39,7 +41,7 @@ const { name, description, avatar, url, message } = Astro.props;
     <!-- 访问提示 -->
     <span class="spotlight-visit">
       去看看她的世界
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      <span class="spotlight-visit-icon" set:html={svgIcons.arrowRightLine}></span>
     </span>
   </a>
 </section>
