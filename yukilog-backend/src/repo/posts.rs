@@ -300,3 +300,78 @@ where
 
     Ok(results.into_iter().map(|r| r.post_id).collect())
 }
+
+/// 全文搜索文章（ILIKE 模糊匹配 title + summary + content）
+///
+/// 仅搜索已发布的文章，按相关性排序：标题匹配 > 摘要匹配 > 内容匹配
+pub async fn search_posts<C>(
+    db: &C,
+    keyword: &str,
+    count: u64,
+    page: u64,
+) -> RepoResult<(Vec<PostDto>, u64)>
+where
+    C: ConnectionTrait,
+{
+    use sea_orm::{FromQueryResult, Statement};
+
+    let pattern = format!("%{}%", keyword);
+    let offset = (page - 1) * count;
+
+    // 统计总数
+    let count_sql = r#"
+        SELECT COUNT(*) as total FROM posts 
+        WHERE status = 'published' 
+          AND (title ILIKE $1 OR summary ILIKE $1 OR content ILIKE $1)
+    "#;
+    
+    #[derive(FromQueryResult)]
+    struct CountResult {
+        total: i64,
+    }
+    
+    let count_stmt = Statement::from_sql_and_values(
+        sea_orm::DatabaseBackend::Postgres,
+        count_sql,
+        vec![pattern.clone().into()],
+    );
+    let total = CountResult::find_by_statement(count_stmt)
+        .one(db)
+        .await?
+        .map(|r| r.total as u64)
+        .unwrap_or(0);
+
+    if total == 0 {
+        return Ok((vec![], 0));
+    }
+
+    // 查询结果，按相关性排序（标题匹配优先）
+    let search_sql = r#"
+        SELECT * FROM posts 
+        WHERE status = 'published' 
+          AND (title ILIKE $1 OR summary ILIKE $1 OR content ILIKE $1)
+        ORDER BY 
+          CASE WHEN title ILIKE $1 THEN 0 ELSE 1 END,
+          CASE WHEN summary ILIKE $1 THEN 0 ELSE 1 END,
+          created_at DESC
+        LIMIT $2 OFFSET $3
+    "#;
+
+    let search_stmt = Statement::from_sql_and_values(
+        sea_orm::DatabaseBackend::Postgres,
+        search_sql,
+        vec![pattern.into(), (count as i64).into(), (offset as i64).into()],
+    );
+
+    let models = posts::Entity::find()
+        .from_raw_sql(search_stmt)
+        .all(db)
+        .await?;
+
+    let dtos = models
+        .into_iter()
+        .map(PostDto::try_from)
+        .collect::<Result<Vec<_>, _>>()?;
+
+    Ok((dtos, total))
+}
