@@ -87,7 +87,7 @@ POST    /api/public/links/submit        -> public::links::submit_link
 
 后台接口, 需要 JWT 认证才能访问
 
-**总共 23 个接口:**
+**总共 24 个接口:**
 
 **Themes 主题 (3个)**
 ```rust
@@ -104,10 +104,11 @@ DELETE  /api/admin/tags/:id      -> admin::tags::delete_tag
 POST    /api/admin/tags/merge    -> admin::tags::merge_tags
 ```
 
-**Posts 文章 (4个)**
+**Posts 文章 (5个)**
 ```rust
 GET     /api/admin/posts         -> admin::posts::list_posts
 POST    /api/admin/posts         -> admin::posts::create_post
+GET     /api/admin/posts/:slug   -> admin::posts::get_post
 PUT     /api/admin/posts/:slug   -> admin::posts::update_post
 DELETE  /api/admin/posts/:slug   -> admin::posts::delete_post
 ```
