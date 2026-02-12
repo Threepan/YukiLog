@@ -364,7 +364,7 @@ const applyConfig = contentConfig.components.applyLinkModal;
         if (textEl) textEl.style.display = 'none';
         if (loadingEl) loadingEl.style.display = 'inline';
 
-        const res = await fetch(`${API_BASE_URL}/api/links`, {
+        const res = await fetch(`${API_BASE_URL}/api/public/links/submit`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data),

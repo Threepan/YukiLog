@@ -2,25 +2,7 @@
 // Mock 评论数据 - 用于开发期间占位展示
 // ================================
 
-export interface Comment {
-  id: number;
-  post_id: number;
-  content: string;
-  guest_nick: string;
-  guest_email: string;
-  guest_website?: string;
-  avatar_url: string;
-  parent_id?: number;
-  root_id?: number;
-  visitor_info?: string;
-  status: 'approved' | 'pending' | 'spam';
-  created_at: string;
-}
-
-export interface CommentNode {
-  comment: Comment;
-  children: CommentNode[];
-}
+import type { Comment, CommentNode } from '../types/api';
 
 // Mock 数据：评论树
 export const mockComments: CommentNode[] = [

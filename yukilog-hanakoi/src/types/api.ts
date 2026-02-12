@@ -90,7 +90,7 @@ export interface CreatePostRequest {
   cover_image?: string | null;
   status: PostStatus;
   theme_slug?: string | null;
-  tag_slugs?: string[];
+  tag_slugs: string[];  // 必填，无标签时传空数组 []
 }
 
 /**
