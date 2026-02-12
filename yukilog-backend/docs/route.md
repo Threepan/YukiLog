@@ -47,7 +47,7 @@ POST    /api/admin/login    -> auth::login
 
 前台接口, 任何人都可以访问, 不需要登录
 
-**总共 14 个接口:**
+**总共 15 个接口:**
 
 **Themes 主题 (3个)**
 ```rust
@@ -63,11 +63,12 @@ GET     /api/public/tags/:slug          -> public::tags::get_tag
 POST    /api/public/tags/:slug/view     -> public::tags::increment_tag_view
 ```
 
-**Posts 文章 (3个)**
+**Posts 文章 (3个) + Search 搜索 (1个)**
 ```rust
 GET     /api/public/posts               -> public::posts::list_posts
 GET     /api/public/posts/:slug         -> public::posts::get_post
 POST    /api/public/posts/:slug/view    -> public::posts::increment_post_view
+GET     /api/public/search              -> public::posts::search_posts
 ```
 
 **Comments 评论 (3个)**
