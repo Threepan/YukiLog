@@ -2,10 +2,12 @@
 // 前端专属类型定义
 // ================================
 
+import type { NavIconKey, SocialIconKey } from '../lib/svg-icons';
+
 /**
  * 导航项配置
  */
-export type NavIconName = 'home' | 'theme' | 'archive' | 'tag' | 'links' | 'about';
+export type NavIconName = NavIconKey;
 
 export interface NavItem {
   label: string;
@@ -16,13 +18,7 @@ export interface NavItem {
 /**
  * 社交链接配置
  */
-export type SocialIconName =
-  | 'github'
-  | 'qq'
-  | 'bilibili'
-  | 'twitter'
-  | 'netease-music'
-  | 'gmail';
+export type SocialIconName = SocialIconKey;
 
 export interface SocialLink {
   name: string;
