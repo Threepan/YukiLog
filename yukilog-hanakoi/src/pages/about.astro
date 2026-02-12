@@ -9,12 +9,9 @@ import MusicPlayer from "../components/shared/MusicPlayer.astro";
 import { Image } from "astro:assets";
 import avatarImage from "../assets/icon/logo/logo.jpg";
 import { contentConfig, siteConfig } from "../lib/config";
+import { svgIcons } from "../lib/svg-icons";
 
 const socialLinks = siteConfig.social;
-
-// 引号装饰
-const openQuote = await import('../assets/icon/ui/opening-quotation-mark.svg?raw');
-const closeQuote = await import('../assets/icon/ui/closing-quotation-mark.svg?raw');
 ---
 
 <BlogLayout title="关于 - YukiLog" stickyNav>
@@ -37,7 +34,7 @@ const closeQuote = await import('../assets/icon/ui/closing-quotation-mark.svg?ra
     <!-- 正文：左右双栏对话 -->
     <div class="about-body">
       <div class="about-paragraph about-opening" style="--delay: 0">
-        <span class="quote-mark quote-open" set:html={openQuote.default}></span>
+        <span class="quote-mark quote-open" set:html={svgIcons.openingQuotationMark}></span>
         <p>
           这是我在互联网留下的一片小小角落。<br />
           它不喧闹，也不追求热闹。
@@ -115,7 +112,7 @@ const closeQuote = await import('../assets/icon/ui/closing-quotation-mark.svg?ra
           如果你愿意，<br />
           可以在这里停留一会。
         </p>
-        <span class="quote-mark quote-close" set:html={closeQuote.default}></span>
+        <span class="quote-mark quote-close" set:html={svgIcons.closingQuotationMark}></span>
       </div>
     </div>
 

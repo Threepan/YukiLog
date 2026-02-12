@@ -6,10 +6,7 @@
 // ================================
 
 import { contentConfig, siteConfig } from '../../lib/config.ts';
-
-// 引用括号图标
-const openQuote = await import('../../assets/icon/ui/opening-quotation-mark.svg?raw');
-const closeQuote = await import('../../assets/icon/ui/closing-quotation-mark.svg?raw');
+import { svgIcons } from '../../lib/svg-icons';
 
 // 社交图标映射（config icon name → 实际文件名）
 const iconFileMap: Record<string, string> = {
@@ -62,9 +59,9 @@ const quoteText = contentConfig.components.welcomeCard.quoteText;
     <div class="welcome-info-card">
       <!-- ABBA: 引用文字 -->
       <div class="welcome-quote">
-        <span class="quote-icon quote-open" set:html={openQuote.default}></span>
+        <span class="quote-icon quote-open" set:html={svgIcons.openingQuotationMark}></span>
         <span class="quote-text">{quoteText}</span>
-        <span class="quote-icon quote-close" set:html={closeQuote.default}></span>
+        <span class="quote-icon quote-close" set:html={svgIcons.closingQuotationMark}></span>
       </div>
 
       <!-- ABBB: 社交图标 -->

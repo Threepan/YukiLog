@@ -6,10 +6,6 @@
 // ================================
 
 import { svgIcons } from '../../lib/svg-icons';
-
-// 引用括号图标
-const openQuote = await import('../../assets/icon/ui/opening-quotation-mark.svg?raw');
-const closeQuote = await import('../../assets/icon/ui/closing-quotation-mark.svg?raw');
 ---
 
 <div class="hitokoto-card" id="hitokoto-card">
@@ -23,11 +19,11 @@ const closeQuote = await import('../../assets/icon/ui/closing-quotation-mark.svg
 
   <!-- 引用内容 -->
   <div class="hitokoto-body">
-    <span class="hitokoto-quote-icon quote-open" set:html={openQuote.default}></span>
+    <span class="hitokoto-quote-icon quote-open" set:html={svgIcons.openingQuotationMark}></span>
     <p class="hitokoto-text" id="hitokoto-text">
       加载中...
     </p>
-    <span class="hitokoto-quote-icon quote-close" set:html={closeQuote.default}></span>
+    <span class="hitokoto-quote-icon quote-close" set:html={svgIcons.closingQuotationMark}></span>
   </div>
 
   <!-- 出处 -->
