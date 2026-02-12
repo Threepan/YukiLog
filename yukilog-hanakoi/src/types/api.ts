@@ -137,6 +137,7 @@ export interface Comment {
   status: CommentStatus;
   ip: string | null;
   ua: string | null;
+  visitor_info: string | null;  // 解析后的访客信息（如 "Desktop Chrome 136.0 · macOS 15"）
   created_at: string;
 }
 
