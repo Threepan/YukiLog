@@ -174,13 +174,13 @@ POST   /api/public/posts/:slug/view - 浏览计数 (IP限流 10分钟)
 pub async fn list_posts(
     State(state): State<AppState>,
     Query(params): Query<ListPostsQuery>,
-) -> Result<Json<ApiResponse<PagedData<Post>>>, ServiceError>
+) -> Result<Json<ApiResponse<PagedData<PostWithRelations>>>, ServiceError>
 
 /// 获取文章详情
 pub async fn get_post(
     State(state): State<AppState>,
     Path(slug): Path<String>,
-) -> Result<Json<ApiResponse<Post>>, ServiceError>
+) -> Result<Json<ApiResponse<PostWithRelations>>, ServiceError>
 
 /// 增加文章浏览计数
 pub async fn increment_post_view(
