@@ -3,11 +3,53 @@ use axum::{
     extract::State,
     http::{header::AUTHORIZATION, Request, StatusCode},
     middleware::Next,
-    response::Response,
+    response::{IntoResponse, Response},
+    Json,
 };
+use serde_json::json;
 
 use crate::handler::auth::validate_token;
 use crate::handler::state::AppState;
+
+/// JWT 认证错误类型
+#[derive(Debug)]
+pub enum AuthError {
+    /// 缺少 Authorization header 或令牌格式错误
+    MissingToken,
+    /// 令牌签名无效或格式错误
+    InvalidToken,
+    /// 令牌已过期
+    ExpiredToken,
+}
+
+impl IntoResponse for AuthError {
+    fn into_response(self) -> Response {
+        let (message, log_msg) = match self {
+            AuthError::MissingToken => (
+                "缺少认证令牌或格式错误",
+                "Missing or malformed Authorization header",
+            ),
+            AuthError::InvalidToken => (
+                "认证令牌无效",
+                "Invalid token signature or format",
+            ),
+            AuthError::ExpiredToken => (
+                "认证令牌已过期",
+                "Token has expired",
+            ),
+        };
+
+        tracing::warn!("JWT auth failed: {}", log_msg);
+
+        let body = json!({
+            "success": false,
+            "data": null,
+            "message": message
+        });
+
+        (StatusCode::UNAUTHORIZED, Json(body)).into_response()
+    }
+}
 
 /// JWT 认证中间件
 ///
@@ -24,16 +66,16 @@ use crate::handler::state::AppState;
 ///
 /// # 错误处理
 ///
-/// 如果认证失败，返回 401 Unauthorized：
-/// - 缺少 Authorization header
-/// - Token 格式错误（不是 Bearer 格式）
-/// - Token 签名无效
-/// - Token 已过期
+/// 如果认证失败，返回 401 Unauthorized JSON 响应：
+/// - 缺少 Authorization header → `{ success: false, message: "缺少认证令牌或格式错误" }`
+/// - Token 格式错误（不是 Bearer 格式） → `{ success: false, message: "缺少认证令牌或格式错误" }`
+/// - Token 签名无效 → `{ success: false, message: "认证令牌无效" }`
+/// - Token 已过期 → `{ success: false, message: "认证令牌已过期" }`
 ///
 /// # 安全性
 ///
 /// - 所有认证失败都会记录日志（用于安全审计）
-/// - 不暴露具体失败原因给客户端（防止信息泄露）
+/// - 区分三种错误类型，便于前端展示不同提示
 /// - 使用常量时间比较防止时序攻击（jsonwebtoken 库已实现）
 ///
 /// # 使用方式
@@ -63,24 +105,19 @@ pub async fn jwt_auth(
     State(state): State<AppState>,
     mut req: Request<Body>,
     next: Next,
-) -> Result<Response, StatusCode> {
+) -> Result<Response, AuthError> {
     // 1. 提取 token
-    let token = match extract_bearer_token(&req) {
-        Ok(t) => t,
-        Err(e) => {
-            tracing::warn!("JWT auth failed: missing or invalid Authorization header");
-            return Err(e);
-        }
-    };
+    let token = extract_bearer_token(&req)?;
 
     // 2. 验证 token 并解析 Claims
-    let claims = match validate_token(token, &state.config.jwt_secret) {
-        Ok(c) => c,
-        Err(e) => {
-            tracing::warn!("JWT validation failed: {:?}", e);
-            return Err(StatusCode::UNAUTHORIZED);
+    let claims = validate_token(token, &state.config.jwt_secret).map_err(|e| {
+        // 区分过期 vs 其他错误
+        use jsonwebtoken::errors::ErrorKind;
+        match e.kind() {
+            ErrorKind::ExpiredSignature => AuthError::ExpiredToken,
+            _ => AuthError::InvalidToken,
         }
-    };
+    })?;
 
     tracing::debug!("JWT auth successful for user: {}", claims.sub);
 
@@ -101,29 +138,29 @@ pub async fn jwt_auth(
 /// # 返回
 ///
 /// * `Ok(&str)` - 提取出的 JWT token 字符串
-/// * `Err(StatusCode)` - 401 Unauthorized（缺少或格式错误）
+/// * `Err(AuthError::MissingToken)` - 缺少或格式错误
 ///
 /// # 示例
 ///
 /// ```text
 /// Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 /// ```
-fn extract_bearer_token<B>(req: &Request<B>) -> Result<&str, StatusCode> {
+fn extract_bearer_token<B>(req: &Request<B>) -> Result<&str, AuthError> {
     // 获取 Authorization header
     let auth_header = req
         .headers()
         .get(AUTHORIZATION)
         .and_then(|value| value.to_str().ok())
-        .ok_or(StatusCode::UNAUTHORIZED)?;
+        .ok_or(AuthError::MissingToken)?;
 
     // 检查 "Bearer " 前缀
     let token = auth_header
         .strip_prefix("Bearer ")
-        .ok_or(StatusCode::UNAUTHORIZED)?;
+        .ok_or(AuthError::MissingToken)?;
 
     // 确保 token 不为空
     if token.is_empty() {
-        return Err(StatusCode::UNAUTHORIZED);
+        return Err(AuthError::MissingToken);
     }
 
     Ok(token)
@@ -151,7 +188,7 @@ mod tests {
         let req = Request::builder().body(()).unwrap();
         let result = extract_bearer_token(&req);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), StatusCode::UNAUTHORIZED);
+        assert!(matches!(result.unwrap_err(), AuthError::MissingToken));
     }
 
     #[test]
