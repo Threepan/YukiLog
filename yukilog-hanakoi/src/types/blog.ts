@@ -5,19 +5,29 @@
 /**
  * 导航项配置
  */
+export type NavIconName = 'home' | 'theme' | 'archive' | 'tag' | 'links' | 'about';
+
 export interface NavItem {
   label: string;
   href: string;
-  icon?: string; // 图标名称或 SVG 路径
+  icon?: NavIconName; // 统一导航图标 key
 }
 
 /**
  * 社交链接配置
  */
+export type SocialIconName =
+  | 'github'
+  | 'qq'
+  | 'bilibili'
+  | 'twitter'
+  | 'netease-music'
+  | 'gmail';
+
 export interface SocialLink {
   name: string;
   url: string;
-  icon: string; // 图标名称
+  icon: SocialIconName; // 统一社交图标 key
   color?: string; // 品牌色
 }
 
