@@ -9,7 +9,7 @@ use std::net::SocketAddr;
 use crate::handler::{
     response::{ok, ApiResponse},
     state::AppState,
-    utils::{check_rate_limit, generate_gravatar_url, get_client_ip, get_user_agent},
+    utils::{check_rate_limit, get_client_ip, get_user_agent},
 };
 use crate::service::{self, comments::{Comment, CommentNode, CreateCommentInput}, error::ServiceError};
 
@@ -35,8 +35,6 @@ pub struct CreateCommentRequest {
 pub struct CreateCommentResponse {
     /// 评论 ID
     pub id: i64,
-    /// 头像 URL（优先website favicon，其次Gravatar）
-    pub avatar_url: Option<String>,
     /// 创建时间
     pub created_at: chrono::DateTime<chrono::FixedOffset>,
 }
@@ -163,7 +161,6 @@ pub async fn get_comment_replies(
 ///   "success": true,
 ///   "data": {
 ///     "id": 1,
-///     "avatar_url": "https://www.gravatar.com/avatar/abc123?d=identicon",
 ///     "created_at": "2024-01-01T00:00:00Z"
 ///   }
 /// }
@@ -191,18 +188,6 @@ pub async fn create_comment(
         ));
     }
 
-    // 生成头像 URL：优先 website favicon，其次 Gravatar，最后置空
-    let avatar_url = if let Some(ref website) = req.website {
-        // 如果提供了网站，尝试使用网站 favicon
-        Some(format!("{}/favicon.ico", website.trim_end_matches('/')))
-    } else if !req.email.is_empty() {
-        // 否则使用邮箱生成 Gravatar
-        Some(generate_gravatar_url(&req.email))
-    } else {
-        // 都没有就置空
-        None
-    };
-
     // 获取 IP 和 User-Agent
     let user_agent = get_user_agent(&headers);
 
@@ -228,7 +213,6 @@ pub async fn create_comment(
 
     Ok(ok(CreateCommentResponse {
         id: comment.id,
-        avatar_url,
         created_at: comment.created_at,
     }))
 }
