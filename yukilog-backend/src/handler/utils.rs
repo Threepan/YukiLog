@@ -1,5 +1,4 @@
 use axum::http::HeaderMap;
-use redis::AsyncCommands;
 use std::net::SocketAddr;
 
 /// 从请求中提取客户端真实 IP
@@ -48,7 +47,14 @@ pub fn get_client_ip(headers: &HeaderMap, addr: SocketAddr) -> String {
 
 /// 检查 IP限流（基于 Redis）
 ///
-/// 使用 Redis 的 SETNX + EXPIRE 实现原子性限流
+/// 使用 Redis 的 `SET key value EX ttl NX` 原子命令实现限流
+///
+/// # 原子性保证
+///
+/// 使用单个 Redis 命令完成 "设置值 + 设置过期时间 + 仅当不存在时设置"，
+/// 避免 SETNX + EXPIRE 两步操作的竞态条件：
+/// - 如果在 SETNX 后、EXPIRE 前进程崩溃，key 会永久存在
+/// - 原子命令确保要么全部成功，要么全部失败
 ///
 /// # 参数
 ///
@@ -77,17 +83,22 @@ pub async fn check_rate_limit(
 ) -> Result<bool, redis::RedisError> {
     let mut conn = redis.get_async_connection().await?;
 
-    // SETNX: 如果 key 不存在则设置为 "1"
-    let set: bool = conn.set_nx(cache_key, "1").await?;
+    // 原子命令：SET key value EX ttl NX
+    // - NX: 仅当 key 不存在时设置
+    // - EX: 设置过期时间（秒）
+    // 返回值：Some("OK") 表示成功设置，None 表示 key 已存在
+    let result: Option<String> = redis::cmd("SET")
+        .arg(cache_key)
+        .arg("1")
+        .arg("EX")
+        .arg(ttl)
+        .arg("NX")
+        .query_async(&mut conn)
+        .await?;
 
-    if set {
-        // 首次访问或已过期，设置 TTL
-        let _: () = conn.expire(cache_key, ttl as i64).await?;
-        Ok(true) // 允许访问
-    } else {
-        // key 存在，说明在 TTL 内重复访问
-        Ok(false) // 限流中
-    }
+    // Some("OK") = 首次访问或已过期，允许访问
+    // None = key 存在，限流中
+    Ok(result.is_some())
 }
 
 /// 生成 Gravatar 头像 URL
