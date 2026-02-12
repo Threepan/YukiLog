@@ -2,7 +2,7 @@
 // ================================
 // 站点信息卡片
 // 第二屏右下 - 主站链接、浏览量、运行时长、GitHub
-// 动画: 从右往左滑入 60px + 淡入，延迟 400ms
+// 动画: 从右往左滑入 100px + 淡入，延迟 400ms
 // ================================
 
 import { siteConfig } from '../../lib/config.ts';
@@ -85,12 +85,13 @@ import { siteConfig } from '../../lib/config.ts';
   border-radius: $radius-lg;
   box-shadow: $shadow-md;
   padding: $spacing-lg;
+  margin-top: $spacing-sm;
   display: flex;
   flex-direction: column;
   
   // 初始隐藏，等待动画触发
   opacity: 0;
-  transform: translateX(60px);
+  transform: translateX(100px);
   transition: opacity 600ms cubic-bezier(0.22, 0.61, 0.36, 1),
               transform 600ms cubic-bezier(0.22, 0.61, 0.36, 1);
   

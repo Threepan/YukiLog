@@ -26,11 +26,11 @@
   }
 }
 
-// 组件从左侧滑入（60px，用于个人信息/站点信息）
+// 组件从左侧滑入（100px，用于个人信息/站点信息）
 @keyframes slide-in-left {
   from {
     opacity: 0;
-    transform: translateX(-60px);
+    transform: translateX(-100px);
   }
   to {
     opacity: 1;
@@ -38,11 +38,11 @@
   }
 }
 
-// 组件从右侧滑入（60px）
+// 组件从右侧滑入（100px）
 @keyframes slide-in-right {
   from {
     opacity: 0;
-    transform: translateX(60px);
+    transform: translateX(100px);
   }
   to {
     opacity: 1;

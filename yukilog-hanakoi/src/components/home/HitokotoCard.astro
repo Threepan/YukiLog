@@ -2,7 +2,7 @@
 // ================================
 // 一言卡片（Hitokoto）
 // 第二屏右上 - 每次访问显示一条随机二次元语录
-// 动画: 从右往左滑入 60px + 淡入
+// 动画: 从右往左滑入 100px + 淡入
 // ================================
 
 // 引用括号图标
@@ -43,13 +43,14 @@ const closeQuote = await import('../../assets/icon/ui/closing-quotation-mark.svg
   border-radius: $radius-lg;
   box-shadow: $shadow-md;
   padding: $spacing-lg;
+  min-height: 180px;
   display: flex;
   flex-direction: column;
   gap: 0;
   
   // 初始隐藏，等待动画触发
   opacity: 0;
-  transform: translateX(60px);
+  transform: translateX(100px);
   transition: opacity 600ms cubic-bezier(0.22, 0.61, 0.36, 1),
               transform 600ms cubic-bezier(0.22, 0.61, 0.36, 1);
   
@@ -111,11 +112,17 @@ const closeQuote = await import('../../assets/icon/ui/closing-quotation-mark.svg
   height: 14px;
   flex-shrink: 0;
   margin-top: 4px;
-  opacity: 0.4;
+  opacity: 0.3;
+  color: $lian-text;
   
   :global(svg) {
     width: 100%;
     height: 100%;
+    fill: currentColor;
+    
+    :global(path) {
+      fill: currentColor;
+    }
   }
   
   &.quote-close {
@@ -187,12 +194,14 @@ const closeQuote = await import('../../assets/icon/ui/closing-quotation-mark.svg
     if (!textEl || !sourceEl) return;
     
     const fromEl = sourceEl.querySelector('.hitokoto-from');
+    const card = textEl.closest('.hitokoto-card') as HTMLElement;
     
-    // 加载态 - 模糊消失
+    // 锁定卡片当前高度，防止内容切换时抖动
+    if (card) card.style.minHeight = `${card.offsetHeight}px`;
+    
+    // 淡出
     textEl.classList.add('loading');
     if (fromEl) fromEl.classList.add('loading');
-    
-    // 等淡出动画完成后再更新内容
     await new Promise(r => setTimeout(r, 200));
 
     try {
@@ -201,7 +210,6 @@ const closeQuote = await import('../../assets/icon/ui/closing-quotation-mark.svg
       
       textEl.textContent = data.hitokoto || '...';
       
-      // 构建出处文字
       let source = '';
       if (data.from_who && data.from) {
         source = `—— ${data.from_who}「${data.from}」`;
@@ -212,8 +220,13 @@ const closeQuote = await import('../../assets/icon/ui/closing-quotation-mark.svg
     } catch {
       textEl.textContent = '获取失败，点击刷新重试';
     } finally {
+      // 淡入
       textEl.classList.remove('loading');
       if (fromEl) fromEl.classList.remove('loading');
+      // 内容渲染后释放高度锁定
+      requestAnimationFrame(() => {
+        if (card) card.style.minHeight = '';
+      });
     }
   }
 
