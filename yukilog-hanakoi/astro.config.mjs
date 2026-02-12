@@ -2,9 +2,15 @@
 import { defineConfig } from 'astro/config';
 import vue from '@astrojs/vue';
 import tailwindcss from '@tailwindcss/vite';
+import node from '@astrojs/node';
 
 // https://astro.build/config
 export default defineConfig({
+  output: 'static',  // 默认静态，admin 页面通过 prerender: false 标记为动态
+  adapter: node({
+    mode: 'standalone'
+  }),
+  
   integrations: [vue()],
 
   vite: {

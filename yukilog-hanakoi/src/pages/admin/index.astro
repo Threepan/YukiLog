@@ -1,0 +1,119 @@
+---
+// ================================
+// 管理后台首页
+// ================================
+
+export const prerender = false;
+
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="管理后台" activeMenu="posts">
+  <div class="dashboard">
+    <div class="welcome">
+      <h2>欢迎使用 YukiLog 管理后台</h2>
+      <p>请从左侧菜单选择功能模块，开始管理你的博客内容</p>
+    </div>
+    
+    <div class="quick-links">
+      <a href="/admin/posts" class="quick-link-card">
+        <div class="card-icon">📝</div>
+        <h3>文章管理</h3>
+        <p>管理所有文章、草稿和发布状态</p>
+      </a>
+      
+      <a href="/admin/comments" class="quick-link-card">
+        <div class="card-icon">💬</div>
+        <h3>评论审核</h3>
+        <p>审核、编辑和删除评论</p>
+      </a>
+      
+      <a href="/admin/themes" class="quick-link-card">
+        <div class="card-icon">🎨</div>
+        <h3>主题管理</h3>
+        <p>创建和管理文章主题分类</p>
+      </a>
+      
+      <a href="/admin/tags" class="quick-link-card">
+        <div class="card-icon">🏷️</div>
+        <h3>标签管理</h3>
+        <p>创建、编辑和合并标签</p>
+      </a>
+      
+      <a href="/admin/links" class="quick-link-card">
+        <div class="card-icon">🔗</div>
+        <h3>友链管理</h3>
+        <p>审核和管理友情链接</p>
+      </a>
+    </div>
+  </div>
+</AdminLayout>
+
+<style lang="scss">
+  .dashboard {
+    max-width: 1000px;
+  }
+
+  .welcome {
+    margin-bottom: $spacing-xxl;
+
+    h2 {
+      font-size: $font-size-2xl;
+      font-weight: $font-weight-bold;
+      color: $lian-text;
+      margin: 0 0 $spacing-sm;
+    }
+
+    p {
+      font-size: $font-size-base;
+      color: $lian-text-light;
+      margin: 0;
+    }
+  }
+
+  .quick-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: $spacing-md;
+  }
+
+  .quick-link-card {
+    padding: $spacing-lg;
+    background: $lian-white;
+    border-radius: $radius-md;
+    box-shadow: $shadow-sm;
+    text-decoration: none;
+    transition: all $transition-base $ease-gentle;
+    display: block;
+
+    &:hover {
+      box-shadow: $shadow-blue;
+      transform: translateY(-2px);
+    }
+
+    .card-icon {
+      font-size: 2rem;
+      margin-bottom: $spacing-sm;
+    }
+
+    h3 {
+      font-size: $font-size-lg;
+      font-weight: $font-weight-semibold;
+      color: $lian-blue;
+      margin: 0 0 $spacing-xs;
+    }
+
+    p {
+      font-size: $font-size-sm;
+      color: $lian-text-light;
+      margin: 0;
+      line-height: $line-height-base;
+    }
+  }
+
+  @media (max-width: $container-sm) {
+    .quick-links {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

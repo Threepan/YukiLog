@@ -1,0 +1,251 @@
+---
+// ================================
+// 管理员登录页（SSR 动态渲染）
+// ================================
+
+export const prerender = false;
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="管理员登录 - YukiLog">
+  <div class="login-container">
+    <div class="login-card">
+      <h1>YukiLog 管理后台</h1>
+      
+      <form id="login-form">
+        <div class="form-group">
+          <label for="username">用户名</label>
+          <input 
+            type="text" 
+            id="username" 
+            required 
+            autocomplete="username"
+            placeholder="请输入用户名"
+          />
+        </div>
+        
+        <div class="form-group">
+          <label for="password">密码</label>
+          <input 
+            type="password" 
+            id="password" 
+            required 
+            autocomplete="current-password"
+            placeholder="请输入密码"
+          />
+        </div>
+        
+        <div id="error-message" class="error-message"></div>
+        
+        <button type="submit" id="submit-btn" class="submit-btn">
+          登录
+        </button>
+      </form>
+
+      <!-- 开发模式后门 -->
+      <div class="dev-mode">
+        <hr class="divider" />
+        <button type="button" id="dev-login-btn" class="dev-btn">
+          🔓 开发模式：跳过登录
+        </button>
+        <p class="dev-hint">仅用于开发阶段，生产环境需删除此按钮</p>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import { authApi } from '../../lib/api';
+  import { setToken, setDevToken, isAuthenticated } from '../../lib/auth';
+
+  // 已登录自动跳转
+  if (isAuthenticated()) {
+    window.location.href = '/admin';
+  }
+
+  const form = document.getElementById('login-form') as HTMLFormElement;
+  const usernameInput = document.getElementById('username') as HTMLInputElement;
+  const passwordInput = document.getElementById('password') as HTMLInputElement;
+  const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+  const errorMsg = document.getElementById('error-message')!;
+  const devLoginBtn = document.getElementById('dev-login-btn') as HTMLButtonElement;
+
+  // 正常登录
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value;
+
+    if (!username || !password) {
+      showError('请输入用户名和密码');
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = '登录中...';
+    errorMsg.textContent = '';
+
+    try {
+      const data = await authApi.login({ username, password });
+      setToken(data.token, data.expires_in);
+      
+      // 登录成功跳转
+      window.location.href = '/admin';
+    } catch (err: any) {
+      showError(err.message || '登录失败，请检查用户名和密码');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = '登录';
+    }
+  });
+
+  // 开发模式快捷登录
+  devLoginBtn.addEventListener('click', () => {
+    setDevToken();
+    window.location.href = '/admin';
+  });
+
+  function showError(msg: string) {
+    errorMsg.textContent = msg;
+    errorMsg.style.display = 'block';
+  }
+</script>
+
+<style lang="scss">
+  .login-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba($lian-blue, 0.08) 0%, rgba($lian-pink, 0.08) 100%);
+    padding: $spacing-lg;
+  }
+
+  .login-card {
+    width: 100%;
+    max-width: 420px;
+    background: $lian-white;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-md;
+    padding: $spacing-xxl $spacing-xl;
+
+    h1 {
+      font-size: $font-size-2xl;
+      font-weight: $font-weight-bold;
+      color: $lian-text;
+      text-align: center;
+      margin: 0 0 $spacing-xl;
+    }
+  }
+
+  .form-group {
+    margin-bottom: $spacing-md;
+
+    label {
+      display: block;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-medium;
+      color: $lian-text;
+      margin-bottom: $spacing-xs;
+    }
+
+    input {
+      width: 100%;
+      padding: $spacing-sm $spacing-md;
+      font-size: $font-size-base;
+      color: $lian-text;
+      background: $lian-white;
+      border: 1px solid $lian-border;
+      border-radius: $radius-sm;
+      transition: all $transition-fast $ease-gentle;
+
+      &::placeholder {
+        color: $lian-text-muted;
+      }
+
+      &:focus {
+        outline: none;
+        border-color: $lian-blue;
+        box-shadow: 0 0 0 3px rgba($lian-blue, 0.1);
+      }
+    }
+  }
+
+  .error-message {
+    display: none;
+    padding: $spacing-sm;
+    margin-bottom: $spacing-md;
+    font-size: $font-size-sm;
+    color: $lian-error;
+    background: rgba($lian-error, 0.08);
+    border-radius: $radius-sm;
+    text-align: center;
+  }
+
+  .submit-btn {
+    width: 100%;
+    padding: $spacing-sm $spacing-md;
+    font-size: $font-size-base;
+    font-weight: $font-weight-semibold;
+    color: white;
+    background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
+    border: none;
+    border-radius: $radius-sm;
+    cursor: pointer;
+    transition: all $transition-base $ease-gentle;
+
+    &:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: $shadow-blue;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  // 开发模式区域
+  .dev-mode {
+    margin-top: $spacing-xl;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid $lian-divider;
+    margin: 0 0 $spacing-md;
+  }
+
+  .dev-btn {
+    width: 100%;
+    padding: $spacing-sm $spacing-md;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    color: $lian-warning;
+    background: rgba($lian-warning, 0.08);
+    border: 1px dashed $lian-warning;
+    border-radius: $radius-sm;
+    cursor: pointer;
+    transition: all $transition-fast $ease-gentle;
+
+    &:hover {
+      background: rgba($lian-warning, 0.15);
+      transform: translateY(-1px);
+    }
+  }
+
+  .dev-hint {
+    font-size: $font-size-xs;
+    color: $lian-text-muted;
+    text-align: center;
+    margin: $spacing-xs 0 0;
+  }
+
+  @media (max-width: $container-sm) {
+    .login-card {
+      padding: $spacing-xl $spacing-lg;
+    }
+  }
+</style>
