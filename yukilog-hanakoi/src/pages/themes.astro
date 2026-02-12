@@ -1,0 +1,249 @@
+---
+// ================================
+// 主题（分类）页面
+// Hero + 分类卡片网格
+// ================================
+
+import BlogLayout from "../layouts/BlogLayout.astro";
+import PageHero from "../components/shared/PageHero.astro";
+
+// 导航图标作为 Hero icon
+import themeIcon from "../assets/icon/nav/theme.svg?raw";
+
+// ================================
+// 占位数据，后续接入后端 API
+// ================================
+const themes = [
+  {
+    name: "前端开发",
+    slug: "frontend",
+    description: "HTML、CSS、JavaScript 以及各种框架的探索与实践",
+    post_count: 12,
+  },
+  {
+    name: "后端开发",
+    slug: "backend",
+    description: "Rust、Node.js、数据库设计和 API 架构",
+    post_count: 8,
+  },
+  {
+    name: "学习笔记",
+    slug: "study-notes",
+    description: "读书、课程、技术文档的消化与整理",
+    post_count: 15,
+  },
+  {
+    name: "生活碎片",
+    slug: "life",
+    description: "日常的观察、感受和一些不太重要的小事",
+    post_count: 6,
+  },
+  {
+    name: "情绪日记",
+    slug: "emotion",
+    description: "写给深夜的自己，那些不说出口的话",
+    post_count: 4,
+  },
+  {
+    name: "项目记录",
+    slug: "projects",
+    description: "从零开始造轮子的全过程",
+    post_count: 9,
+  },
+];
+// 确定性微旋转角度（交替正负，模拟散落感）
+const rotations = [1.2, -1.8, 2.1, -0.9, 1.6, -2.3, 0.7, -1.4];
+// 确定性水平错位
+const offsets = [0, 24, -16, 32, -8, 20, -28, 12];
+---
+
+<BlogLayout title="主题 - YukiLog" stickyNav>
+  <PageHero title="主题" subtitle="按类别浏览文章" icon={themeIcon} />
+
+  <div class="themes-page">
+    <div class="themes-scatter">
+      {themes.map((theme, i) => (
+        <a
+          href={`/themes/${theme.slug}`}
+          class="theme-card"
+          style={`--i: ${i}; --rot: ${rotations[i % rotations.length]}deg; --offset: ${offsets[i % offsets.length]}px`}
+        >
+          <div class="theme-card-inner">
+            <h2 class="theme-name">{theme.name}</h2>
+            {theme.description && (
+              <p class="theme-desc">{theme.description}</p>
+            )}
+            <div class="theme-meta">
+              <span class="theme-count">{theme.post_count} 篇文章</span>
+              <span class="theme-arrow">→</span>
+            </div>
+          </div>
+        </a>
+      ))}
+    </div>
+  </div>
+</BlogLayout>
+
+<script>
+  // 使用 IntersectionObserver 为卡片添加入场动画
+  const cards = document.querySelectorAll<HTMLElement>('.theme-card');
+  
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const el = entry.target as HTMLElement;
+          const i = parseInt(el.style.getPropertyValue('--i') || '0');
+          setTimeout(() => {
+            el.classList.add('visible');
+          }, i * 80);
+          observer.unobserve(el);
+        }
+      });
+    },
+    { threshold: 0.1 }
+  );
+
+  cards.forEach((card) => observer.observe(card));
+</script>
+
+<style lang="scss">
+  .themes-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: $spacing-xl $spacing-lg $spacing-xxl;
+  }
+
+  .themes-scatter {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: $spacing-lg $spacing-md;
+    padding: 0 $spacing-md;
+  }
+
+  .theme-card {
+    display: block;
+    text-decoration: none;
+    border-radius: $radius-lg;
+    background: white;
+    overflow: hidden;
+    width: calc(50% - $spacing-md);
+    transform: rotate(var(--rot)) translateX(var(--offset));
+    transition:
+      box-shadow $transition-base $ease-gentle,
+      transform $transition-base $ease-gentle;
+
+    // 入场动画
+    opacity: 0;
+
+    &.visible {
+      opacity: 1;
+      transform: rotate(var(--rot)) translateX(var(--offset));
+      transition:
+        opacity 500ms $ease-gentle,
+        transform $transition-base $ease-gentle,
+        box-shadow $transition-base $ease-gentle;
+    }
+
+    &:hover {
+      transform: rotate(0deg) translateX(0) translateY(-4px) scale(1.03);
+      z-index: 2;
+
+      .theme-arrow {
+        transform: translateX(4px);
+        opacity: 1;
+      }
+    }
+
+    // 交替蓝粉阴影 + 左边框
+    &:nth-child(odd) {
+      box-shadow: $shadow-blue;
+      border-left: 3px solid $lian-blue;
+
+      &:hover {
+        box-shadow: $shadow-blue-hover;
+      }
+    }
+
+    &:nth-child(even) {
+      box-shadow: $shadow-pink;
+      border-left: 3px solid $lian-pink;
+
+      &:hover {
+        box-shadow: $shadow-pink-hover;
+      }
+    }
+
+    // 宽度随机感：交替不同宽度
+    &:nth-child(3n+1) { width: calc(48% - $spacing-md); }
+    &:nth-child(3n+2) { width: calc(44% - $spacing-md); }
+    &:nth-child(3n)   { width: calc(52% - $spacing-md); }
+  }
+
+  .theme-card-inner {
+    padding: $spacing-lg $spacing-xl;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+    min-height: 130px;
+    justify-content: space-between;
+  }
+
+  .theme-name {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-semibold;
+    color: $lian-text;
+    margin: 0;
+    line-height: $line-height-tight;
+  }
+
+  .theme-desc {
+    font-size: $font-size-sm;
+    color: $lian-text-light;
+    line-height: $line-height-base;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .theme-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: $spacing-xs;
+  }
+
+  .theme-count {
+    font-size: $font-size-xs;
+    color: $lian-text-muted;
+    letter-spacing: 0.02em;
+  }
+
+  .theme-arrow {
+    font-size: $font-size-base;
+    color: $lian-blue;
+    opacity: 0.4;
+    transition:
+      transform $transition-fast $ease-gentle,
+      opacity $transition-fast $ease-gentle;
+  }
+
+  // 响应式
+  @media (max-width: $container-md) {
+    .theme-card,
+    .theme-card:nth-child(3n+1),
+    .theme-card:nth-child(3n+2),
+    .theme-card:nth-child(3n) {
+      width: 100%;
+    }
+  }
+
+  @media (max-width: $container-sm) {
+    .themes-page {
+      padding: $spacing-lg $spacing-sm $spacing-xl;
+    }
+  }
+</style>
