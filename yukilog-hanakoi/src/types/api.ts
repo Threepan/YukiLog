@@ -165,7 +165,7 @@ export interface CreateCommentRequest {
  */
 export interface CreateCommentResponse {
   id: number;
-  avatar_url: string;
+  avatar_url: string | null;
   created_at: string;
 }
 
