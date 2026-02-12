@@ -30,7 +30,46 @@ const musicUrl = await import('../../assets/music/时空漫步.mp3?url');
   
   const fadeInDuration = 800;
   const maxVolume = 0.4;
+  const STORAGE_KEY = 'yukilog-music';
   let started = false;
+  
+  // 从 sessionStorage 恢复播放进度
+  function restoreProgress() {
+    try {
+      const saved = sessionStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const { time, timestamp } = JSON.parse(saved);
+        // 页面切换耗时补偿（估算经过的时间）
+        const elapsed = (Date.now() - timestamp) / 1000;
+        const resumeTime = time + elapsed;
+        if (resumeTime > 0 && isFinite(resumeTime) && resumeTime < audio.duration) {
+          audio.currentTime = resumeTime;
+        } else if (resumeTime > 0 && isFinite(resumeTime)) {
+          // duration 还没加载好，等 loadedmetadata 后再设置
+          audio.addEventListener('loadedmetadata', () => {
+            if (resumeTime < audio.duration) {
+              audio.currentTime = resumeTime;
+            }
+          }, { once: true });
+        }
+      }
+    } catch {}
+  }
+
+  // 定期保存播放进度
+  function saveProgress() {
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
+        time: audio.currentTime,
+        timestamp: Date.now(),
+      }));
+    } catch {}
+  }
+
+  // 页面离开时保存
+  window.addEventListener('beforeunload', saveProgress);
+  // 每 2 秒保存一次
+  setInterval(saveProgress, 2000);
   
   function fadeIn() {
     const startTime = Date.now();
@@ -46,6 +85,7 @@ const musicUrl = await import('../../assets/music/时空漫步.mp3?url');
   function tryPlay() {
     if (started) return;
     audio.volume = 0;
+    restoreProgress();
     
     const p = audio.play();
     if (p) {

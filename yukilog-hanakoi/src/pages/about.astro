@@ -1,0 +1,506 @@
+---
+// ================================
+// 关于页面 - 信纸风格
+// 逐段淡入，温柔的自我介绍
+// ================================
+
+import BlogLayout from "../layouts/BlogLayout.astro";
+import MusicPlayer from "../components/shared/MusicPlayer.astro";
+import { Image } from "astro:assets";
+import avatarImage from "../assets/icon/logo/logo.jpg";
+import { siteConfig } from "../lib/config";
+
+const socialLinks = siteConfig.social;
+
+// 引号装饰
+const openQuote = await import('../assets/icon/ui/opening-quotation-mark.svg?raw');
+const closeQuote = await import('../assets/icon/ui/closing-quotation-mark.svg?raw');
+---
+
+<BlogLayout title="关于 - YukiLog" stickyNav>
+  <article class="about-page">
+    <!-- 页头 -->
+    <header class="about-header">
+      <div class="avatar-wrap">
+        <div class="avatar-glow"></div>
+        <Image
+          src={avatarImage}
+          alt="恋"
+          width={128}
+          height={128}
+          class="avatar"
+        />
+      </div>
+      <h1 class="greeting">你好，我是<span class="name-highlight"> 恋</span></h1>
+    </header>
+
+    <!-- 正文：左右双栏对话 -->
+    <div class="about-body">
+      <div class="about-paragraph about-opening" style="--delay: 0">
+        <span class="quote-mark quote-open" set:html={openQuote.default}></span>
+        <p>
+          这是我在互联网留下的一片小小角落。<br />
+          它不喧闹，也不追求热闹。
+        </p>
+      </div>
+
+      <!-- 双栏对话 -->
+      <div class="about-dialogue">
+        <!-- 左：技术 / 蓝 -->
+        <div class="dialogue-left">
+          <div class="dialogue-label blue-label">代码与理性</div>
+
+          <p class="about-paragraph align-left" style="--delay: 1">
+            我正在学习全栈开发。<br />
+            喜欢造轮子，喜欢架构，<br />
+            喜欢那种把事情一点点构建起来的感觉。
+          </p>
+
+          <div class="about-paragraph align-left about-list-section" style="--delay: 2">
+            <p>这里分享：</p>
+            <ul class="about-list blue-dots">
+              <li>关于代码和系统的思考</li>
+              <li>关于学习的记录</li>
+              <li>不成熟但认真的技术尝试</li>
+            </ul>
+          </div>
+
+          <p class="about-paragraph align-left" style="--delay: 3">
+            我开始写博客，<br />
+            是想给未来的自己留下些什么。<br />
+            如果不写下来，它们会慢慢消失。
+          </p>
+        </div>
+
+        <!-- 中间分隔线 -->
+        <div class="dialogue-divider">
+          <div class="dialogue-line"></div>
+        </div>
+
+        <!-- 右：情感 / 粉 -->
+        <div class="dialogue-right">
+          <div class="dialogue-label pink-label">情绪与挣扎</div>
+
+          <p class="about-paragraph align-right" style="--delay: 1.5">
+            我常觉得自己是多余的，<br />
+            世界上有那么多独特的感官，<br />
+            好像我天生就是感受痛苦与恶意的那一个。
+          </p>
+
+          <div class="about-paragraph align-right about-list-section" style="--delay: 2.5">
+            <p>这里记录：</p>
+            <ul class="about-list pink-dots">
+              <li>关于生活的碎片</li>
+              <li>关于情绪的自白</li>
+              <li>以及很多遥不可及的愿望</li>
+            </ul>
+          </div>
+
+          <p class="about-paragraph align-right" style="--delay: 3.5">
+            我亲手全栈写完整个系统，<br />
+            为了摆脱 「别人的」 框架，<br />
+            为了证明自己的存在、价值
+          </p>
+        </div>
+      </div>
+
+      <!-- 分隔线 -->
+      <div class="about-paragraph about-divider-wrap" style="--delay: 4">
+        <div class="about-divider"></div>
+      </div>
+
+      <!-- 结尾寄语 -->
+      <div class="about-paragraph about-closing" style="--delay: 5">
+        <p>
+          如果你愿意，<br />
+          可以在这里停留一会。
+        </p>
+        <span class="quote-mark quote-close" set:html={closeQuote.default}></span>
+      </div>
+    </div>
+
+    <!-- 社交链接 -->
+    <footer class="about-footer" style="--delay: 6">
+      <p class="footer-hint">找到我</p>
+      <div class="social-links">
+        {socialLinks.map((link) => (
+          <a
+            href={link.url}
+            target="_blank"
+            rel="noopener"
+            class="social-link"
+            title={link.name}
+            style={`--brand-color: ${link.color}`}
+          >
+            {link.name}
+          </a>
+        ))}
+      </div>
+    </footer>
+  </article>
+
+  <MusicPlayer />
+</BlogLayout>
+
+<style lang="scss">
+  .about-page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 $spacing-lg $spacing-xxl * 2;
+    min-height: 100vh;
+  }
+
+  // ====== 页头 ======
+  .about-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $spacing-lg;
+    padding-top: 100px;
+    opacity: 0;
+    animation: fade-down 700ms $ease-gentle 100ms forwards;
+  }
+
+  @keyframes fade-down {
+    from {
+      opacity: 0;
+      transform: translateY(-12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .avatar-wrap {
+    position: relative;
+  }
+
+  .avatar-glow {
+    position: absolute;
+    inset: -5px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, $lian-pink, $lian-blue);
+    opacity: 0.35;
+    filter: blur(10px);
+    animation: glow-breathe 4s ease-in-out infinite;
+  }
+
+  @keyframes glow-breathe {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.04); }
+  }
+
+  .avatar {
+    position: relative;
+    width: 128px;
+    height: 128px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid $lian-white;
+    box-shadow: $shadow-pink;
+  }
+
+  .greeting {
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-bold;
+    color: $lian-text;
+    margin: 0;
+    text-align: center;
+  }
+
+  .name-highlight {
+    color: $lian-pink;
+  }
+
+  // ====== 正文 ======
+  .about-body {
+    margin-top: $spacing-xxl;
+  }
+
+  // 引号装饰
+  .quote-mark {
+    display: block;
+    line-height: 0;
+
+    :global(svg) {
+      width: 28px;
+      height: 28px;
+    }
+
+    :global(svg path) {
+      fill: currentColor;
+    }
+  }
+
+  .quote-open {
+    color: $lian-blue;
+    opacity: 0.25;
+    margin-bottom: $spacing-sm;
+  }
+
+  .quote-close {
+    color: $lian-pink;
+    opacity: 0.25;
+    margin-top: $spacing-sm;
+    text-align: right;
+  }
+
+  // 开头段落
+  .about-opening {
+    position: relative;
+
+    p {
+      margin: 0;
+    }
+  }
+
+  .about-paragraph {
+    font-size: $font-size-base;
+    color: $lian-text;
+    line-height: $line-height-relaxed;
+    margin: 0 0 $spacing-xl;
+    
+    // 逐段淡入
+    opacity: 0;
+    transform: translateY(20px);
+    animation: paragraph-enter 600ms $ease-gentle forwards;
+    animation-delay: calc(var(--delay, 0) * 180ms + 400ms);
+  }
+
+  @keyframes paragraph-enter {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  // ====== 双栏对话 ======
+  .about-dialogue {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0 $spacing-xl;
+    margin: $spacing-lg 0;
+  }
+
+  .dialogue-left {
+    text-align: left;
+  }
+
+  .dialogue-right {
+    text-align: right;
+  }
+
+  .align-left {
+    text-align: left;
+  }
+
+  .align-right {
+    text-align: right;
+  }
+
+  .dialogue-label {
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: $spacing-lg;
+    opacity: 0;
+    animation: paragraph-enter 600ms $ease-gentle 500ms forwards;
+
+    &.blue-label {
+      color: $lian-blue;
+    }
+
+    &.pink-label {
+      color: $lian-pink;
+    }
+  }
+
+  // 中间分隔线
+  .dialogue-divider {
+    display: flex;
+    justify-content: center;
+    padding-top: $spacing-xl;
+  }
+
+  .dialogue-line {
+    width: 1px;
+    height: 100%;
+    background: linear-gradient(
+      180deg,
+      $lian-blue 0%,
+      $lian-pink 100%
+    );
+    opacity: 0.3;
+  }
+
+  // 列表
+  .about-list-section p {
+    margin: 0 0 $spacing-sm;
+  }
+
+  .about-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+
+    li {
+      position: relative;
+      padding-left: $spacing-md;
+      color: $lian-text-light;
+      font-size: $font-size-sm;
+
+      &::before {
+        content: "";
+        position: absolute;
+        left: 4px;
+        top: 0.65em;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        opacity: 0.6;
+      }
+    }
+
+    &.blue-dots li::before {
+      background: $lian-blue;
+    }
+
+    &.pink-dots li {
+      padding-left: 0;
+      padding-right: $spacing-md;
+
+      &::before {
+        left: auto;
+        right: 4px;
+        background: $lian-pink;
+      }
+    }
+  }
+
+  // 分隔线
+  .about-divider-wrap {
+    display: flex;
+    justify-content: center;
+  }
+
+  .about-divider {
+    width: 48px;
+    height: 2px;
+    background: linear-gradient(90deg, $lian-pink, $lian-blue);
+    border-radius: 1px;
+  }
+
+  // 结尾寄语
+  .about-closing {
+    position: relative;
+    text-align: center;
+    font-size: $font-size-lg;
+    font-style: italic;
+    color: $lian-pink;
+    line-height: $line-height-relaxed;
+
+    p {
+      margin: 0;
+    }
+  }
+
+  // ====== 社交链接 ======
+  .about-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $spacing-md;
+    padding-top: $spacing-lg;
+
+    opacity: 0;
+    transform: translateY(20px);
+    animation: paragraph-enter 600ms $ease-gentle forwards;
+    animation-delay: calc(var(--delay, 0) * 180ms + 400ms);
+  }
+
+  .footer-hint {
+    font-size: $font-size-sm;
+    color: $lian-text-muted;
+    margin: 0;
+    letter-spacing: 0.1em;
+  }
+
+  .social-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: $spacing-xs $spacing-sm;
+  }
+
+  .social-link {
+    font-size: $font-size-sm;
+    color: $lian-text-light;
+    text-decoration: none;
+    padding: 6px 14px;
+    border-radius: $radius-sm;
+    border: 1px solid $lian-border;
+    transition:
+      color $transition-fast $ease-gentle,
+      border-color $transition-fast $ease-gentle,
+      background $transition-fast $ease-gentle;
+
+    &:hover {
+      color: var(--brand-color, $lian-blue);
+      border-color: var(--brand-color, $lian-blue);
+      background: rgba(0, 0, 0, 0.02);
+    }
+  }
+
+  // 响应式
+  @media (max-width: $container-sm) {
+    .about-page {
+      padding: 0 $spacing-md $spacing-xxl;
+    }
+
+    .about-header {
+      padding-top: 80px;
+    }
+
+    .avatar {
+      width: 100px;
+      height: 100px;
+    }
+
+    .greeting {
+      font-size: $font-size-xl;
+    }
+
+    // 小屏双栏变单栏
+    .about-dialogue {
+      grid-template-columns: 1fr;
+      gap: $spacing-lg 0;
+    }
+
+    .dialogue-divider {
+      display: none;
+    }
+
+    .dialogue-right {
+      text-align: left;
+    }
+
+    .align-right {
+      text-align: left;
+    }
+
+    .about-list.pink-dots li {
+      padding-left: $spacing-md;
+      padding-right: 0;
+
+      &::before {
+        left: 4px;
+        right: auto;
+      }
+    }
+  }
+</style>
