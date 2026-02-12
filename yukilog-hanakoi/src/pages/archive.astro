@@ -1,0 +1,440 @@
+---
+// ================================
+// 归档页面
+// Hero + 时间轴（按年份分组）
+// ================================
+
+import BlogLayout from "../layouts/BlogLayout.astro";
+import PageHero from "../components/shared/PageHero.astro";
+
+import archiveIcon from "../assets/icon/nav/archive.svg?raw";
+
+// ================================
+// 占位数据，后续接入后端 API
+// ================================
+const archiveData = [
+  {
+    year: 2026,
+    posts: [
+      { title: "YukiLog 前端架构复盘", slug: "yukilog-frontend-review", created_at: "2026-02-10", month: 2, day: 10 },
+      { title: "Rust Axum 中间件实践", slug: "rust-axum-middleware", created_at: "2026-02-03", month: 2, day: 3 },
+      { title: "新年的第一篇博客", slug: "first-post-2026", created_at: "2026-01-15", month: 1, day: 15 },
+      { title: "如何从零搭建一个博客系统", slug: "build-blog-from-scratch", created_at: "2026-01-08", month: 1, day: 8 },
+    ],
+  },
+  {
+    year: 2025,
+    posts: [
+      { title: "年终总结：代码与生活", slug: "year-end-2025", created_at: "2025-12-28", month: 12, day: 28 },
+      { title: "深夜的胡思乱想", slug: "midnight-thoughts", created_at: "2025-12-15", month: 12, day: 15 },
+      { title: "Sea-ORM 踩坑日记", slug: "sea-orm-notes", created_at: "2025-11-20", month: 11, day: 20 },
+      { title: "第一次被人夸代码写得好看", slug: "first-code-compliment", created_at: "2025-11-05", month: 11, day: 5 },
+      { title: "关于「造轮子」这件事", slug: "about-reinventing-wheel", created_at: "2025-10-18", month: 10, day: 18 },
+      { title: "Astro 初体验", slug: "astro-first-look", created_at: "2025-09-22", month: 9, day: 22 },
+      { title: "学习全栈的第一个月", slug: "first-month-fullstack", created_at: "2025-09-01", month: 9, day: 1 },
+    ],
+  },
+];
+
+// 统计总文章数
+const totalPosts = archiveData.reduce((sum, y) => sum + y.posts.length, 0);
+---
+
+<BlogLayout title="归档 - YukiLog" stickyNav>
+  <PageHero
+    title="归档"
+    subtitle={`共 ${totalPosts} 篇文章，记录着走过的路`}
+    icon={archiveIcon}
+  />
+
+  <div class="archive-page">
+    <div class="timeline">
+      {archiveData.map((yearGroup, yi) => (
+        <section class="year-group" style={`--yi: ${yi}`}>
+          <!-- 年份标记 - 居中 -->
+          <div class="year-marker">
+            <span class="year-dot"></span>
+            <h2 class="year-label">{yearGroup.year}</h2>
+            <span class="year-count">{yearGroup.posts.length} 篇</span>
+          </div>
+
+          <!-- 文章按月份奇偶分左右 -->
+          <div class="posts-container">
+            {yearGroup.posts.map((post, pi) => (
+              <div
+                class:list={[
+                  "post-item",
+                  post.month % 2 === 1 ? "left" : "right"
+                ]}
+                style={`--pi: ${pi}`}
+              >
+                <div class="post-card">
+                  <time class="post-date">
+                    {String(post.month).padStart(2, '0')}-{String(post.day).padStart(2, '0')}
+                  </time>
+                  <a href={`/posts/${post.slug}`} class="post-title">
+                    {post.title}
+                  </a>
+                </div>
+                <span class="post-dot"></span>
+              </div>
+            ))}
+          </div>
+        </section>
+      ))}
+
+      <!-- 时间轴终点 -->
+      <div class="timeline-end">
+        <span class="end-dot"></span>
+        <span class="end-text">故事从这里开始</span>
+      </div>
+    </div>
+  </div>
+</BlogLayout>
+
+<script>
+  // IntersectionObserver 逐个显示年份分组和文章
+  const yearGroups = document.querySelectorAll<HTMLElement>('.year-group');
+  const timelineEnd = document.querySelector<HTMLElement>('.timeline-end');
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.15 }
+  );
+
+  yearGroups.forEach((g) => observer.observe(g));
+  if (timelineEnd) observer.observe(timelineEnd);
+</script>
+
+<style lang="scss">
+  .archive-page {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: $spacing-xl $spacing-lg $spacing-xxl * 2;
+  }
+
+  // ================================
+  // 居中时间轴
+  // ================================
+  .timeline {
+    position: relative;
+
+    // 中央竖线
+    &::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(
+        to bottom,
+        $lian-blue,
+        $lian-pink 60%,
+        transparent
+      );
+      border-radius: 1px;
+    }
+  }
+
+  // ================================
+  // 年份分组
+  // ================================
+  .year-group {
+    position: relative;
+    margin-bottom: $spacing-xl;
+    opacity: 0;
+    transform: translateY(20px);
+    transition:
+      opacity 600ms $ease-gentle,
+      transform 600ms $ease-gentle;
+
+    &.visible {
+      opacity: 1;
+      transform: translateY(0);
+
+      .post-item {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+  }
+
+  // 年份标记 —— 居中显示
+  .year-marker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-sm;
+    margin-bottom: $spacing-lg;
+    position: relative;
+  }
+
+  .year-dot {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: $lian-blue;
+    border: 3px solid white;
+    box-shadow: $shadow-sm;
+    z-index: 2;
+  }
+
+  .year-label {
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-bold;
+    color: $lian-text;
+    margin: 0;
+    letter-spacing: 0.04em;
+    background: $lian-bg;
+    padding: 0 $spacing-md;
+    position: relative;
+    z-index: 3;
+  }
+
+  .year-count {
+    font-size: $font-size-xs;
+    color: $lian-text-muted;
+    background: rgba($lian-blue, 0.08);
+    padding: 2px 10px;
+    border-radius: 12px;
+    position: relative;
+    z-index: 3;
+  }
+
+  // ================================
+  // 文章容器
+  // ================================
+  .posts-container {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+  }
+
+  // ================================
+  // 文章条目 —— 左右交替
+  // ================================
+  .post-item {
+    display: flex;
+    align-items: center;
+    position: relative;
+    width: 100%;
+
+    // 入场动画
+    opacity: 0;
+    transition:
+      opacity 500ms $ease-gentle,
+      transform 500ms $ease-gentle;
+    transition-delay: calc(var(--pi) * 60ms + 200ms);
+
+    // 时间轴节点 —— 居中
+    .post-dot {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: $lian-pink;
+      z-index: 2;
+      flex-shrink: 0;
+    }
+
+    // 左侧（单数月份）
+    &.left {
+      justify-content: flex-end;
+      padding-right: calc(50% + 24px);
+      transform: translateX(-16px);
+
+      .post-card {
+        text-align: right;
+        flex-direction: row-reverse;
+      }
+    }
+
+    // 右侧（双数月份）
+    &.right {
+      justify-content: flex-start;
+      padding-left: calc(50% + 24px);
+      transform: translateX(16px);
+
+      .post-card {
+        text-align: left;
+      }
+    }
+  }
+
+  // 文章卡片
+  .post-card {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    padding: $spacing-xs $spacing-md;
+    border-radius: $radius-sm;
+    transition: background $transition-fast $ease-gentle;
+
+    &:hover {
+      background: rgba($lian-blue, 0.04);
+    }
+  }
+
+  .post-date {
+    font-size: $font-size-sm;
+    color: $lian-text-muted;
+    font-family: $font-family-code;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .post-title {
+    font-size: $font-size-base;
+    color: $lian-text;
+    text-decoration: none;
+    line-height: $line-height-base;
+    transition: color $transition-fast $ease-gentle;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &:hover {
+      color: $lian-blue;
+    }
+  }
+
+  // ================================
+  // 时间轴终点 —— 居中
+  // ================================
+  .timeline-end {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-sm;
+    position: relative;
+    padding-top: $spacing-md;
+    opacity: 0;
+    transform: translateY(12px);
+    transition:
+      opacity 600ms $ease-gentle 200ms,
+      transform 600ms $ease-gentle 200ms;
+
+    &.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .end-dot {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: $lian-pink;
+    border: 2px solid white;
+    box-shadow: $shadow-sm;
+    z-index: 2;
+  }
+
+  .end-text {
+    font-size: $font-size-sm;
+    color: $lian-text-muted;
+    font-style: italic;
+    background: $lian-bg;
+    padding: 0 $spacing-md;
+    position: relative;
+    z-index: 3;
+  }
+
+  // ================================
+  // 响应式 —— 小屏回退为单列
+  // ================================
+  @media (max-width: $container-md) {
+    .timeline::before {
+      left: 20px;
+      transform: none;
+    }
+
+    .year-marker {
+      justify-content: flex-start;
+      padding-left: 40px;
+    }
+
+    .year-dot {
+      left: 20px;
+      transform: translate(-50%, -50%);
+    }
+
+    .year-label {
+      background: transparent;
+      padding: 0;
+    }
+
+    .post-item {
+      .post-dot {
+        left: 20px;
+        transform: translate(-50%, -50%);
+      }
+
+      &.left,
+      &.right {
+        justify-content: flex-start;
+        padding-left: 48px;
+        padding-right: 0;
+        transform: translateX(-12px);
+
+        .post-card {
+          text-align: left;
+          flex-direction: row;
+        }
+      }
+    }
+
+    .timeline-end {
+      justify-content: flex-start;
+      padding-left: 40px;
+    }
+
+    .end-dot {
+      left: 20px;
+      transform: translate(-50%, -50%);
+    }
+
+    .end-text {
+      background: transparent;
+      padding: 0;
+    }
+  }
+
+  @media (max-width: $container-sm) {
+    .archive-page {
+      padding: $spacing-lg $spacing-sm $spacing-xxl;
+    }
+
+    .year-label {
+      font-size: $font-size-xl;
+    }
+
+    .post-date {
+      font-size: $font-size-xs;
+    }
+
+    .post-title {
+      font-size: $font-size-sm;
+    }
+  }
+</style>
