@@ -217,8 +217,11 @@ pub struct ListPostsQuery {
 ```bash
 GET    /api/public/posts/:slug/comments        - 评论树
 GET    /api/public/posts/:slug/comments/:id   - 懒加载回复
-POST   /api/public/posts/:slug/comments        - 发表评论 (频率限制 10秒 + Gravatar)
+POST   /api/public/posts/:slug/comments        - 发表评论 (频率限制 10秒 + Gravatar + UA解析)
 ```
+
+**访客信息解析**：  
+使用 `woothee` 库自动解析 User-Agent 为可读格式，如 "Desktop Chrome 136.0 · macOS 15"。解析失败时 `visitor_info` 为 `null`。
 
 #### 接口定义
 
