@@ -14,7 +14,7 @@ interface Props {
   index: number;
 }
 
-const { label, href, icon, index } = Astro.props;
+const { label, href, icon, index } = Astro.props as Props;
 const isActive = Astro.url.pathname === href;
 const isHome = href === '/';
 
