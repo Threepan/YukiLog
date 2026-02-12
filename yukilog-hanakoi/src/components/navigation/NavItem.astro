@@ -13,46 +13,73 @@ interface Props {
 
 const { label, href, icon, index } = Astro.props;
 const isActive = Astro.url.pathname === href;
+const isHome = href === '/';
+
+// 动态导入图标
+const icons: Record<string, any> = {
+  home: await import('../../assets/icon/nav/home.svg?raw'),
+  theme: await import('../../assets/icon/nav/theme.svg?raw'),
+  archive: await import('../../assets/icon/nav/archive.svg?raw'),
+  tag: await import('../../assets/icon/nav/tag.svg?raw'),
+  links: await import('../../assets/icon/nav/links.svg?raw'),
+  about: await import('../../assets/icon/nav/about.svg?raw'),
+};
+
+const iconSvg = icon && icons[icon] ? icons[icon].default : null;
 ---
 
 <a
   href={href}
   class:list={['nav-item', { active: isActive }]}
   style={`--index: ${index}`}
+  onclick={isHome ? "event.preventDefault(); location.reload(true);" : undefined}
 >
-  {icon && <span class="nav-icon" data-icon={icon}></span>}
+  {iconSvg && (
+    <span class="nav-icon" set:html={iconSvg}></span>
+  )}
   <span class="nav-label">{label}</span>
 </a>
 
 <style lang="scss">
 .nav-item {
+  position: relative;
   display: flex;
   align-items: center;
   gap: $spacing-xs;
   padding: $spacing-sm $spacing-md;
-  border-radius: $radius-md;
   color: $lian-text;
   font-weight: $font-weight-medium;
   font-size: $font-size-base;
   text-decoration: none;
-  transition: 
-    background-color $transition-fast $ease-out,
-    color $transition-fast $ease-out,
-    transform $transition-fast $ease-out;
+  white-space: nowrap;
+  transition: color $transition-base $ease-gentle;
   
-  // 滑入动画（从右往左 40px）
-  .navbar:hover & {
-    animation: nav-item-slide-in $transition-base $ease-gentle calc(var(--index) * 50ms) both;
+  // 下划线（从左到右，宽度缩短）
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 15%;
+    width: 0;
+    height: 2px;
+    background: currentColor;
+    transition: width $transition-base $ease-gentle;
   }
   
   &:hover {
-    background: $lian-bg;
-    transform: translateY(-2px);
+    color: $lian-blue;
+    
+    &::after {
+      width: 70%;
+    }
   }
   
   &.active {
-    color: $lian-blue;
-    background: rgba($lian-blue, 0.1);
+    color: $lian-pink;
+    
+    &::after {
+      width: 70%;
+    }
   }
 }
 
@@ -62,15 +89,17 @@ const isActive = Astro.url.pathname === href;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   
-  // 图标占位（后期用 SVG 替换）
-  &::before {
-    content: attr(data-icon);
-    font-size: $font-size-xs;
+  :global(svg) {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
   }
 }
 
 .nav-label {
+  position: relative;
   line-height: 1;
 }
 </style>
