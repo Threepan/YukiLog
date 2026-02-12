@@ -16,7 +16,8 @@ const closeQuote = await import('../../assets/icon/ui/closing-quotation-mark.svg
     <span class="hitokoto-label">一言</span>
     <button class="hitokoto-refresh" id="hitokoto-refresh" aria-label="换一条" title="换一条">
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+        <polyline points="1 4 1 10 7 10"/>
+        <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
       </svg>
     </button>
   </div>
@@ -89,21 +90,9 @@ const closeQuote = await import('../../assets/icon/ui/closing-quotation-mark.svg
   transition: color $transition-base $ease-gentle,
               background $transition-base $ease-gentle;
   
-  svg {
-    transition: transform 400ms cubic-bezier(0.22, 0.61, 0.36, 1);
-  }
-  
   &:hover {
     color: $lian-blue;
     background: $lian-bg;
-    
-    svg {
-      transform: rotate(90deg);
-    }
-  }
-  
-  &:active svg {
-    transform: rotate(180deg);
   }
 }
 
@@ -144,10 +133,10 @@ const closeQuote = await import('../../assets/icon/ui/closing-quotation-mark.svg
   margin: 0;
   flex: 1;
   min-height: 1.6em;
-  transition: opacity 300ms $ease-gentle;
+  transition: opacity 200ms $ease-gentle;
   
   &.loading {
-    opacity: 0.4;
+    opacity: 0;
   }
 }
 
@@ -168,10 +157,10 @@ const closeQuote = await import('../../assets/icon/ui/closing-quotation-mark.svg
   font-size: $font-size-sm;
   color: $lian-text-light;
   font-style: italic;
-  transition: opacity 300ms $ease-gentle;
+  transition: opacity 200ms $ease-gentle;
   
   &.loading {
-    opacity: 0.4;
+    opacity: 0;
   }
 }
 
@@ -199,9 +188,12 @@ const closeQuote = await import('../../assets/icon/ui/closing-quotation-mark.svg
     
     const fromEl = sourceEl.querySelector('.hitokoto-from');
     
-    // 加载态
+    // 加载态 - 模糊消失
     textEl.classList.add('loading');
     if (fromEl) fromEl.classList.add('loading');
+    
+    // 等淡出动画完成后再更新内容
+    await new Promise(r => setTimeout(r, 200));
 
     try {
       const res = await fetch('https://v1.hitokoto.cn/?c=a');
