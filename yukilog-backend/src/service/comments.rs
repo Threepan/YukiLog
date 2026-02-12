@@ -1,11 +1,13 @@
-use sea_orm::DatabaseConnection;
 use chrono::{DateTime, FixedOffset};
+use sea_orm::DatabaseConnection;
 use serde::{Deserialize, Serialize};
 use woothee::parser::Parser;
 
 use crate::domain::status::CommentStatus;
 use crate::repo;
-use crate::repo::comments::{CreateComment as RepoCreateComment, UpdateComment as RepoUpdateComment};
+use crate::repo::comments::{
+    CreateComment as RepoCreateComment, UpdateComment as RepoUpdateComment,
+};
 use crate::service::error::{ServiceError, ServiceResult};
 use crate::service::posts;
 
@@ -26,14 +28,14 @@ pub struct Comment {
     pub status: CommentStatus,
     pub ip: Option<String>,
     pub ua: Option<String>,
-    pub visitor_info: Option<String>,  // 解析后的访客信息（如 "上海 · Desktop Chrome 136.0 · macOS 15"）
+    pub visitor_info: Option<String>, // 解析后的访客信息（如 "上海 · Desktop Chrome 136.0 · macOS 15"）
     pub created_at: DateTime<FixedOffset>,
 }
 
 impl From<repo::comments::CommentDto> for Comment {
     fn from(dto: repo::comments::CommentDto) -> Self {
         let visitor_info = parse_visitor_info(dto.ua.as_deref());
-        
+
         Self {
             id: dto.id,
             post_id: dto.post_id.unwrap_or(0),
@@ -95,8 +97,8 @@ pub struct AdminCommentFilter {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum CommentSortBy {
-    CreatedAtAsc,   // 时间正序（评论常用）
-    CreatedAtDesc,  // 时间倒序
+    CreatedAtAsc,  // 时间正序（评论常用）
+    CreatedAtDesc, // 时间倒序
 }
 
 // ================================
@@ -104,7 +106,7 @@ pub enum CommentSortBy {
 // ================================
 
 /// 1. 创建评论（前台）
-/// 
+///
 /// 逻辑：
 /// - 通过 post_slug 查询 post_id
 /// - 验证文章存在且已发布（draft 不允许评论）
@@ -122,7 +124,7 @@ pub async fn create_comment(
     // 2. 如果是回复，验证父评论存在且属于同一文章
     let (parent_id, root_id) = if let Some(pid) = input.parent_id {
         let parent = repo::comments::get_comment_by_id(db, pid).await?;
-        
+
         // 验证父评论属于同一文章
         if parent.post_id != Some(post.id) {
             return Err(ServiceError::InvalidInput(
@@ -177,7 +179,8 @@ pub async fn list_post_comments(
         sort_asc,
         None,
         None,
-    ).await?;
+    )
+    .await?;
     Ok(dtos.into_iter().map(Into::into).collect())
 }
 
@@ -196,10 +199,7 @@ pub async fn get_post_comment_tree(
 
 #[allow(dead_code)]
 /// 4. 获取评论详情
-pub async fn get_comment_by_id(
-    db: &DatabaseConnection,
-    id: i64,
-) -> ServiceResult<Comment> {
+pub async fn get_comment_by_id(db: &DatabaseConnection, id: i64) -> ServiceResult<Comment> {
     let dto = repo::comments::get_comment_by_id(db, id).await?;
     Ok(dto.into())
 }
@@ -222,15 +222,13 @@ pub async fn list_all_comments(
         sort_asc,
         filter.count,
         filter.page,
-    ).await?;
+    )
+    .await?;
     Ok(dtos.into_iter().map(Into::into).collect())
 }
 
 /// 6. 审核评论：通过
-pub async fn approve_comment(
-    db: &DatabaseConnection,
-    id: i64,
-) -> ServiceResult<Comment> {
+pub async fn approve_comment(db: &DatabaseConnection, id: i64) -> ServiceResult<Comment> {
     let update_input = RepoUpdateComment {
         status: Some(Some(CommentStatus::Approved)),
         ..Default::default()
@@ -240,10 +238,7 @@ pub async fn approve_comment(
 }
 
 /// 7. 审核评论：拒绝（标记为垃圾）
-pub async fn reject_comment(
-    db: &DatabaseConnection,
-    id: i64,
-) -> ServiceResult<Comment> {
+pub async fn reject_comment(db: &DatabaseConnection, id: i64) -> ServiceResult<Comment> {
     let update_input = RepoUpdateComment {
         status: Some(Some(CommentStatus::Spam)),
         ..Default::default()
@@ -270,12 +265,9 @@ pub async fn update_comment(
 }
 
 /// 9. 删除评论（后台）
-/// 
+///
 /// 子评论会被 DB CASCADE 删除
-pub async fn delete_comment(
-    db: &DatabaseConnection,
-    id: i64,
-) -> ServiceResult<()> {
+pub async fn delete_comment(db: &DatabaseConnection, id: i64) -> ServiceResult<()> {
     repo::comments::delete_comment(db, id).await?;
     Ok(())
 }
@@ -285,11 +277,9 @@ pub async fn list_comment_replies(
     db: &DatabaseConnection,
     parent_id: i64,
 ) -> ServiceResult<Vec<Comment>> {
-    let dtos = repo::comments::list_comment_replies(
-        db,
-        parent_id,
-        CommentStatus::Approved.as_str(),
-    ).await?;
+    let dtos =
+        repo::comments::list_comment_replies(db, parent_id, CommentStatus::Approved.as_str())
+            .await?;
     Ok(dtos.into_iter().map(Into::into).collect())
 }
 
@@ -348,18 +338,18 @@ fn build_comment_tree(comments: Vec<Comment>) -> Vec<CommentNode> {
 }
 
 /// 解析 User-Agent 为可读的访客信息
-/// 
+///
 /// # 参数
-/// 
+///
 /// * `ua` - User-Agent 字符串
-/// 
+///
 /// # 返回
-/// 
+///
 /// * `Some(String)` - 解析成功，返回如 "Desktop Chrome 136.0 · macOS 15"
 /// * `None` - UA 为空或解析失败
-/// 
+///
 /// # 示例
-/// 
+///
 /// ```rust
 /// let ua = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)...";
 /// let info = parse_visitor_info(Some(ua));
@@ -367,10 +357,10 @@ fn build_comment_tree(comments: Vec<Comment>) -> Vec<CommentNode> {
 /// ```
 fn parse_visitor_info(ua: Option<&str>) -> Option<String> {
     let ua_str = ua?;
-    
+
     let parser = Parser::new();
     let result = parser.parse(ua_str)?;
-    
+
     // 设备类型
     let device_type = match result.category {
         "pc" => "Desktop",
@@ -380,14 +370,14 @@ fn parse_visitor_info(ua: Option<&str>) -> Option<String> {
         "crawler" => "Bot",
         _ => "Unknown",
     };
-    
+
     // 浏览器
     let browser = if result.name.is_empty() {
         "Unknown".to_string()
     } else {
         format!("{} {}", result.name, result.version)
     };
-    
+
     // 操作系统
     let os = if result.os.is_empty() {
         "Unknown OS".to_string()
@@ -396,6 +386,6 @@ fn parse_visitor_info(ua: Option<&str>) -> Option<String> {
     } else {
         format!("{} {}", result.os, result.os_version)
     };
-    
+
     Some(format!("{} {} · {}", device_type, browser, os))
 }
