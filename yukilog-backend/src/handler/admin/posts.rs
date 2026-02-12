@@ -13,7 +13,7 @@ use crate::handler::{
 use crate::service::{
     self,
     error::ServiceError,
-    posts::{CreatePostInput, Post, PostFilter, PostSortBy, UpdatePostInput},
+    posts::{CreatePostInput, Post, PostFilter, PostSortBy, UpdatePostInput, PostWithRelations},
 };
 
 // ================================
@@ -111,7 +111,7 @@ pub async fn list_posts(
     State(state): State<AppState>,
     Extension(claims): Extension<Claims>,
     Query(params): Query<ListPostsQuery>,
-) -> Result<Json<ApiResponse<PagedData<Post>>>, ServiceError> {
+) -> Result<Json<ApiResponse<PagedData<PostWithRelations>>>, ServiceError> {
     tracing::debug!("Admin {} listing posts", claims.sub);
 
     let page = params.page.unwrap_or(1).max(1);
@@ -139,8 +139,8 @@ pub async fn list_posts(
         page: Some(page),
     };
 
-    // 获取文章列表
-    let posts = service::posts::list_posts(&state.db, filter.clone()).await?;
+    // 获取文章列表（含关联数据）
+    let posts = service::posts::list_posts_with_relations(&state.db, filter.clone()).await?;
 
     // 获取总数（SELECT COUNT(*)）
     let count_filter = PostFilter {
@@ -285,4 +285,36 @@ pub async fn delete_post(
 
     service::posts::delete_post(&state.db, &slug).await?;
     Ok(no_content())
+}
+
+/// GET /api/admin/posts/:slug
+///
+/// 获取单篇文章详情（含草稿）
+///
+/// # 路径参数
+///
+/// - `slug`: 文章 slug
+///
+/// # 响应
+///
+/// ```json
+/// {
+///   "success": true,
+///   "data": {
+///     "post": { "id": 1, "title": "...", ... },
+///     "theme": { "id": 1, "name": "Tech", ... },
+///     "tags": [ { "id": 1, "name": "Rust", ... } ]
+///   }
+/// }
+/// ```
+pub async fn get_post(
+    State(state): State<AppState>,
+    Extension(claims): Extension<Claims>,
+    Path(slug): Path<String>,
+) -> Result<Json<ApiResponse<PostWithRelations>>, ServiceError> {
+    tracing::debug!("Admin {} getting post: {}", claims.sub, slug);
+
+    // 获取文章及关联数据（include_draft = true，管理员可以看草稿）
+    let post_with_rels = service::posts::get_post_with_relations(&state.db, &slug, true).await?;
+    Ok(ok(post_with_rels))
 }
