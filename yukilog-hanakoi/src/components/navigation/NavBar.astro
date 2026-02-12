@@ -6,30 +6,76 @@
 
 import { navItems } from '../../lib/config.ts';
 import NavItem from './NavItem.astro';
+
+// 导入右侧图标
+const lightIcon = await import('../../assets/icon/ui/light.svg?raw');
+const dartIcon = await import('../../assets/icon/ui/dart.svg?raw');
+const searchIcon = await import('../../assets/icon/ui/search.svg?raw');
+
+// 为固定元素的SVG生成唯一ID，避免与navbar内部SVG的mask ID冲突
+function deduplicateSvgIds(svg: string, suffix: string): string {
+  return svg
+    .replace(/id='([^']+)'/g, (_, id) => `id='${id}${suffix}'`)
+    .replace(/url\(#([^)]+)\)/g, (_, id) => `url(#${id}${suffix})`);
+}
+const lightIconFixed = deduplicateSvgIds(lightIcon.default, '_fixed');
+const searchIconFixed = deduplicateSvgIds(searchIcon.default, '_fixed');
 ---
 
 <nav class="navbar" id="navbar">
   <div class="navbar-container">
-    {navItems.map((item, index) => (
-      <NavItem {...item} index={index} />
-    ))}
+    <div class="navbar-inner-logo">YukiLog</div>
+    
+    <div class="navbar-items">
+      {navItems.map((item, index) => (
+        <NavItem {...item} index={index} />
+      ))}
+    </div>
+    
+    <div class="navbar-inner-actions">
+      <button class="navbar-action-btn" aria-label="切换主题">
+        <span set:html={lightIcon.default}></span>
+      </button>
+      <button class="navbar-action-btn" aria-label="搜索">
+        <span set:html={searchIcon.default}></span>
+      </button>
+    </div>
   </div>
 </nav>
 
+<div class="navbar-fixed-elements" id="navbar-fixed">
+  <div class="navbar-logo">YukiLog</div>
+  
+  <div class="navbar-actions">
+    <button class="navbar-action-btn" id="theme-toggle" aria-label="切换主题">
+      <span set:html={lightIconFixed}></span>
+    </button>
+    <button class="navbar-action-btn" id="search-toggle" aria-label="搜索">
+      <span set:html={searchIconFixed}></span>
+    </button>
+  </div>
+</div>
+
 <style lang="scss">
+// 导航栏容器
 .navbar {
   position: fixed;
   top: 0;
-  left: 0;
-  right: 0;
-  height: 7vh;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  height: 50px;
+  background: $lian-white;
   z-index: $z-nav;
   opacity: 0;
-  transition: opacity $transition-base $ease-gentle;
   pointer-events: none;
+  transition: opacity 400ms $ease-gentle,
+              width 500ms cubic-bezier(0.22, 0.61, 0.36, 1),
+              border-radius 500ms cubic-bezier(0.22, 0.61, 0.36, 1),
+              top 500ms cubic-bezier(0.22, 0.61, 0.36, 1),
+              box-shadow 500ms $ease-gentle;
   
-  &:hover,
-  &.visible {
+  &.active {
     opacity: 1;
     pointer-events: auto;
   }
@@ -37,31 +83,171 @@ import NavItem from './NavItem.astro';
   &.sticky {
     opacity: 1;
     pointer-events: auto;
-    background: rgba($lian-white, 0.95);
-    backdrop-filter: blur(10px);
-    box-shadow: $shadow-sm;
+    width: auto;
+    top: 10px;
+    border-radius: $radius-xl;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1), 0 1px 6px rgba(0, 0, 0, 0.06);
   }
 }
 
 .navbar-container {
-  max-width: $container-xl;
   height: 100%;
   margin: 0 auto;
   padding: 0 $spacing-lg;
   display: flex;
   align-items: center;
-  gap: $spacing-lg;
+  justify-content: center;
+  gap: $spacing-md;
+}
+
+// 固定显示的 Logo 和操作图标
+.navbar-fixed-elements {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50px;
+  pointer-events: none;
+  z-index: $z-nav + 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 $spacing-xl;
+  transition: opacity 400ms $ease-gentle;
+  
+  // sticky时隐藏（logo和图标收入navbar内部）
+  &.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+// 左侧 Logo（始终显示）
+.navbar-logo {
+  font-size: 1.5rem;
+  font-weight: $font-weight-bold;
+  color: $lian-text;
+  flex-shrink: 0;
+  pointer-events: auto;
+  white-space: nowrap;
+}
+
+// 内部Logo（仅sticky时显示）
+.navbar-inner-logo {
+  font-size: 1.5rem;
+  font-weight: $font-weight-bold;
+  color: $lian-text;
+  flex-shrink: 0;
+  white-space: nowrap;
+  display: none;
+  
+  .navbar.sticky & {
+    display: block;
+  }
+}
+
+// 内部操作图标（仅sticky时显示）
+.navbar-inner-actions {
+  display: none;
+  align-items: center;
+  gap: $spacing-sm;
+  flex-shrink: 0;
+  
+  .navbar.sticky & {
+    display: flex;
+  }
+}
+
+// 中间导航项（标签动画独立控制）
+.navbar-items {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+// 单个标签的滑入动画（使用 :global 穿透 Astro 作用域）
+.navbar :global(.nav-item) {
+  opacity: 0;
+  transform: translateX(40px);
+  transition: color 200ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.navbar.active :global(.nav-item),
+.navbar.sticky :global(.nav-item) {
+  animation: nav-item-enter 600ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  transition: color 200ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+// 为每个标签设置不同的延迟
+@for $i from 0 through 5 {
+  .navbar.active :global(.nav-item:nth-child(#{$i + 1})),
+  .navbar.sticky :global(.nav-item:nth-child(#{$i + 1})) {
+    animation-delay: #{$i * 150}ms;
+  }
+}
+
+@keyframes nav-item-enter {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+// 右侧操作图标（始终显示）
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  flex-shrink: 0;
+  pointer-events: auto;
+  
+  // 固定元素中的按钮用白色（在暗背景上）
+  .navbar-action-btn {
+    color: $lian-text;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: $lian-blue;
+    }
+  }
+}
+
+.navbar-action-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  color: $lian-text;
+  cursor: pointer;
+  border-radius: $radius-sm;
+  transition: all $transition-fast $ease-out;
+  
+  :global(svg) {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+  }
+  
+  &:hover {
+    background: $lian-bg;
+    color: $lian-blue;
+  }
 }
 
 // 响应式
 @media (max-width: $container-md) {
-  .navbar {
-    height: 60px;
-  }
-  
-  .navbar-container {
+  .navbar-container,
+  .navbar-fixed-elements {
     padding: 0 $spacing-md;
-    gap: $spacing-md;
   }
 }
 </style>
@@ -69,26 +255,31 @@ import NavItem from './NavItem.astro';
 <script>
   // 导航栏显隐逻辑
   const navbar = document.getElementById('navbar');
-  if (!navbar) throw new Error('Navbar not found');
+  const navbarFixed = document.getElementById('navbar-fixed');
+  if (!navbar || !navbarFixed) throw new Error('Navbar not found');
 
-  // 监听滚动，判断是否需要 sticky 样式
+  // 使用实际视口高度作为阈值
+  const getThreshold = () => window.innerHeight;
+
+  // 监听滚动
   window.addEventListener('scroll', () => {
-    const scrollY = window.scrollY;
-    
-    // 滚动超过 1080px (第二屏) 后变为 sticky
-    if (scrollY > 1080) {
+    const threshold = getThreshold();
+    if (window.scrollY >= threshold) {
       navbar.classList.add('sticky');
+      navbarFixed.classList.add('hidden');
     } else {
       navbar.classList.remove('sticky');
+      navbarFixed.classList.remove('hidden');
     }
   });
 
   // 鼠标靠近顶部时显示
   document.addEventListener('mousemove', (e) => {
-    if (e.clientY < 100 && window.scrollY < 1080) {
-      navbar.classList.add('visible');
-    } else if (window.scrollY < 1080) {
-      navbar.classList.remove('visible');
+    const threshold = getThreshold();
+    if (e.clientY < 80 && window.scrollY < threshold) {
+      navbar.classList.add('active');
+    } else if (window.scrollY < threshold) {
+      navbar.classList.remove('active');
     }
   });
 </script>
