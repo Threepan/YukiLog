@@ -8,6 +8,7 @@ import MusicPlayer from "../components/shared/MusicPlayer.astro";
 import WelcomeCard from "../components/home/WelcomeCard.astro";
 import ProfileCard from "../components/home/ProfileCard.astro";
 import HitokotoCard from "../components/home/HitokotoCard.astro";
+import SiteInfoCard from "../components/home/SiteInfoCard.astro";
 
 // 箭头图标
 const arrowIcon = await import('../assets/icon/ui/arrow.svg?raw');
@@ -48,6 +49,7 @@ const randomBackground =
       <!-- 右侧栏 -->
       <aside class="sidebar sidebar-right">
         <HitokotoCard />
+        <SiteInfoCard />
       </aside>
     </div>
   </div>
@@ -204,4 +206,7 @@ const randomBackground =
   
   const hitokotoCard = document.getElementById('hitokoto-card');
   if (hitokotoCard) observer.observe(hitokotoCard);
+  
+  const siteinfoCard = document.getElementById('siteinfo-card');
+  if (siteinfoCard) observer.observe(siteinfoCard);
 </script>
