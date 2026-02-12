@@ -9,6 +9,7 @@ import WelcomeCard from "../components/home/WelcomeCard.astro";
 import ProfileCard from "../components/home/ProfileCard.astro";
 import HitokotoCard from "../components/home/HitokotoCard.astro";
 import SiteInfoCard from "../components/home/SiteInfoCard.astro";
+import ArticleList from "../components/home/ArticleList.astro";
 
 // 箭头图标
 const arrowIcon = await import('../assets/icon/ui/arrow.svg?raw');
@@ -40,6 +41,7 @@ const randomBackground =
   </div>
   
   <div class="home-second-screen" id="second-screen">
+    <ArticleList />
   </div>
   
   <!-- 固定侧栏卡片（与导航栏同步显隐） -->
@@ -142,11 +144,11 @@ const randomBackground =
   }
   
   .fixed-sidebar-left {
-    left: $spacing-xl;
+    left: $spacing-xl * 2;
   }
   
   .fixed-sidebar-right {
-    right: $spacing-xl;
+    right: $spacing-xl * 2;
   }
   
   // 响应式：小屏隐藏固定侧栏

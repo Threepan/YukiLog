@@ -2,10 +2,17 @@
 // ================================
 // 导航栏组件
 // 鼠标靠近后浮出，带圆角和阴影
+// stickyOnly: 非首页直接以岛屿模式展示
 // ================================
 
 import { navItems } from '../../lib/config.ts';
 import NavItem from './NavItem.astro';
+
+interface Props {
+  stickyOnly?: boolean;
+}
+
+const { stickyOnly = false } = Astro.props;
 
 // 导入右侧图标
 const lightIcon = await import('../../assets/icon/ui/light.svg?raw');
@@ -22,9 +29,9 @@ const lightIconFixed = deduplicateSvgIds(lightIcon.default, '_fixed');
 const searchIconFixed = deduplicateSvgIds(searchIcon.default, '_fixed');
 ---
 
-<nav class="navbar" id="navbar">
+<nav class="navbar" id="navbar" data-sticky-only={stickyOnly ? 'true' : undefined}>
   <div class="navbar-container">
-    <div class="navbar-inner-logo">YukiLog</div>
+    <a href="/" class="navbar-inner-logo">YukiLog</a>
     
     <div class="navbar-items">
       {navItems.map((item, index) => (
@@ -44,7 +51,7 @@ const searchIconFixed = deduplicateSvgIds(searchIcon.default, '_fixed');
 </nav>
 
 <div class="navbar-fixed-elements" id="navbar-fixed">
-  <div class="navbar-logo">YukiLog</div>
+  <a href="/" class="navbar-logo">YukiLog</a>
   
   <div class="navbar-actions">
     <button class="navbar-action-btn" id="theme-toggle" aria-label="切换主题">
@@ -86,7 +93,7 @@ const searchIconFixed = deduplicateSvgIds(searchIcon.default, '_fixed');
     width: auto;
     top: 10px;
     border-radius: $radius-xl;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1), 0 1px 6px rgba(0, 0, 0, 0.06);
+    box-shadow: $shadow-blue, 0 4px 16px rgba(0, 0, 0, 0.04);
   }
 }
 
@@ -127,9 +134,14 @@ const searchIconFixed = deduplicateSvgIds(searchIcon.default, '_fixed');
   font-size: 1.5rem;
   font-weight: $font-weight-bold;
   color: $lian-text;
+  text-decoration: none;
   flex-shrink: 0;
   pointer-events: auto;
   white-space: nowrap;
+
+  &:hover {
+    color: $lian-blue;
+  }
 }
 
 // 内部Logo（仅sticky时显示）
@@ -137,10 +149,15 @@ const searchIconFixed = deduplicateSvgIds(searchIcon.default, '_fixed');
   font-size: 1.5rem;
   font-weight: $font-weight-bold;
   color: $lian-text;
+  text-decoration: none;
   flex-shrink: 0;
   white-space: nowrap;
   display: none;
   
+  &:hover {
+    color: $lian-blue;
+  }
+
   .navbar.sticky & {
     display: block;
   }
@@ -254,33 +271,39 @@ const searchIconFixed = deduplicateSvgIds(searchIcon.default, '_fixed');
 
 <script>
   // 导航栏显隐逻辑
-  // 进入第二屏的时候应该切换为浮动岛屿样式
-  // 所以这里的代码是对innerHeight进行取值, 然后监听屏幕滚动
   const navbar = document.getElementById('navbar');
   const navbarFixed = document.getElementById('navbar-fixed');
   if (!navbar || !navbarFixed) throw new Error('Navbar not found');
 
-  const getThreshold = () => window.innerHeight;
+  const stickyOnly = navbar.dataset.stickyOnly === 'true';
 
-  // 监听滚动
-  window.addEventListener('scroll', () => {
-    const threshold = getThreshold();
-    if (window.scrollY >= threshold - 50) {
-      navbar.classList.add('sticky');
-      navbarFixed.classList.add('hidden');
-    } else {
-      navbar.classList.remove('sticky');
-      navbarFixed.classList.remove('hidden');
-    }
-  });
+  if (stickyOnly) {
+    // 非首页：直接以岛屿模式展示，隐藏固定元素
+    navbar.classList.add('sticky');
+    navbarFixed.classList.add('hidden');
+  } else {
+    const getThreshold = () => window.innerHeight;
 
-  // 鼠标靠近顶部时显示
-  document.addEventListener('mousemove', (e) => {
-    const threshold = getThreshold();
-    if (e.clientY < 80 && window.scrollY < threshold) {
-      navbar.classList.add('active');
-    } else if (window.scrollY < threshold) {
-      navbar.classList.remove('active');
-    }
-  });
+    // 监听滚动
+    window.addEventListener('scroll', () => {
+      const threshold = getThreshold();
+      if (window.scrollY >= threshold - 50) {
+        navbar.classList.add('sticky');
+        navbarFixed.classList.add('hidden');
+      } else {
+        navbar.classList.remove('sticky');
+        navbarFixed.classList.remove('hidden');
+      }
+    });
+
+    // 鼠标靠近顶部时显示
+    document.addEventListener('mousemove', (e) => {
+      const threshold = getThreshold();
+      if (e.clientY < 80 && window.scrollY < threshold) {
+        navbar.classList.add('active');
+      } else if (window.scrollY < threshold) {
+        navbar.classList.remove('active');
+      }
+    });
+  }
 </script>

@@ -39,6 +39,12 @@ $shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
 $shadow-lg: 0 6px 16px rgba(0, 0, 0, 0.10);
 $shadow-hover: 0 8px 20px rgba(0, 0, 0, 0.12);
 
+// 彩色阴影（左下偏移，描边质感）
+$shadow-pink: -2px 2px 8px rgba(#E8A4B4, 0.25);
+$shadow-pink-hover: -3px 3px 12px rgba(#E8A4B4, 0.4);
+$shadow-blue: -2px 2px 8px rgba(#7EB6D9, 0.25);
+$shadow-blue-hover: -3px 3px 12px rgba(#7EB6D9, 0.4);
+
 // ================================
 // 动画时长（温柔节奏）
 // ================================

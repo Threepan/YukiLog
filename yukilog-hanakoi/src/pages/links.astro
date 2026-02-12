@@ -1,0 +1,181 @@
+---
+// ================================
+// 友链页面 - 信笺风格
+// 导航栏直接以 sticky 岛屿模式展示
+// ================================
+
+import BlogLayout from "../layouts/BlogLayout.astro";
+import FriendSpotlight from "../components/links/FriendSpotlight.astro";
+import FriendCard from "../components/links/FriendCard.astro";
+import ApplyLinkModal from "../components/links/ApplyLinkModal.astro";
+
+// ================================
+// 最好的他（前端硬编码）
+// ================================
+const bestFriend = {
+  name: "Duo 云站",
+  description: "MathForest官方🌲|程序及数学可视化✨|屑魔女游世界🔮",
+  avatar: "https://www.mduo.cloud/elaina_q.jpg",
+  url: "https://www.mduo.cloud/",
+  message: "愿你的梦中常有我相伴",
+};
+
+// ================================
+// 其他友链 - 占位数据，后续接入后端 API
+// ================================
+const friends = [
+  {
+    name: "一只小透明",
+    description: "记录平凡日子里的不平凡",
+    avatar: null,
+    url: "https://example.com/1",
+  },
+  {
+    name: "桜の記録",
+    description: "全栈开发者的技术笔记",
+    avatar: null,
+    url: "https://example.com/2",
+  },
+  {
+    name: "云深不知处",
+    description: "诗和远方的数字花园",
+    avatar: null,
+    url: "https://example.com/3",
+  },
+  {
+    name: "CodeDreamer",
+    description: "把代码写成诗",
+    avatar: null,
+    url: "https://example.com/4",
+  },
+  {
+    name: "月光邮局",
+    description: "收集世界各地的温柔",
+    avatar: null,
+    url: "https://example.com/5",
+  },
+  {
+    name: "像素森林",
+    description: "独立游戏与像素艺术",
+    avatar: null,
+    url: "https://example.com/6",
+  },
+];
+---
+
+<BlogLayout title="友链 - YukiLog" stickyNav>
+  <div class="links-page">
+    <!-- 页头独白 -->
+    <header class="links-header">
+      <p class="links-greeting">能走到这里的人，大概都是温柔的吧。</p>
+      <div class="links-divider"></div>
+    </header>
+
+    <!-- 最好的朋友 Spotlight -->
+    <FriendSpotlight {...bestFriend} />
+
+    <!-- 朋友们 - 散落便签 -->
+    <section class="friends-section">
+      <h2 class="friends-title">朋友们</h2>
+      <div class="friends-grid">
+        {friends.map((friend, i) => (
+          <FriendCard {...friend} index={i} />
+        ))}
+      </div>
+    </section>
+
+    <!-- 申请友链 -->
+    <ApplyLinkModal />
+  </div>
+</BlogLayout>
+
+<style lang="scss">
+  .links-page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 $spacing-lg;
+    min-height: 100vh;
+  }
+
+  // 页头
+  .links-header {
+    padding-top: 80px; // 给 sticky 导航栏留空间
+    text-align: center;
+    opacity: 0;
+    animation: header-enter 700ms $ease-gentle 100ms forwards;
+  }
+
+  @keyframes header-enter {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .links-greeting {
+    font-size: $font-size-lg;
+    color: $lian-text-light;
+    font-style: italic;
+    margin: 0;
+    line-height: $line-height-relaxed;
+  }
+
+  .links-divider {
+    width: 60px;
+    height: 2px;
+    background: linear-gradient(90deg, $lian-pink, $lian-blue);
+    margin: $spacing-lg auto 0;
+    border-radius: 1px;
+  }
+
+  // 朋友们区域
+  .friends-section {
+    padding-top: $spacing-xl;
+  }
+
+  .friends-title {
+    font-size: $font-size-base;
+    font-weight: $font-weight-medium;
+    color: $lian-text-muted;
+    text-align: center;
+    margin: 0 0 $spacing-xl;
+    letter-spacing: 0.15em;
+  }
+
+  .friends-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: $spacing-lg;
+    padding: 0 $spacing-md;
+
+    // 给子元素批量设置入场延迟
+    :global(.friend-card) {
+      @for $i from 0 through 11 {
+        &:nth-child(#{$i + 1}) {
+          --i: #{$i};
+        }
+      }
+    }
+  }
+
+  // 响应式
+  @media (max-width: $container-sm) {
+    .links-page {
+      padding: 0 $spacing-sm;
+    }
+
+    .links-header {
+      padding-top: 70px;
+    }
+
+    .friends-grid {
+      gap: $spacing-md;
+      padding: 0;
+    }
+  }
+</style>

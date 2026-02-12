@@ -32,7 +32,7 @@ const iconSvg = icon && icons[icon] ? icons[icon].default : null;
   href={href}
   class:list={['nav-item', { active: isActive }]}
   style={`--index: ${index}`}
-  onclick={isHome ? "event.preventDefault(); location.reload(true);" : undefined}
+  onclick={isHome && isActive ? "event.preventDefault(); location.reload(true);" : undefined}
 >
   {iconSvg && (
     <span class="nav-icon" set:html={iconSvg}></span>

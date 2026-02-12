@@ -1,0 +1,220 @@
+---
+// ================================
+// 最好的朋友 - Spotlight 聚光灯展示
+// 独占区域，信封/来信隐喻
+// ================================
+
+interface Props {
+  name: string;
+  description: string;
+  avatar: string;
+  url: string;
+  message: string; // 寄语
+}
+
+const { name, description, avatar, url, message } = Astro.props;
+---
+
+<section class="spotlight" id="friend-spotlight">
+  <a href={url} target="_blank" rel="noopener" class="spotlight-card">
+    <!-- 头像 -->
+    <div class="spotlight-avatar-wrap">
+      <div class="spotlight-avatar-glow"></div>
+      <img src={avatar} alt={name} class="spotlight-avatar" loading="eager" />
+    </div>
+
+    <!-- 信息 -->
+    <div class="spotlight-info">
+      <h2 class="spotlight-name">{name}</h2>
+      <p class="spotlight-desc">{description}</p>
+    </div>
+
+    <!-- 寄语 -->
+    <blockquote class="spotlight-message">
+      <span class="quote-mark">"</span>
+      {message}
+      <span class="quote-mark">"</span>
+    </blockquote>
+
+    <!-- 访问提示 -->
+    <span class="spotlight-visit">
+      去看看她的世界
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+    </span>
+  </a>
+</section>
+
+<style lang="scss">
+  .spotlight {
+    display: flex;
+    justify-content: center;
+    padding: $spacing-xxl 0;
+    opacity: 0;
+    transform: translateY(30px);
+    animation: spotlight-enter 800ms $ease-gentle 200ms forwards;
+  }
+
+  @keyframes spotlight-enter {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .spotlight-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $spacing-lg;
+    padding: $spacing-xxl $spacing-xl * 2;
+    max-width: 480px;
+    width: 100%;
+    background: $lian-white;
+    border-radius: $radius-xl;
+    box-shadow: $shadow-pink;
+    text-decoration: none;
+    color: $lian-text;
+    position: relative;
+    overflow: hidden;
+    transition:
+      box-shadow 400ms $ease-gentle,
+      transform 400ms $ease-gentle;
+
+    // 淡粉渐变背景装饰
+    &::before {
+      content: "";
+      position: absolute;
+      top: -40%;
+      left: -20%;
+      width: 140%;
+      height: 80%;
+      background: radial-gradient(
+        ellipse at center,
+        rgba($lian-pink, 0.08) 0%,
+        transparent 70%
+      );
+      pointer-events: none;
+    }
+
+    &:hover {
+      box-shadow: $shadow-pink-hover;
+      transform: translateY(-4px);
+
+      .spotlight-avatar {
+        transform: scale(1.05);
+      }
+
+      .spotlight-visit svg {
+        transform: translateX(4px);
+      }
+    }
+  }
+
+  // 头像区域
+  .spotlight-avatar-wrap {
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .spotlight-avatar-glow {
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, $lian-pink, $lian-blue);
+    opacity: 0.4;
+    filter: blur(8px);
+    animation: glow-pulse 3s ease-in-out infinite;
+  }
+
+  @keyframes glow-pulse {
+    0%, 100% { opacity: 0.35; transform: scale(1); }
+    50% { opacity: 0.55; transform: scale(1.05); }
+  }
+
+  .spotlight-avatar {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid $lian-white;
+    box-shadow: 0 2px 12px rgba($lian-pink, 0.2);
+    transition: transform 400ms $ease-gentle;
+  }
+
+  // 信息
+  .spotlight-info {
+    text-align: center;
+    position: relative;
+  }
+
+  .spotlight-name {
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-bold;
+    color: $lian-text;
+    margin: 0;
+  }
+
+  .spotlight-desc {
+    font-size: $font-size-sm;
+    color: $lian-text-light;
+    margin: $spacing-xs 0 0;
+    line-height: $line-height-base;
+  }
+
+  // 寄语
+  .spotlight-message {
+    position: relative;
+    font-size: $font-size-base;
+    font-style: italic;
+    color: $lian-pink;
+    text-align: center;
+    line-height: $line-height-relaxed;
+    margin: 0;
+    padding: 0 $spacing-sm;
+    opacity: 0;
+    animation: message-fade 600ms $ease-gentle 600ms forwards;
+    
+    .quote-mark {
+      font-size: $font-size-xl;
+      font-weight: $font-weight-bold;
+      opacity: 0.5;
+      vertical-align: -2px;
+    }
+  }
+
+  @keyframes message-fade {
+    to { opacity: 1; }
+  }
+
+  // 访问提示
+  .spotlight-visit {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: $font-size-sm;
+    color: $lian-text-muted;
+    transition: color $transition-fast $ease-gentle;
+
+    svg {
+      transition: transform $transition-fast $ease-gentle;
+    }
+  }
+
+  .spotlight-card:hover .spotlight-visit {
+    color: $lian-pink;
+  }
+
+  // 响应式
+  @media (max-width: $container-sm) {
+    .spotlight-card {
+      padding: $spacing-xl $spacing-lg;
+      margin: 0 $spacing-md;
+    }
+
+    .spotlight-avatar {
+      width: 96px;
+      height: 96px;
+    }
+  }
+</style>
