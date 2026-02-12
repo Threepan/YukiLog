@@ -12,7 +12,9 @@
 
 #### Redis 限流系统
 
-使用 Redis 实现 IP 限流和访问控制, 防止恶意刷访问量和评论灌水
+使用 Redis 实现 IP 限流和访问控制，防止恶意刷访问量和评论灌水
+
+**原子性保证**: 使用 `SET key value EX ttl NX` 原子命令，避免 SETNX + EXPIRE 两步操作的竞态条件
 
 源码: [yukilog-backend/src/handler/utils.rs]
 
@@ -29,6 +31,8 @@ pub fn get_client_ip(headers: &HeaderMap, addr: SocketAddr) -> String
 
 #### 限流检查
 
+**原子命令**: 使用单个 Redis 命令 `SET key value EX ttl NX` 完成设置值和过期时间
+
 ```rust
 pub async fn check_rate_limit(
     redis: &redis::Client,
@@ -38,8 +42,8 @@ pub async fn check_rate_limit(
 ```
 
 **返回值:**
-- `Ok(true)` - 允许访问
-- `Ok(false)` - 限流中
+- `Ok(true)` - 允许访问（首次或已过期）
+- `Ok(false)` - 限流中（TTL 内重复访问）
 
 ---
 
