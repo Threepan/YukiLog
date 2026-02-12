@@ -1,0 +1,252 @@
+---
+import { marked } from "marked";
+import BlogLayout from "../../layouts/BlogLayout.astro";
+import ProfileCard from "../../components/home/ProfileCard.astro";
+import { contentConfig, siteConfig } from "../../lib/config";
+import markdownSource from "../../../TODOTEST.md?raw";
+
+export function getStaticPaths() {
+  return contentConfig.pages.home.articleList.placeholderPosts.map((post) => ({
+    params: { slug: post.slug },
+  }));
+}
+
+const placeholderPosts = contentConfig.pages.home.articleList.placeholderPosts;
+
+const { slug } = Astro.params;
+const currentPost = placeholderPosts.find((post) => post.slug === slug);
+
+if (!currentPost) {
+  throw new Error(`Post not found: ${slug}`);
+}
+
+const headingPrefixes = contentConfig.markdown.headingPrefixes;
+const headingPrefixStyle = `
+  --md-h1-prefix: "${headingPrefixes.h1}";
+  --md-h2-prefix: "${headingPrefixes.h2}";
+  --md-h3-prefix: "${headingPrefixes.h3}";
+  --md-h4-prefix: "${headingPrefixes.h4}";
+  --md-h5-prefix: "${headingPrefixes.h5}";
+  --md-h6-prefix: "${headingPrefixes.h6}";
+`;
+
+const renderedMarkdown = marked.parse(markdownSource, {
+  gfm: true,
+  breaks: true,
+}) as string;
+
+let headingCounter = 0;
+const markdownHtml = renderedMarkdown.replace(/<h([1-6])>(.*?)<\/h\1>/g, (_, level, inner) => {
+  const plainText = String(inner).replace(/<[^>]*>/g, "").trim();
+  headingCounter += 1;
+  const headingId = `md-heading-${headingCounter}`;
+  return `<h${level} id="${headingId}">${inner}</h${level}>`;
+});
+---
+
+<BlogLayout
+  title={`${currentPost.title} | ${siteConfig.name}`}
+  description={currentPost.summary}
+  keywords={["Markdown", "样式测试", "占位文章"]}
+  stickyNav={true}
+>
+  <section class="post-page container">
+    <div class="post-grid">
+      <aside class="post-author">
+        <ProfileCard />
+      </aside>
+
+      <article class="post-content markdown-body" style={headingPrefixStyle}>
+        <header class="post-header">
+          <h1>{currentPost.title}</h1>
+          <p>{currentPost.summary}</p>
+          <time datetime={currentPost.created_at}>
+            {new Date(currentPost.created_at).toLocaleDateString("zh-CN", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
+          </time>
+        </header>
+
+        <div class="post-divider" aria-hidden="true"></div>
+
+        <div set:html={markdownHtml}></div>
+      </article>
+    </div>
+  </section>
+</BlogLayout>
+
+<style lang="scss">
+  .post-page {
+    padding-top: $spacing-xl;
+    padding-bottom: $spacing-xxl;
+  }
+
+  .post-grid {
+    display: grid;
+    grid-template-columns: 300px minmax(0, 1fr);
+    gap: $spacing-lg;
+    align-items: start;
+  }
+
+  .post-author {
+    position: sticky;
+    top: 88px;
+  }
+
+  .post-content {
+    background: $lian-white;
+    border: 1px solid $lian-border;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-blue;
+    padding: $spacing-xl;
+  }
+
+  .post-header {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+    margin-bottom: $spacing-md;
+
+    p {
+      color: $lian-text-light;
+      line-height: $line-height-relaxed;
+    }
+
+    time {
+      color: $lian-text-muted;
+      font-size: $font-size-sm;
+    }
+  }
+
+  .post-divider {
+    height: 1px;
+    background: $lian-divider;
+    margin-bottom: $spacing-lg;
+  }
+
+  .markdown-body {
+    line-height: $line-height-relaxed;
+    color: $lian-text;
+
+    :where(h1, h2, h3, h4, h5, h6) {
+      position: relative;
+      margin-top: $spacing-xl;
+      margin-bottom: $spacing-sm;
+      line-height: $line-height-tight;
+      scroll-margin-top: 96px;
+    }
+
+    h1::before { content: var(--md-h1-prefix, "# "); color: $lian-pink; }
+    h2::before { content: var(--md-h2-prefix, "## "); color: $lian-pink; }
+    h3::before { content: var(--md-h3-prefix, "### "); color: $lian-blue; }
+    h4::before { content: var(--md-h4-prefix, "#### "); color: $lian-blue; }
+    h5::before { content: var(--md-h5-prefix, "##### "); color: $lian-text-light; }
+    h6::before { content: var(--md-h6-prefix, "###### "); color: $lian-text-light; }
+
+    p,
+    ul,
+    ol,
+    blockquote,
+    table,
+    pre {
+      margin-top: $spacing-md;
+      margin-bottom: $spacing-md;
+    }
+
+    a {
+      color: $lian-blue;
+      text-decoration: none;
+      background-image: linear-gradient(currentColor, currentColor);
+      background-size: 0% 2px;
+      background-repeat: no-repeat;
+      background-position: 0 100%;
+      transition:
+        color $transition-fast $ease-gentle,
+        background-size $transition-base $ease-gentle;
+
+      &:hover {
+        color: color-mix(in srgb, $lian-blue 88%, black);
+        background-size: 100% 2px;
+      }
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      border: 1px solid $lian-border;
+      border-radius: $radius-md;
+      overflow: hidden;
+      box-shadow: $shadow-sm;
+      background: $lian-white;
+
+      thead th {
+        background: rgba($lian-blue, 0.12);
+        color: color-mix(in srgb, $lian-blue 78%, black);
+        font-weight: $font-weight-semibold;
+      }
+
+      th,
+      td {
+        padding: $spacing-sm $spacing-md;
+        border-bottom: 1px solid $lian-divider;
+        text-align: left;
+      }
+
+      tbody tr:nth-child(even) {
+        background: rgba($lian-pink, 0.08);
+      }
+
+      tbody tr:last-child td {
+        border-bottom: none;
+      }
+    }
+
+    pre {
+      border: 1px solid rgba($lian-blue, 0.3);
+      border-radius: $radius-md;
+      background: linear-gradient(135deg, rgba($lian-blue, 0.08), rgba($lian-pink, 0.08));
+      box-shadow: $shadow-sm;
+      padding: $spacing-md;
+      overflow-x: auto;
+
+      code {
+        display: block;
+        color: $lian-text;
+        background: transparent;
+        font-family: $font-family-code;
+        font-size: $font-size-sm;
+        line-height: $line-height-base;
+      }
+    }
+
+    :not(pre) > code {
+      display: inline-block;
+      border: 1px solid rgba($lian-pink, 0.25);
+      border-radius: 10px;
+      padding: 0.1rem 0.45rem;
+      background: rgba($lian-pink, 0.12);
+      color: color-mix(in srgb, $lian-pink 76%, black);
+      font-family: $font-family-code;
+      font-size: 0.9em;
+    }
+  }
+
+  @media (max-width: $container-lg) {
+    .post-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .post-author {
+      position: static;
+    }
+  }
+
+  @media (max-width: $container-md) {
+    .post-content {
+      padding: $spacing-lg;
+    }
+  }
+</style>
