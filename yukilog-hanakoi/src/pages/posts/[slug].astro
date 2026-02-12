@@ -1,8 +1,9 @@
 ---
-import { marked } from "marked";
 import BlogLayout from "../../layouts/BlogLayout.astro";
 import ProfileCard from "../../components/home/ProfileCard.astro";
+import TableOfContents from "../../components/posts/TableOfContents.astro";
 import { contentConfig, siteConfig } from "../../lib/config";
+import { renderMarkdown } from "../../lib/markdown";
 import markdownSource from "../../../TODOTEST.md?raw";
 
 export function getStaticPaths() {
@@ -20,28 +21,9 @@ if (!currentPost) {
   throw new Error(`Post not found: ${slug}`);
 }
 
-const headingPrefixes = contentConfig.markdown.headingPrefixes;
-const headingPrefixStyle = `
-  --md-h1-prefix: "${headingPrefixes.h1}";
-  --md-h2-prefix: "${headingPrefixes.h2}";
-  --md-h3-prefix: "${headingPrefixes.h3}";
-  --md-h4-prefix: "${headingPrefixes.h4}";
-  --md-h5-prefix: "${headingPrefixes.h5}";
-  --md-h6-prefix: "${headingPrefixes.h6}";
-`;
+const hp = contentConfig.markdown.headingPrefixes;
 
-const renderedMarkdown = marked.parse(markdownSource, {
-  gfm: true,
-  breaks: true,
-}) as string;
-
-let headingCounter = 0;
-const markdownHtml = renderedMarkdown.replace(/<h([1-6])>(.*?)<\/h\1>/g, (_, level, inner) => {
-  const plainText = String(inner).replace(/<[^>]*>/g, "").trim();
-  headingCounter += 1;
-  const headingId = `md-heading-${headingCounter}`;
-  return `<h${level} id="${headingId}">${inner}</h${level}>`;
-});
+const { html: markdownHtml, headings } = await renderMarkdown(markdownSource);
 ---
 
 <BlogLayout
@@ -50,16 +32,23 @@ const markdownHtml = renderedMarkdown.replace(/<h([1-6])>(.*?)<\/h\1>/g, (_, lev
   keywords={["Markdown", "样式测试", "占位文章"]}
   stickyNav={true}
 >
-  <section class="post-page container">
-    <div class="post-grid">
-      <aside class="post-author">
-        <ProfileCard />
-      </aside>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/katex.min.css" slot="head" />
 
-      <article class="post-content markdown-body" style={headingPrefixStyle}>
+  <section class="post-page">
+    <!-- 左侧个人卡片：固定定位，与主页一致 -->
+    <aside class="post-author-fixed">
+      <ProfileCard />
+    </aside>
+
+    <!-- 文章 + 目录 -->
+    <div class="post-main">
+      <article
+        class="post-content"
+        style={`--h1p:"${hp.h1}";--h2p:"${hp.h2}";--h3p:"${hp.h3}";--h4p:"${hp.h4}";--h5p:"${hp.h5}";--h6p:"${hp.h6}";`}
+      >
         <header class="post-header">
-          <h1>{currentPost.title}</h1>
-          <p>{currentPost.summary}</p>
+          <h1 class="post-title">{currentPost.title}</h1>
+          <p class="post-summary">{currentPost.summary}</p>
           <time datetime={currentPost.created_at}>
             {new Date(currentPost.created_at).toLocaleDateString("zh-CN", {
               year: "numeric",
@@ -71,28 +60,51 @@ const markdownHtml = renderedMarkdown.replace(/<h([1-6])>(.*?)<\/h\1>/g, (_, lev
 
         <div class="post-divider" aria-hidden="true"></div>
 
-        <div set:html={markdownHtml}></div>
+        <div class="markdown-body" set:html={markdownHtml} />
       </article>
+
+      <aside class="post-toc">
+        {headings.length > 0 && <TableOfContents headings={headings} />}
+      </aside>
     </div>
   </section>
 </BlogLayout>
 
-<style lang="scss">
+<style lang="scss" is:global>
+  // ================================
+  // 文章页布局
+  // ================================
   .post-page {
-    padding-top: $spacing-xl;
+    padding-top: calc(#{$spacing-xl} + 44px);
     padding-bottom: $spacing-xxl;
+    min-height: 100vh;
   }
 
-  .post-grid {
-    display: grid;
-    grid-template-columns: 300px minmax(0, 1fr);
-    gap: $spacing-lg;
-    align-items: start;
-  }
-
-  .post-author {
-    position: sticky;
+  // 左侧个人卡片：固定定位，位置与主页 .fixed-sidebar-left 一致
+  .post-author-fixed {
+    position: fixed;
+    left: $spacing-xl * 2;
     top: 88px;
+    width: 280px;
+    z-index: $z-nav - 1;
+  }
+
+  // 强制覆盖 ProfileCard scoped 样式的 opacity/transform
+  .post-author-fixed .profile-card {
+    opacity: 1 !important;
+    transform: translateX(0) !important;
+  }
+
+  // 文章 + 目录：和主页文章列表一样，在全宽内居中
+  .post-main {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 220px;
+    gap: $spacing-xl;
+    align-items: start;
+    max-width: 1060px;
+    margin: 0 auto;
+    padding: 0 $spacing-md;
+    transform: translateX(130px);
   }
 
   .post-content {
@@ -101,17 +113,27 @@ const markdownHtml = renderedMarkdown.replace(/<h([1-6])>(.*?)<\/h\1>/g, (_, lev
     border-radius: $radius-lg;
     box-shadow: $shadow-blue;
     padding: $spacing-xl;
+    width: 100%;
   }
 
   .post-header {
     display: flex;
     flex-direction: column;
     gap: $spacing-xs;
-    margin-bottom: $spacing-md;
+    margin-bottom: $spacing-lg;
 
-    p {
+    .post-title {
+      font-size: $font-size-3xl;
+      font-weight: $font-weight-bold;
+      color: $lian-text;
+      line-height: $line-height-tight;
+      &::before { content: none !important; }
+    }
+
+    .post-summary {
       color: $lian-text-light;
       line-height: $line-height-relaxed;
+      font-size: $font-size-base;
     }
 
     time {
@@ -122,131 +144,517 @@ const markdownHtml = renderedMarkdown.replace(/<h([1-6])>(.*?)<\/h\1>/g, (_, lev
 
   .post-divider {
     height: 1px;
-    background: $lian-divider;
-    margin-bottom: $spacing-lg;
+    background: linear-gradient(to right, $lian-pink, $lian-blue);
+    opacity: 0.35;
+    margin-bottom: $spacing-xl;
   }
 
+  // ================================
+  // Markdown 正文样式
+  // ================================
   .markdown-body {
     line-height: $line-height-relaxed;
     color: $lian-text;
+    font-size: $font-size-base;
+    word-break: break-word;
 
-    :where(h1, h2, h3, h4, h5, h6) {
-      position: relative;
-      margin-top: $spacing-xl;
-      margin-bottom: $spacing-sm;
+    // ---- 全局间距节奏 ----
+    > * + * {
+      margin-top: 1.25em;
+    }
+
+    // ---- 标题 ----
+    h1, h2, h3, h4, h5, h6 {
       line-height: $line-height-tight;
+      font-weight: $font-weight-semibold;
+      color: $lian-text;
       scroll-margin-top: 96px;
-    }
+      margin-top: 2em;
+      margin-bottom: 0.75em;
 
-    h1::before { content: var(--md-h1-prefix, "# "); color: $lian-pink; }
-    h2::before { content: var(--md-h2-prefix, "## "); color: $lian-pink; }
-    h3::before { content: var(--md-h3-prefix, "### "); color: $lian-blue; }
-    h4::before { content: var(--md-h4-prefix, "#### "); color: $lian-blue; }
-    h5::before { content: var(--md-h5-prefix, "##### "); color: $lian-text-light; }
-    h6::before { content: var(--md-h6-prefix, "###### "); color: $lian-text-light; }
-
-    p,
-    ul,
-    ol,
-    blockquote,
-    table,
-    pre {
-      margin-top: $spacing-md;
-      margin-bottom: $spacing-md;
-    }
-
-    a {
-      color: $lian-blue;
-      text-decoration: none;
-      background-image: linear-gradient(currentColor, currentColor);
-      background-size: 0% 2px;
-      background-repeat: no-repeat;
-      background-position: 0 100%;
-      transition:
-        color $transition-fast $ease-gentle,
-        background-size $transition-base $ease-gentle;
-
-      &:hover {
-        color: color-mix(in srgb, $lian-blue 88%, black);
-        background-size: 100% 2px;
+      &::before {
+        font-weight: $font-weight-normal;
+        margin-right: 0.25em;
       }
     }
 
+    h1 {
+      font-size: $font-size-3xl;
+      padding-bottom: 0.4em;
+      border-bottom: 2px solid $lian-divider;
+      &::before { content: var(--h1p, ""); color: $lian-pink; }
+    }
+
+    h2 {
+      font-size: $font-size-2xl;
+      padding-bottom: 0.3em;
+      border-bottom: 1px solid $lian-divider;
+      &::before { content: var(--h2p, ""); color: $lian-pink; }
+    }
+
+    h3 {
+      font-size: $font-size-xl;
+      &::before { content: var(--h3p, ""); color: $lian-blue; }
+    }
+
+    h4 {
+      font-size: $font-size-lg;
+      &::before { content: var(--h4p, ""); color: $lian-blue; }
+    }
+
+    h5 {
+      font-size: $font-size-base;
+      &::before { content: var(--h5p, ""); color: $lian-text-light; }
+    }
+
+    h6 {
+      font-size: $font-size-sm;
+      color: $lian-text-light;
+      &::before { content: var(--h6p, ""); color: $lian-text-muted; }
+    }
+
+    // ---- 段落 ----
+    p {
+      line-height: $line-height-relaxed;
+    }
+
+    // ---- 链接（动态下划线，从左拉开） ----
+    a {
+      color: $lian-blue;
+      text-decoration: none;
+      position: relative;
+      display: inline;
+      background: none;
+
+      &::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: -1px;
+        width: 0;
+        height: 1.5px;
+        background: $lian-blue;
+        transition: width $transition-base $ease-gentle;
+      }
+
+      &:hover {
+        color: color-mix(in srgb, $lian-blue 82%, black);
+        &::after {
+          width: 100%;
+        }
+      }
+    }
+
+    // ---- 行内代码 ----
+    :not(pre) > code {
+      font-family: $font-family-code;
+      font-size: 0.88em;
+      color: color-mix(in srgb, $lian-pink 70%, #333);
+      background: rgba($lian-pink, 0.1);
+      border: 1px solid rgba($lian-pink, 0.2);
+      border-radius: 4px;
+      padding: 0.15em 0.4em;
+      word-break: break-word;
+    }
+
+    // ---- 代码块（shiki 高亮） ----
+    .code-block {
+      position: relative;
+      margin-top: 1.25em;
+      margin-bottom: 1.25em;
+      border-radius: $radius-md;
+      border: 1px solid $lian-border;
+      background: #fafbfc;
+      box-shadow: $shadow-sm;
+      overflow: hidden;
+
+      &[data-lang]::before {
+        content: attr(data-lang);
+        position: absolute;
+        top: 0;
+        right: 0;
+        padding: 2px 12px;
+        font-size: $font-size-xs;
+        font-family: $font-family-code;
+        color: $lian-text-muted;
+        background: rgba($lian-blue, 0.08);
+        border-bottom-left-radius: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        user-select: none;
+        z-index: 1;
+      }
+
+      pre {
+        margin: 0 !important;
+        padding: $spacing-md;
+        padding-top: calc($spacing-md + 4px);
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        border-radius: 0;
+        overflow-x: auto;
+
+        code {
+          font-family: $font-family-code;
+          font-size: $font-size-sm;
+          line-height: 1.7;
+          display: block;
+          background: none !important;
+          border: none !important;
+          padding: 0;
+          color: inherit;
+        }
+      }
+    }
+
+    // ---- 引用块 ----
+    blockquote {
+      margin: 1.25em 0;
+      padding: $spacing-sm $spacing-md;
+      border-left: 4px solid $lian-pink;
+      background: rgba($lian-pink, 0.06);
+      border-radius: 0 $radius-sm $radius-sm 0;
+      color: $lian-text-light;
+
+      p {
+        margin: 0.5em 0;
+        &:first-child { margin-top: 0; }
+        &:last-child { margin-bottom: 0; }
+      }
+
+      blockquote {
+        border-left-color: $lian-blue;
+        background: rgba($lian-blue, 0.06);
+
+        blockquote {
+          border-left-color: $lian-text-muted;
+          background: rgba($lian-text-muted, 0.06);
+        }
+      }
+    }
+
+    // ---- 列表 ----
+    ul, ol {
+      padding-left: 1.75em;
+      margin: 1em 0;
+      line-height: $line-height-relaxed;
+    }
+
+    li {
+      margin: 0.35em 0;
+      > ul, > ol {
+        margin: 0.25em 0;
+      }
+    }
+
+    ul { list-style-type: disc; ul { list-style-type: circle; } }
+    ol { list-style-type: decimal; }
+
+    // ---- 任务列表 ----
+    .task-item {
+      list-style: none;
+      margin-left: -1.75em;
+      padding-left: 0;
+
+      .task-check {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 18px;
+        height: 18px;
+        border-radius: 4px;
+        font-size: 12px;
+        vertical-align: middle;
+        margin-right: 0.4em;
+        position: relative;
+        top: -1px;
+
+        &.checked {
+          background: $lian-blue;
+          color: white;
+          border: 1.5px solid $lian-blue;
+        }
+
+        &.unchecked {
+          background: $lian-white;
+          border: 1.5px solid $lian-border;
+        }
+      }
+    }
+
+    // ---- 表格 ----
     table {
       width: 100%;
       border-collapse: separate;
       border-spacing: 0;
+      margin: 1.5em 0;
       border: 1px solid $lian-border;
-      border-radius: $radius-md;
+      border-radius: 12px;
       overflow: hidden;
       box-shadow: $shadow-sm;
       background: $lian-white;
+      font-size: $font-size-sm;
 
       thead th {
-        background: rgba($lian-blue, 0.12);
-        color: color-mix(in srgb, $lian-blue 78%, black);
+        background: rgba($lian-blue, 0.1);
+        color: color-mix(in srgb, $lian-blue 65%, black);
         font-weight: $font-weight-semibold;
-      }
-
-      th,
-      td {
-        padding: $spacing-sm $spacing-md;
-        border-bottom: 1px solid $lian-divider;
+        padding: 12px 16px;
         text-align: left;
+        border-bottom: 2px solid rgba($lian-blue, 0.2);
+        white-space: nowrap;
       }
 
-      tbody tr:nth-child(even) {
-        background: rgba($lian-pink, 0.08);
-      }
+      tbody {
+        td {
+          padding: 10px 16px;
+          border-bottom: 1px solid $lian-divider;
+          color: $lian-text;
+        }
 
-      tbody tr:last-child td {
-        border-bottom: none;
+        tr:nth-child(even) { background: rgba($lian-pink, 0.05); }
+
+        tr:hover {
+          background: rgba($lian-blue, 0.06);
+          transition: background $transition-fast $ease-gentle;
+        }
+
+        tr:last-child td { border-bottom: none; }
       }
     }
 
-    pre {
-      border: 1px solid rgba($lian-blue, 0.3);
-      border-radius: $radius-md;
-      background: linear-gradient(135deg, rgba($lian-blue, 0.08), rgba($lian-pink, 0.08));
-      box-shadow: $shadow-sm;
-      padding: $spacing-md;
-      overflow-x: auto;
+    // ---- 分隔线 ----
+    hr {
+      border: none;
+      height: 1px;
+      margin: 2.5em auto;
+      max-width: 60%;
+      background: linear-gradient(
+        to right,
+        transparent,
+        $lian-pink,
+        $lian-blue,
+        transparent
+      );
+      position: relative;
 
-      code {
+      &::after {
+        content: "✦";
         display: block;
-        color: $lian-text;
-        background: transparent;
-        font-family: $font-family-code;
+        text-align: center;
+        color: $lian-text-muted;
         font-size: $font-size-sm;
-        line-height: $line-height-base;
+        line-height: 1;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: $lian-white;
+        padding: 0 0.75em;
       }
     }
 
-    :not(pre) > code {
-      display: inline-block;
-      border: 1px solid rgba($lian-pink, 0.25);
-      border-radius: 10px;
-      padding: 0.1rem 0.45rem;
-      background: rgba($lian-pink, 0.12);
-      color: color-mix(in srgb, $lian-pink 76%, black);
+    // ---- 图片 ----
+    .md-image {
+      margin: 1.5em 0;
+      text-align: center;
+
+      img {
+        max-width: 100%;
+        border-radius: $radius-md;
+        box-shadow: $shadow-md;
+        display: inline-block;
+      }
+
+      figcaption {
+        margin-top: 0.5em;
+        font-size: $font-size-sm;
+        color: $lian-text-muted;
+        font-style: italic;
+      }
+    }
+
+    // ---- 删除线 ----
+    del {
+      text-decoration: line-through;
+      color: $lian-text-muted;
+    }
+
+    strong {
+      font-weight: $font-weight-semibold;
+      color: $lian-text;
+    }
+
+    em {
+      color: $lian-pink;
+      font-style: italic;
+    }
+
+    // ---- 脚注 ----
+    .footnotes {
+      margin-top: 3em;
+      padding-top: 1.5em;
+      border-top: 1px solid $lian-divider;
+      font-size: $font-size-sm;
+      color: $lian-text-light;
+
+      ol { padding-left: 1.25em; }
+      li { margin: 0.5em 0; }
+
+      a[data-footnote-backref] {
+        color: $lian-pink;
+        font-size: $font-size-xs;
+        &::after { content: none; }
+      }
+    }
+
+    sup a[data-footnote-ref] {
+      color: $lian-pink;
+      font-weight: $font-weight-medium;
+      font-size: 0.8em;
+      text-decoration: none;
+      &::after { content: none; }
+    }
+
+    .footnotes-sep {
+      display: none;
+    }
+
+    // ---- 数学公式 ----
+    .math-block {
+      margin: 1.5em 0;
+      text-align: center;
+      overflow-x: auto;
+      padding: $spacing-sm 0;
+    }
+
+    .math-error {
+      color: $lian-error;
       font-family: $font-family-code;
-      font-size: 0.9em;
+      font-size: $font-size-sm;
+    }
+
+    // ---- HTML 容器 ----
+    > div[style] {
+      border-radius: $radius-sm;
+      margin: 1.25em 0;
     }
   }
 
-  @media (max-width: $container-lg) {
-    .post-grid {
-      grid-template-columns: minmax(0, 1fr);
+  // ================================
+  // 右侧目录
+  // ================================
+  .post-toc {
+    position: sticky;
+    top: 88px;
+    max-height: calc(100vh - 120px);
+    overflow: visible;
+    padding-right: $spacing-lg;
+  }
+
+  .toc-container {
+    font-size: $font-size-sm;
+  }
+
+  .toc-title {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    color: $lian-text-light;
+    margin-bottom: $spacing-sm;
+    padding-left: 14px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .toc-scroll-area {
+    position: relative;
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
+    // 上下留出少量 padding 即可，不用 mask 遮罩
+    padding: $spacing-xs 0;
+  }
+
+  .toc-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .toc-item {
+    padding-left: calc(14px + var(--indent, 0) * 12px);
+    transition: all 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
+
+    &.active .toc-link {
+      color: color-mix(in srgb, $lian-blue 85%, #000);
+      font-weight: $font-weight-semibold;
+      transform: scale(1.2) translateX(-6px);
+      transform-origin: left center;
     }
 
-    .post-author {
-      position: static;
+    &:not(.active) .toc-link {
+      color: $lian-text-muted;
+    }
+  }
+
+  .toc-link {
+    display: block;
+    padding: 4px 0;
+    line-height: 1.5;
+    text-decoration: none;
+    transition: color 0.5s cubic-bezier(0.22, 0.61, 0.36, 1), transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &:hover {
+      color: color-mix(in srgb, $lian-blue 80%, black) !important;
+    }
+
+    // 覆盖 markdown-body 中的 a::after 动画下划线
+    &::after {
+      content: none !important;
+    }
+  }
+
+  // 左侧指示线
+  .toc-indicator {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 2.5px;
+    height: 20px;
+    border-radius: 2px;
+    background: linear-gradient(to bottom, $lian-pink, $lian-blue);
+    opacity: 0;
+    transition: transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1), height 0.5s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
+    pointer-events: none;
+  }
+
+  // ================================
+  // 响应式
+  // ================================
+  @media (max-width: $container-lg) {
+    .post-author-fixed {
+      display: none;
+    }
+
+    .post-main {
+      grid-template-columns: minmax(0, 1fr);
+      max-width: 780px;
+      padding: 0 $spacing-sm;
+    }
+
+    .post-toc {
+      display: none;
     }
   }
 
   @media (max-width: $container-md) {
     .post-content {
-      padding: $spacing-lg;
+      padding: $spacing-lg $spacing-md;
     }
   }
 </style>
