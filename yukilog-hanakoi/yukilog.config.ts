@@ -42,6 +42,12 @@ export const siteConfig = {
     nickname: "恋",
     avatar: "/images/avatar.jpg",
     bio: "我能走到这里，是因为你没有放弃",
+    birthday: "2005-05-16",
+    genderIdentity: "非二元",
+    systemLog: {
+      timestamp: "2024-06-09 08:48:29",
+      message: "这不是你亲手开启的故事吗？",
+    },
   },
   social: [
     {
