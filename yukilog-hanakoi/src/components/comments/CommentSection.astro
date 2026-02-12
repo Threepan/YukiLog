@@ -57,13 +57,13 @@ const totalCount = countTotalComments(comments);
         // 如果已存在回复表单，移除（toggle 效果）
         if (container.querySelector('.comment-form')) {
           container.innerHTML = '';
-          btn.textContent = '💬 回复';
+          btn.textContent = '💬';
           return;
         }
         
         // 清空容器
         container.innerHTML = '';
-        btn.textContent = '✖ 取消';
+        btn.textContent = '💬';
         
         // 创建回复表单
         const formWrapper = document.createElement('div');
@@ -207,13 +207,13 @@ const totalCount = countTotalComments(comments);
           alert('回复已提交，等待审核中... 🎉\n（这是 mock 模式，实际会调用 API）');
           
           container.innerHTML = '';
-          btn.textContent = '💬 回复';
+          btn.textContent = '回复';
         });
         
         // 取消回复
         cancelBtn.addEventListener('click', () => {
           container.innerHTML = '';
-          btn.textContent = '💬 回复';
+          btn.textContent = '💬';
         });
         
         // 聚焦到文本框
@@ -221,159 +221,16 @@ const totalCount = countTotalComments(comments);
       });
     });
   }
-  
-  // 便签墙随机布局
-  function initStickyNoteLayout() {
-    const commentItems = document.querySelectorAll<HTMLElement>('.comment-item');
-    
-    commentItems.forEach((item, index) => {
-      const depth = parseInt(item.dataset.depth || '0', 10);
-      const card = item.querySelector<HTMLElement>('.comment-card');
-      
-      if (!card) return;
-      
-      // 生成稳定但看似随机的值（基于index以保持一致性）
-      const seed = index * 12345 + 6789;
-      const pseudoRandom = (seed % 1000) / 1000;
-      
-      // 旋转角度 (-2deg ~ 2deg)
-      const rotation = (pseudoRandom - 0.5) * 4;
-      
-      // 主评论和回复的不同处理
-      if (depth === 0) {
-        // 主评论：完全随机
-        const translateX = (pseudoRandom - 0.5) * 20; // -10px ~ 10px
-        const translateY = (((seed * 7) % 1000) / 1000 - 0.5) * 16;  // -8px ~ 8px
-        
-        card.style.transform = `translate(${translateX}px, ${translateY}px) rotate(${rotation}deg)`;
-      } else {
-        // 回复：相对对齐但有微小偏移
-        const translateX = (pseudoRandom - 0.5) * 12; // -6px ~ 6px
-        const translateY = (((seed * 3) % 1000) / 1000 - 0.5) * 8;  // -4px ~ 4px
-        
-        card.style.transform = `translate(${translateX}px, ${translateY}px) rotate(${rotation}deg)`;
-        
-        // 给回复添加稍微的缩进，但通过margin而不是固定值
-        item.style.marginLeft = `${20 + depth * 15}px`;
-        item.style.marginTop = '16px';
-      }
-      
-      // 添加过渡效果
-      card.style.transition = 'transform 0.2s ease-out, box-shadow 0.2s ease-out';
-    });
-  }
-  
-  // 绘制手绘风格连接线
-  function drawHandDrawnConnections() {
-    const svg = document.getElementById('comment-connections') as SVGSVGElement | null;
-    if (!svg) return;
-    
-    // 清空现有线条
-    svg.innerHTML = '';
-    
-    const commentItems = document.querySelectorAll<HTMLElement>('.comment-item');
-    
-    commentItems.forEach((item) => {
-      const children = item.querySelector(':scope > .comment-children')?.querySelectorAll<HTMLElement>(':scope > .comment-item');
-      if (!children || children.length === 0) return;
-      
-      const parentCard = item.querySelector<HTMLElement>('.comment-card');
-      if (!parentCard) return;
-      
-      const parentRect = parentCard.getBoundingClientRect();
-      const svgRect = svg.getBoundingClientRect();
-      
-      // 父评论的起点（右侧中心）
-      const parentX = parentRect.right - svgRect.left;
-      const parentY = parentRect.top + parentRect.height / 2 - svgRect.top;
-      
-      children.forEach((child, index) => {
-        const childCard = child.querySelector<HTMLElement>('.comment-card');
-        if (!childCard) return;
-        
-        const childRect = childCard.getBoundingClientRect();
-        
-        // 子评论的终点（左侧中心）
-        const childX = childRect.left - svgRect.left;
-        const childY = childRect.top + childRect.height / 2 - svgRect.top;
-        
-        // 计算贝塞尔曲线控制点
-        const dx = childX - parentX;
-        const dy = childY - parentY;
-        
-        // 控制点偏移（制造曲线）
-        const cp1X = parentX + dx * 0.3 + (index % 2 === 0 ? 10 : -15);
-        const cp1Y = parentY + dy * 0.2 + (((index * 456) % 20) - 10);
-        const cp2X = parentX + dx * 0.7 + (index % 3 === 0 ? -8 : 12);
-        const cp2Y = childY - dy * 0.2 + (((index * 789) % 18) - 9);
-        
-        // 绘制路径
-        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        const d = `M ${parentX} ${parentY} C ${cp1X} ${cp1Y}, ${cp2X} ${cp2Y}, ${childX} ${childY}`;
-        
-        path.setAttribute('d', d);
-        path.setAttribute('fill', 'none');
-        path.setAttribute('stroke', 'rgba(126, 182, 217, 0.4)'); // lian-blue with opacity
-        path.setAttribute('stroke-width', '1.5');
-        path.setAttribute('stroke-linecap', 'round');
-        
-        // 添加微小抖动效果（通过filter）
-        path.setAttribute('filter', 'url(#hand-drawn-filter)');
-        
-        svg.appendChild(path);
-      });
-    });
-    
-    // 添加手绘滤镜
-    if (!svg.querySelector('#hand-drawn-filter')) {
-      const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-      const filter = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
-      filter.setAttribute('id', 'hand-drawn-filter');
-      
-      const turbulence = document.createElementNS('http://www.w3.org/2000/svg', 'feTurbulence');
-      turbulence.setAttribute('type', 'fractalNoise');
-      turbulence.setAttribute('baseFrequency', '0.05');
-      turbulence.setAttribute('numOctaves', '2');
-      turbulence.setAttribute('result', 'noise');
-      
-      const displace = document.createElementNS('http://www.w3.org/2000/svg', 'feDisplacementMap');
-      displace.setAttribute('in', 'SourceGraphic');
-      displace.setAttribute('in2', 'noise');
-      displace.setAttribute('scale', '1.5');
-      
-      filter.appendChild(turbulence);
-      filter.appendChild(displace);
-      defs.appendChild(filter);
-      svg.appendChild(defs);
-    }
-  }
+
   
   // 初始化
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      initCommentReply();
-      initStickyNoteLayout();
-      // 需要延迟一下让布局完成
-      setTimeout(drawHandDrawnConnections, 100);
-    });
+    document.addEventListener('DOMContentLoaded', initCommentReply);
   } else {
     initCommentReply();
-    initStickyNoteLayout();
-    setTimeout(drawHandDrawnConnections, 100);
   }
   
-  document.addEventListener('astro:page-load', () => {
-    initCommentReply();
-    initStickyNoteLayout();
-    setTimeout(drawHandDrawnConnections, 100);
-  });
-  
-  // 窗口resize时重绘连接线
-  let resizeTimer: NodeJS.Timeout;
-  window.addEventListener('resize', () => {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(drawHandDrawnConnections, 150);
-  });
+  document.addEventListener('astro:page-load', initCommentReply);
 </script>
 
 <style lang="scss">

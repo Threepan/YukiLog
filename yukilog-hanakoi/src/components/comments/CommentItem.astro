@@ -43,42 +43,51 @@ const isMaxDepth = depth >= maxDepth;
     <div class="comment-body">
       <!-- 头部：用户信息 -->
       <div class="comment-header">
-        {comment.guest_website ? (
-          <a href={comment.guest_website} target="_blank" rel="noopener" class="comment-author">
-            {comment.guest_nick}
-          </a>
-        ) : (
-          <span class="comment-author">{comment.guest_nick}</span>
-        )}
+        <span class={`comment-author ${comment.guest_nick === '恋' ? 'is-lian' : ''}`}>
+          {comment.guest_nick}
+        </span>
         
         <span class="comment-time">{relativeTime}</span>
       </div>
-
-      {comment.visitor_info && (
-        <div class="comment-meta" title={comment.visitor_info}>
-          <span class="meta-icon">📍</span>
-          <span class="meta-text">{comment.visitor_info}</span>
-        </div>
-      )}
+      
+      <!-- 用户元信息 -->
+      <div class="comment-user-info">
+        {comment.guest_email && (
+          <a href={`mailto:${comment.guest_email}`} class="user-email" title="发送邮件">
+            ✉️ {comment.guest_email}
+          </a>
+        )}
+        
+        {comment.guest_website && (
+          <a href={comment.guest_website} target="_blank" rel="noopener" class="user-website" title="访问网站">
+            🔗 {comment.guest_website}
+          </a>
+        )}
+        
+        {comment.visitor_info && (
+          <span class="comment-meta" title={comment.visitor_info}>
+            <span class="meta-icon">📍</span>
+            <span class="meta-text">{comment.visitor_info}</span>
+          </span>
+        )}
+      </div>
       
       <!-- 内容 -->
       <div class="comment-content markdown-body" set:html={renderedContent} />
       
-      <!-- 操作栏 -->
-      <div class="comment-actions">
-        {!isMaxDepth && (
-          <button class="btn-reply" data-comment-id={comment.id} data-comment-nick={comment.guest_nick}>
-            💬 回复
-          </button>
-        )}
-      </div>
-      
       <!-- 回复表单容器（动态插入） -->
       <div class="reply-form-container" id={`reply-container-${comment.id}`}></div>
     </div>
+    
+    <!-- 回复按钮（右下角） -->
+    {!isMaxDepth && (
+      <button class="btn-reply" data-comment-id={comment.id} data-comment-nick={comment.guest_nick}>
+        💬
+      </button>
+    )}
   </div>
   
-  <!-- 子评论（递归） - 稍后用连接线渲染 -->
+  <!-- 子评论（递归） -->
   {children.length > 0 && (
     <div class="comment-children">
       {children.map((child) => (
@@ -94,40 +103,49 @@ const isMaxDepth = depth >= maxDepth;
 
   .comment-item {
     position: relative;
-    margin-bottom: 0;
-    z-index: 1; // 显示在连接线上方
-    // 随机位置和旋转将由JS动态设置
+    margin-bottom: 20px;
+  }
+  
+  .comment-children {
+    margin-left: 40px;
+    margin-top: 12px;
+    padding-left: 16px;
+    border-left: 2px solid rgba($lian-blue, 0.15);
   }
 
   .comment-card {
     position: relative;
     display: flex;
-    gap: 10px;
-    padding: 12px 14px;
-    background: $lian-white;
-    border: 1px solid rgba($lian-pink, 0.3);
-    border-radius: 6px;
-    box-shadow: 0 1px 3px rgba($lian-text, 0.06);
-    transition:
-      transform $transition-fast $ease-gentle,
-      box-shadow $transition-fast $ease-gentle;
+    gap: 12px;
+    padding: 8px 0;
+    transition: 
+      opacity $transition-fast $ease-gentle,
+      transform $transition-fast $ease-gentle;
     
     &:hover {
-      box-shadow: 0 3px 10px rgba($lian-blue, 0.15);
-      z-index: 2;
+      transform: scale(1.02);
+      
+      .btn-reply {
+        opacity: 1;
+      }
+    }
+    
+    // 当回复表单展开时，隐藏原来的回复按钮
+    &:has(.reply-form-container:not(:empty)) .btn-reply {
+      display: none;
     }
   }
 
   .comment-avatar {
     flex-shrink: 0;
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     
     img {
       width: 100%;
       height: 100%;
       border-radius: 50%;
-      border: 1.5px solid rgba($lian-pink, 0.25);
+      border: 1px solid rgba($lian-text-muted, 0.2);
       object-fit: cover;
     }
   }
@@ -141,58 +159,82 @@ const isMaxDepth = depth >= maxDepth;
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
     line-height: 1.2;
+    flex-wrap: wrap;
   }
 
   .comment-author {
     font-size: 13px;
     font-weight: $font-weight-semibold;
-    color: $lian-text;
+    color: $lian-blue;
     text-decoration: none;
     transition: color $transition-fast $ease-gentle;
     
-    &[href]:hover {
+    &.is-lian {
       color: $lian-pink;
+    }
+    
+    &[href]:hover {
+      opacity: 0.8;
     }
   }
 
   .comment-time {
-    font-size: 11px;
-    color: $lian-text-muted;
-    letter-spacing: 0.02em;
-  }
-
-  .comment-meta {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    max-width: 100%;
-    margin-bottom: 6px;
-    padding: 3px 7px;
     font-size: 10px;
     color: $lian-text-muted;
-    background: rgba($lian-blue, 0.05);
-    border-left: 2px solid rgba($lian-blue, 0.3);
-    border-radius: 2px;
+  }
+
+  .comment-user-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: 11px;
+  }
+  
+  .user-email,
+  .user-website {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: $lian-blue;
+    text-decoration: none;
+    transition: opacity $transition-fast $ease-gentle;
+    
+    &:hover {
+      opacity: 0.7;
+      text-decoration: underline;
+    }
+  }
+  
+  .comment-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    font-size: 11px;
+    color: $lian-text-light;
+    background: rgba($lian-text-muted, 0.08);
+    border-radius: 4px;
   }
 
   .meta-icon {
     flex-shrink: 0;
-    font-size: 10px;
+    font-size: 11px;
   }
 
   .meta-text {
-    display: inline-block;
+    max-width: 300px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
   .comment-content {
-    margin-bottom: 6px;
+    margin-bottom: 0;
     font-size: 13px;
-    line-height: 1.5;
+    line-height: 1.6;
     color: $lian-text-light;
     word-wrap: break-word;
     
@@ -235,28 +277,28 @@ const isMaxDepth = depth >= maxDepth;
     }
   }
 
-  .comment-actions {
-    display: flex;
-    gap: $spacing-sm;
-  }
-
   .btn-reply {
-    padding: 4px 10px;
-    background: rgba($lian-blue, 0.06);
-    border: 1px solid rgba($lian-blue, 0.2);
-    border-radius: 4px;
-    font-size: 11px;
-    font-weight: $font-weight-medium;
+    position: absolute;
+    bottom: 8px;
+    right: 0;
+    padding: 3px 6px;
+    background: transparent;
+    border: none;
+    font-size: 14px;
     font-family: inherit;
-    color: $lian-blue;
+    color: $lian-text-muted;
     cursor: pointer;
+    opacity: 0;
     transition:
-      background $transition-fast $ease-gentle,
-      border-color $transition-fast $ease-gentle;
+      opacity $transition-fast $ease-gentle,
+      transform $transition-fast $ease-gentle;
     
     &:hover {
-      background: rgba($lian-blue, 0.10);
-      border-color: rgba($lian-blue, 0.3);
+      transform: scale(1.15);
+    }
+    
+    &:active {
+      transform: scale(0.95);
     }
   }
 
@@ -270,13 +312,16 @@ const isMaxDepth = depth >= maxDepth;
 
   @media (max-width: $container-sm) {
     .comment-avatar {
-      width: 32px;
-      height: 32px;
+      width: 28px;
+      height: 28px;
     }
     
     .comment-card {
-      padding: 10px 12px;
-      gap: 8px;
+      gap: 10px;
+    }
+    
+    .btn-reply {
+      opacity: 1; // 移动端始终显示
     }
   }
 </style>
