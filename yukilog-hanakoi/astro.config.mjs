@@ -17,6 +17,9 @@ export default defineConfig({
         },
       },
     },
+    server: {
+      allowedHosts: ['.ngrok-free.app', '.ngrok.io'],
+    },
   },
   
   // SEO 友好的 URL（移除尾随斜杠）
