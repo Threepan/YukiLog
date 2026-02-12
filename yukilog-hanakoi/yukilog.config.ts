@@ -184,194 +184,21 @@ export const contentConfig = {
     },
     themes: {
       heroSubtitle: "按类别浏览文章",
-      items: [
-        { name: "前端开发", slug: "frontend", description: "HTML、CSS、JavaScript 以及各种框架的探索与实践", post_count: 12 },
-        { name: "后端开发", slug: "backend", description: "Rust、Node.js、数据库设计和 API 架构", post_count: 8 },
-        { name: "学习笔记", slug: "study-notes", description: "读书、课程、技术文档的消化与整理", post_count: 15 },
-        { name: "生活碎片", slug: "life", description: "日常的观察、感受和一些不太重要的小事", post_count: 6 },
-        { name: "情绪日记", slug: "emotion", description: "写给深夜的自己，那些不说出口的话", post_count: 4 },
-        { name: "项目记录", slug: "projects", description: "从零开始造轮子的全过程", post_count: 9 },
-      ],
     },
     archive: {
       heroSubtitlePrefix: "共",
       heroSubtitleSuffix: "篇文章，记录着走过的路",
       timelineEndText: "故事从这里开始",
-      years: [
-        {
-          year: 2026,
-          posts: [
-            { title: "YukiLog 前端架构复盘", slug: "yukilog-frontend-review", created_at: "2026-02-10", month: 2, day: 10 },
-            { title: "Rust Axum 中间件实践", slug: "rust-axum-middleware", created_at: "2026-02-03", month: 2, day: 3 },
-            { title: "新年的第一篇博客", slug: "first-post-2026", created_at: "2026-01-15", month: 1, day: 15 },
-            { title: "如何从零搭建一个博客系统", slug: "build-blog-from-scratch", created_at: "2026-01-08", month: 1, day: 8 },
-          ],
-        },
-        {
-          year: 2025,
-          posts: [
-            { title: "年终总结：代码与生活", slug: "year-end-2025", created_at: "2025-12-28", month: 12, day: 28 },
-            { title: "深夜的胡思乱想", slug: "midnight-thoughts", created_at: "2025-12-15", month: 12, day: 15 },
-            { title: "Sea-ORM 踩坑日记", slug: "sea-orm-notes", created_at: "2025-11-20", month: 11, day: 20 },
-            { title: "第一次被人夸代码写得好看", slug: "first-code-compliment", created_at: "2025-11-05", month: 11, day: 5 },
-            { title: "关于「造轮子」这件事", slug: "about-reinventing-wheel", created_at: "2025-10-18", month: 10, day: 18 },
-            { title: "Astro 初体验", slug: "astro-first-look", created_at: "2025-09-22", month: 9, day: 22 },
-            { title: "学习全栈的第一个月", slug: "first-month-fullstack", created_at: "2025-09-01", month: 9, day: 1 },
-          ],
-        },
-      ],
     },
     tags: {
       emptyText: "这个标签下暂时还没有文章",
       colorCycle: [0, 2, 1, 0, 1, 2, 1, 0, 2, 0, 1, 2, 0, 2, 1, 0, 1, 2],
       colorNames: ["pink", "blue", "white"],
-      tags: [
-        { name: "Rust", slug: "rust", count: 8, size: 4 },
-        { name: "Astro", slug: "astro", count: 6, size: 3 },
-        { name: "TypeScript", slug: "typescript", count: 7, size: 4 },
-        { name: "CSS", slug: "css", count: 5, size: 3 },
-        { name: "Vue", slug: "vue", count: 4, size: 2 },
-        { name: "Axum", slug: "axum", count: 3, size: 2 },
-        { name: "Sea-ORM", slug: "sea-orm", count: 2, size: 1 },
-        { name: "PostgreSQL", slug: "postgresql", count: 3, size: 2 },
-        { name: "Docker", slug: "docker", count: 2, size: 1 },
-        { name: "生活", slug: "life", count: 6, size: 3 },
-        { name: "情绪", slug: "emotion", count: 4, size: 2 },
-        { name: "思考", slug: "thought", count: 5, size: 3 },
-        { name: "全栈", slug: "fullstack", count: 3, size: 2 },
-        { name: "开源", slug: "open-source", count: 2, size: 1 },
-        { name: "SCSS", slug: "scss", count: 3, size: 2 },
-        { name: "Linux", slug: "linux", count: 2, size: 1 },
-        { name: "架构设计", slug: "architecture", count: 4, size: 2 },
-        { name: "年终总结", slug: "year-review", count: 1, size: 1 },
-      ],
-      tagPosts: {
-        rust: [
-          { title: "Rust Axum 中间件实践", slug: "rust-axum-middleware", created_at: "2026-02-03", summary: "探索 Axum 的中间件机制和错误处理模式" },
-          { title: "关于「造轮子」这件事", slug: "about-reinventing-wheel", created_at: "2025-10-18", summary: "为什么明知有现成方案还要自己写" },
-          { title: "Sea-ORM 踩坑日记", slug: "sea-orm-notes", created_at: "2025-11-20", summary: "在 Rust 生态里找一个顺手的 ORM" },
-        ],
-        astro: [
-          { title: "Astro 初体验", slug: "astro-first-look", created_at: "2025-09-22", summary: "用 Astro 搭一个静态博客，到底有多舒服" },
-          { title: "YukiLog 前端架构复盘", slug: "yukilog-frontend-review", created_at: "2026-02-10", summary: "回顾一个月的前端开发经历" },
-        ],
-        life: [
-          { title: "深夜的胡思乱想", slug: "midnight-thoughts", created_at: "2025-12-15", summary: "凌晨三点睡不着写的东西" },
-          { title: "年终总结：代码与生活", slug: "year-end-2025", created_at: "2025-12-28", summary: "2025 年发生了很多事" },
-        ],
-      },
     },
     home: {
       articleList: {
         loadMoreText: "—— 暂时只有这些了 ——",
-        placeholderPosts: [
-          {
-            title: "Markdown 渲染占位测试",
-            slug: "markdown-style-placeholder",
-            summary: "用于验证标题前缀、动态下划线、表格样式与代码块样式的测试文章。",
-            cover_image: "https://list.yeastar.xin/d/%E6%81%8B/fastfetch/1761672341793.jpeg",
-            created_at: "2026-02-12T20:00:00+08:00",
-            view_count: 1,
-            theme: { name: "测试", slug: "test" },
-            tags: [
-              { name: "Markdown", slug: "markdown" },
-              { name: "样式", slug: "style" },
-            ],
-          },
-          {
-            title: "用 Rust 和 Axum 从零搭建博客后端",
-            slug: "build-blog-backend-with-rust-axum",
-            summary: "从项目初始化到 RESTful API 设计，完整记录用 Rust 实现博客后端的全过程。数据库选型、ORM 搭建、错误处理与中间件设计等核心环节一一解析。",
-            cover_image: "https://list.yeastar.xin/d/%E6%81%8B/fastfetch/1f57b6c355024848e0ccfa0f864273328c22fa76130ae3183bd15453f06d3a17.jpg",
-            created_at: "2026-02-11T10:00:00+08:00",
-            view_count: 128,
-            theme: { name: "技术", slug: "tech" },
-            tags: [
-              { name: "Rust", slug: "rust" },
-              { name: "Axum", slug: "axum" },
-              { name: "后端", slug: "backend" },
-            ],
-          },
-          {
-            title: "Astro + Vue 3：打造轻盈优雅的博客前端",
-            slug: "astro-vue3-blog-frontend",
-            summary: "选择 Astro 作为 SSG 框架，搭配 Vue 3 实现交互组件。从双屏首页设计到响应式布局，分享这套轻量而富有表现力的前端方案。",
-            cover_image: "https://list.yeastar.xin/d/%E6%81%8B/fastfetch/20250809_033215.jpg",
-            created_at: "2026-02-12T14:30:00+08:00",
-            view_count: 96,
-            theme: { name: "技术", slug: "tech" },
-            tags: [
-              { name: "Astro", slug: "astro" },
-              { name: "Vue", slug: "vue" },
-              { name: "前端", slug: "frontend" },
-            ],
-          },
-          {
-            title: "写给自己的一封信",
-            slug: "letter-to-myself",
-            summary: "在某个安静的夜晚写下的独白。关于选择、关于坚持、关于那些不太被看见的角落。也许你也有过这样的时刻。",
-            cover_image: "https://list.yeastar.xin/d/%E6%81%8B/fastfetch/56934dfd210ab238a1ce39ad8adbd7dedc9c744ef910455de9d774f1a2a373b6.jpg",
-            created_at: "2026-02-10T22:15:00+08:00",
-            view_count: 256,
-            theme: { name: "随笔", slug: "essay" },
-            tags: [
-              { name: "情绪", slug: "emotion" },
-              { name: "独白", slug: "monologue" },
-            ],
-          },
-          {
-            title: "SeaORM 实战：优雅地管理数据库实体与关系",
-            slug: "seaorm-entity-relations",
-            summary: "深入 SeaORM 的实体定义、关系映射与查询构建。比较 Active Record 与 Query Builder 两种模式，探索 Rust 生态中数据库操作的最佳实践。",
-            cover_image: "https://list.yeastar.xin/d/%E6%81%8B/fastfetch/bf4c8fd473f4b2e3cb7163d14a8182ed2ea203261f29e9fbc5c1f93e5fcb60be.jpg",
-            created_at: "2026-02-09T16:00:00+08:00",
-            view_count: 87,
-            theme: { name: "技术", slug: "tech" },
-            tags: [
-              { name: "Rust", slug: "rust" },
-              { name: "SeaORM", slug: "seaorm" },
-              { name: "数据库", slug: "database" },
-            ],
-          },
-          {
-            title: "深夜的代码与猫",
-            slug: "late-night-code-and-cat",
-            summary: "凌晨两点，屏幕发出微弱的光。窗外是安静的城市，身边是蜷缩的猫。这大概就是我最喜欢的编程时间。",
-            cover_image: "https://list.yeastar.xin/d/%E6%81%8B/fastfetch/8755c1590031b234f650056457e8b851ab52d4f523667f25303b9c9f1b6f1242.jpg",
-            created_at: "2026-02-08T02:30:00+08:00",
-            view_count: 194,
-            theme: { name: "随笔", slug: "essay" },
-            tags: [
-              { name: "日常", slug: "daily" },
-              { name: "编程", slug: "coding" },
-            ],
-          },
-          {
-            title: "SCSS 变量系统设计：构建一致性的视觉语言",
-            slug: "scss-variable-system-design",
-            summary: "如何利用 SCSS 变量、Mixins 与设计 Token 打造一套温柔而统一的设计系统。记录 YukiLog 视觉风格从零搭建的完整思路。",
-            cover_image: "https://list.yeastar.xin/d/%E6%81%8B/fastfetch/Image_1762911570825.jpg",
-            created_at: "2026-02-07T11:00:00+08:00",
-            view_count: 73,
-            theme: { name: "技术", slug: "tech" },
-            tags: [
-              { name: "SCSS", slug: "scss" },
-              { name: "设计系统", slug: "design-system" },
-              { name: "CSS", slug: "css" },
-            ],
-          },
-        ],
       },
     },
   },
-} as const;
-
-/**
- * 汇总导出，便于后台配置面板一次性读取
- */
-export const yukilogConfig = {
-  designTokens,
-  siteConfig,
-  navItems,
-  contentConfig,
 } as const;
