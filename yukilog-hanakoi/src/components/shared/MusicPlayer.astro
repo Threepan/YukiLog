@@ -1,0 +1,81 @@
+---
+// ================================
+// 背景音乐播放器
+// 自动循环播放，带淡入淡出效果
+// ================================
+
+// 导入音乐文件
+const musicUrl = await import('../../assets/music/时空漫步.mp3?url');
+---
+
+<audio id="bg-music" loop preload="auto">
+  <source src={musicUrl.default} type="audio/mpeg" />
+</audio>
+
+<style lang="scss">
+  audio {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+  }
+</style>
+
+<script>
+  const audio = document.getElementById('bg-music') as HTMLAudioElement;
+  
+  if (!audio) {
+    throw new Error('Music player audio element not found');
+  }
+  
+  const fadeInDuration = 800;
+  const maxVolume = 0.4;
+  let started = false;
+  
+  function fadeIn() {
+    const startTime = Date.now();
+    const fadeInterval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / fadeInDuration, 1);
+      const easedProgress = progress * (2 - progress);
+      audio.volume = easedProgress * maxVolume;
+      if (progress >= 1) clearInterval(fadeInterval);
+    }, 30);
+  }
+  
+  function tryPlay() {
+    if (started) return;
+    audio.volume = 0;
+    
+    const p = audio.play();
+    if (p) {
+      p.then(() => {
+        started = true;
+        fadeIn();
+        cleanup();
+      }).catch(() => {});
+    }
+  }
+  
+  function cleanup() {
+    events.forEach(e => document.removeEventListener(e, tryPlay));
+  }
+  
+  const events = ['click', 'touchstart', 'scroll', 'keydown', 'mousemove', 'pointerdown'];
+  
+  tryPlay();
+  
+  events.forEach(e =>
+    document.addEventListener(e, tryPlay, { passive: true })
+  );
+  
+  let retryCount = 0;
+  const retryInterval = setInterval(() => {
+    if (started || retryCount > 20) {
+      clearInterval(retryInterval);
+      return;
+    }
+    tryPlay();
+    retryCount++;
+  }, 250);
+</script>
