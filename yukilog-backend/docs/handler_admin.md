@@ -246,18 +246,32 @@ pub struct UpdatePostRequest {
     pub slug: Option<String>,
     /// 文章内容
     pub content: Option<String>,
-    /// 摘要
+    /// 摘要（三态字段）
     pub summary: Option<Option<String>>,
-    /// 封面图
+    /// 封面图（三态字段）
     pub cover_image: Option<Option<String>>,
     /// 状态
     pub status: Option<PostStatus>,
-    /// 主题 slug
+    /// 主题 slug（三态字段）
     pub theme_slug: Option<Option<String>>,
     /// 标签 slug 列表
     pub tag_slugs: Option<Vec<String>>,
 }
 ```
+
+**三态字段处理规则**：
+
+`summary`、`cover_image`、`theme_slug` 为三态字段，支持以下操作：
+
+| 前端值 | JSON 序列化 | 后端 Rust 值 | 含义 |
+|--------|-------------|-------------|------|
+| `undefined` | 字段不存在 | `None` | 不修改该字段 |
+| `null` | `"field": null` | `Some(None)` | 清空该字段 |
+| `"value"` | `"field": "value"` | `Some(Some("value"))` | 更新为新值 |
+
+`tag_slugs` 为二态字段：
+- 不传该字段 → 不修改标签关联
+- 传 `[]` 或 `["tag1", "tag2"]` → 更新为该标签列表
 
 ---
 
