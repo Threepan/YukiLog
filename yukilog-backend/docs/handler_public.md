@@ -163,12 +163,13 @@ pub struct ListTagsQuery {
 }
 ```
 
-## Posts 文章 - 3 个接口
+## Posts 文章 - 4 个接口
 
 ```bash
 GET    /api/public/posts            - 文章列表 (分页+过滤)
 GET    /api/public/posts/:slug      - 文章详情
 POST   /api/public/posts/:slug/view - 浏览计数 (IP限流 10分钟)
+GET    /api/public/search            - 全文搜索 (模糊匹配 title+summary+content)
 ```
 
 #### 接口定义
@@ -211,6 +212,34 @@ pub struct ListPostsQuery {
     pub tag_slugs: Option<String>,
 }
 ```
+
+#### 搜索接口
+
+```rust
+/// 全文搜索文章（ILIKE 模糊匹配）
+pub async fn search_posts(
+    State(state): State<AppState>,
+    Query(params): Query<SearchQuery>,
+) -> Result<Json<ApiResponse<PagedData<PostWithRelations>>>, ServiceError>
+```
+
+```rust
+pub struct SearchQuery {
+    /// 搜索关键词（必填，最长 100 字符）
+    pub q: String,
+    /// 分页：页码（从 1 开始，默认 1）
+    pub page: Option<u64>,
+    /// 分页：每页数量（默认 10，最大 50）
+    pub page_size: Option<u64>,
+}
+```
+
+**搜索行为**：
+- 搜索范围：`title` + `summary` + `content`，仅已发布文章
+- 匹配方式：PostgreSQL `ILIKE`（大小写不敏感模糊匹配）
+- 排序：标题匹配优先 > 摘要匹配 > 创建时间倒序
+- 高亮：结果中的关键词用 `<mark>` 标签包裹
+- 摘要：`content` 字段截取为关键词附近 ~200 字符
 
 ## Comments 评论 - 3个接口
 
