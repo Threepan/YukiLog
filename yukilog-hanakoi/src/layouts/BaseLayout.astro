@@ -25,6 +25,7 @@ const { title, description, keywords, ogImage } = Astro.props;
       keywords={keywords}
       ogImage={ogImage}
     />
+    <slot name="head" />
   </head>
   <body>
     <slot />
