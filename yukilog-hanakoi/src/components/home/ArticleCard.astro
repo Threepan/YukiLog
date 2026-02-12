@@ -55,7 +55,7 @@ const coverSrc = post.cover_image || placeholderCover;
       {post.tags && post.tags.length > 0 && (
         <div class="article-tags">
           {post.tags.slice(0, 3).map((tag) => (
-            <a href={`/tags/${tag.slug}`} class="tag-pill">
+            <a href={`/tags?tag=${tag.slug}`} class="tag-pill">
               <span class="tag-hash">#</span>{tag.name}
             </a>
           ))}

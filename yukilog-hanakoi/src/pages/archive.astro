@@ -6,13 +6,13 @@
 
 import BlogLayout from "../layouts/BlogLayout.astro";
 import PageHero from "../components/shared/PageHero.astro";
-import { contentConfig } from "../lib/config";
+import { contentConfig, derivedData } from "../lib/config";
 import { navIcons } from "../lib/svg-icons";
 
 const archiveIcon = navIcons.archive;
 
 const archivePageConfig = contentConfig.pages.archive;
-const archiveData = archivePageConfig.years;
+const archiveData = derivedData.archiveYears;
 
 // 统计总文章数
 const totalPosts = archiveData.reduce((sum, y) => sum + y.posts.length, 0);

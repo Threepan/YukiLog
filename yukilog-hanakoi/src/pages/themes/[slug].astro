@@ -1,0 +1,96 @@
+---
+// ================================
+// 主题详情页
+// 展示某个主题下的所有文章
+// ================================
+
+import BlogLayout from "../../layouts/BlogLayout.astro";
+import PageHero from "../../components/shared/PageHero.astro";
+import PostListCard from "../../components/shared/PostListCard.astro";
+import { allPosts, derivedData } from "../../lib/config";
+import { navIcons } from "../../lib/svg-icons";
+
+const themeIcon = navIcons.theme;
+
+export function getStaticPaths() {
+  return derivedData.themeItems.map((theme) => ({
+    params: { slug: theme.slug },
+    props: { theme },
+  }));
+}
+
+const { theme } = Astro.props;
+
+const posts = allPosts
+  .filter((p) => p.theme?.slug === theme.slug)
+  .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+---
+
+<BlogLayout title={`${theme.name} - YukiLog`} stickyNav>
+  <PageHero
+    title={theme.name}
+    subtitle={theme.description || `共 ${theme.post_count} 篇文章`}
+    icon={themeIcon}
+  />
+
+  <div class="theme-detail-page">
+    <a href="/themes" class="back-link">← 返回全部主题</a>
+
+    <div class="post-list-container">
+      {posts.map((post, i) => (
+        <PostListCard post={post} index={i} />
+      ))}
+    </div>
+  </div>
+</BlogLayout>
+
+<script>
+  const cards = document.querySelectorAll<HTMLElement>('.post-list-card');
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.1 }
+  );
+  cards.forEach((card) => observer.observe(card));
+</script>
+
+<style lang="scss">
+  .theme-detail-page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: $spacing-xl $spacing-lg $spacing-xxl * 2;
+  }
+
+  .post-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: $spacing-lg;
+    font-size: $font-size-sm;
+    color: $lian-text-muted;
+    text-decoration: none;
+    transition: color $transition-fast $ease-gentle;
+
+    &:hover {
+      color: $lian-blue;
+    }
+  }
+
+  @media (max-width: $container-sm) {
+    .theme-detail-page {
+      padding: $spacing-lg $spacing-sm $spacing-xxl;
+    }
+  }
+</style>

@@ -7,10 +7,10 @@
 
 import ArticleCard from "./ArticleCard.astro";
 import type { PostCardData } from "../../types";
-import { contentConfig } from "../../lib/config";
+import { contentConfig, allPosts } from "../../lib/config";
 
-const placeholderPosts = contentConfig.pages.home.articleList
-  .placeholderPosts as unknown as PostCardData[];
+// 首页展示前7篇文章（已按日期降序排列在 allPosts 中）
+const placeholderPosts = allPosts.slice(0, 7) as unknown as PostCardData[];
 ---
 
 <section class="article-list-section" id="article-list">

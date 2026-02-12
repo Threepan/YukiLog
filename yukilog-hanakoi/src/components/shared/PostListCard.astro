@@ -1,0 +1,198 @@
+---
+// ================================
+// 文章列表卡片组件（通用）
+// 用于主题详情页、标签页等场景
+// 支持封面图自适应高度展示
+// ================================
+
+interface Props {
+  post: {
+    title: string;
+    slug: string;
+    summary?: string | null;
+    cover_image?: string | null;
+    created_at: string;
+    tags?: ReadonlyArray<{ readonly name: string; readonly slug: string }>;
+  };
+  index: number;
+}
+
+const { post, index } = Astro.props;
+const hasCover = !!post.cover_image;
+---
+
+<a
+  href={`/posts/${post.slug}`}
+  class:list={["post-list-card", { "has-cover": hasCover }]}
+  style={`--pi: ${index}`}
+>
+  {hasCover && (
+    <div class="plc-cover">
+      <img src={post.cover_image!} alt={post.title} loading="lazy" />
+    </div>
+  )}
+  <div class="plc-info">
+    <h3 class="plc-title">{post.title}</h3>
+    {post.summary && <p class="plc-summary">{post.summary}</p>}
+    <div class="plc-meta">
+      <time class="plc-date">
+        {new Date(post.created_at).toLocaleDateString("zh-CN", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        })}
+      </time>
+      {post.tags && post.tags.length > 0 && (
+        <div class="plc-tags">
+          {post.tags.map((tag) => (
+            <span class="plc-tag">#{tag.name}</span>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+</a>
+
+<style lang="scss">
+  .post-list-card {
+    display: block;
+    padding: $spacing-lg $spacing-xl;
+    background: white;
+    border-radius: $radius-sm;
+    text-decoration: none;
+    box-shadow: $shadow-sm;
+    border-left: 3px solid transparent;
+    overflow: hidden;
+    transition:
+      box-shadow $transition-base $ease-gentle,
+      transform $transition-base $ease-gentle,
+      border-color $transition-base $ease-gentle;
+
+    // 入场动画
+    opacity: 0;
+    transform: translateY(16px);
+    transition:
+      opacity 500ms $ease-gentle,
+      transform 500ms $ease-gentle,
+      box-shadow $transition-base $ease-gentle,
+      border-color $transition-base $ease-gentle;
+    transition-delay: calc(var(--pi) * 60ms);
+
+    &.has-cover {
+      padding: 0;
+      border-left: none;
+
+      .plc-info {
+        padding: $spacing-md $spacing-xl $spacing-lg;
+      }
+    }
+
+    &.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    &:hover {
+      box-shadow: $shadow-blue;
+      transform: translateY(-2px);
+      border-left-color: $lian-blue;
+
+      .plc-title {
+        color: $lian-blue;
+      }
+
+      .plc-cover img {
+        transform: scale(1.06);
+      }
+    }
+
+    &:nth-child(even):hover {
+      box-shadow: $shadow-pink;
+      border-left-color: $lian-pink;
+
+      .plc-title {
+        color: $lian-pink;
+      }
+    }
+  }
+
+  .plc-cover {
+    width: 100%;
+    min-height: 140px;
+    max-height: 320px;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: auto;
+      min-height: 140px;
+      max-height: 320px;
+      object-fit: cover;
+      display: block;
+      transition: transform 500ms $ease-gentle;
+    }
+  }
+
+  .plc-info {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+  }
+
+  .plc-title {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
+    color: $lian-text;
+    margin: 0;
+    line-height: $line-height-tight;
+    transition: color $transition-fast $ease-gentle;
+  }
+
+  .plc-summary {
+    font-size: $font-size-sm;
+    color: $lian-text-light;
+    line-height: $line-height-base;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .plc-meta {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    margin-top: $spacing-xs;
+  }
+
+  .plc-date {
+    font-size: $font-size-xs;
+    color: $lian-text-muted;
+    font-family: $font-family-code;
+  }
+
+  .plc-tags {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .plc-tag {
+    font-size: $font-size-xs;
+    color: $lian-pink;
+    background: rgba($lian-pink, 0.08);
+    padding: 1px 8px;
+    border-radius: 12px;
+  }
+
+  @media (max-width: $container-sm) {
+    .post-list-card {
+      padding: $spacing-md;
+
+      &.has-cover {
+        padding: 0;
+      }
+    }
+  }
+</style>

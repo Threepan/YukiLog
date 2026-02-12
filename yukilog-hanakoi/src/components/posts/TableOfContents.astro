@@ -82,11 +82,11 @@ const minLevel = Math.min(...headings.map((h) => h.level));
       if (index >= 0 && index < tocItems.length) {
         const activeItem = tocItems[index];
         const link = activeItem.querySelector(".toc-link") as HTMLElement;
-        if (link && scrollArea) {
+        if (link && scrollArea && indicator) {
           const scrollRect = scrollArea.getBoundingClientRect();
           const linkRect = link.getBoundingClientRect();
           const top = linkRect.top - scrollRect.top + scrollArea.scrollTop;
-          const height = linkRect.offsetHeight;
+          const height = link.offsetHeight;
           indicator.style.transform = `translateY(${top}px)`;
           indicator.style.height = `${height}px`;
           indicator.style.opacity = "1";
@@ -105,7 +105,7 @@ const minLevel = Math.min(...headings.map((h) => h.level));
             scrollArea.scrollTo({ top: itemBottom - areaHeight * 0.8, behavior: "smooth" });
           }
         }
-      } else {
+      } else if (indicator) {
         indicator.style.opacity = "0";
       }
     }

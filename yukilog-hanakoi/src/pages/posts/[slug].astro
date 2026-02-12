@@ -2,20 +2,18 @@
 import BlogLayout from "../../layouts/BlogLayout.astro";
 import ProfileCard from "../../components/home/ProfileCard.astro";
 import TableOfContents from "../../components/posts/TableOfContents.astro";
-import { contentConfig, siteConfig } from "../../lib/config";
+import { contentConfig, siteConfig, allPosts } from "../../lib/config";
 import { renderMarkdown } from "../../lib/markdown";
 import markdownSource from "../../../TODOTEST.md?raw";
 
 export function getStaticPaths() {
-  return contentConfig.pages.home.articleList.placeholderPosts.map((post) => ({
+  return allPosts.map((post) => ({
     params: { slug: post.slug },
   }));
 }
 
-const placeholderPosts = contentConfig.pages.home.articleList.placeholderPosts;
-
 const { slug } = Astro.params;
-const currentPost = placeholderPosts.find((post) => post.slug === slug);
+const currentPost = allPosts.find((post) => post.slug === slug);
 
 if (!currentPost) {
   throw new Error(`Post not found: ${slug}`);
@@ -46,6 +44,10 @@ const { html: markdownHtml, headings } = await renderMarkdown(markdownSource);
         class="post-content"
         style={`--h1p:"${hp.h1}";--h2p:"${hp.h2}";--h3p:"${hp.h3}";--h4p:"${hp.h4}";--h5p:"${hp.h5}";--h6p:"${hp.h6}";`}
       >
+        <nav class="post-back-nav">
+          <a href="javascript:void(0)" class="post-back-link" id="post-back-link">← 返回</a>
+        </nav>
+
         <header class="post-header">
           <h1 class="post-title">{currentPost.title}</h1>
           <p class="post-summary">{currentPost.summary}</p>
@@ -62,6 +64,20 @@ const { html: markdownHtml, headings } = await renderMarkdown(markdownSource);
 
         <div class="markdown-body" set:html={markdownHtml} />
       </article>
+
+      <script>
+        const backLink = document.getElementById('post-back-link');
+        if (backLink) {
+          backLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (document.referrer && new URL(document.referrer).origin === window.location.origin) {
+              history.back();
+            } else {
+              window.location.href = '/';
+            }
+          });
+        }
+      </script>
 
       <aside class="post-toc">
         {headings.length > 0 && <TableOfContents headings={headings} />}
@@ -114,6 +130,28 @@ const { html: markdownHtml, headings } = await renderMarkdown(markdownSource);
     box-shadow: $shadow-blue;
     padding: $spacing-xl;
     width: 100%;
+  }
+
+  .post-back-nav {
+    margin-bottom: $spacing-md;
+  }
+
+  .post-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: $font-size-sm;
+    color: $lian-text-muted;
+    text-decoration: none;
+    transition: color $transition-fast $ease-gentle;
+
+    &:hover {
+      color: $lian-blue;
+    }
+
+    &::after {
+      content: none !important;
+    }
   }
 
   .post-header {

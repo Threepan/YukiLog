@@ -2,20 +2,26 @@
 // ================================
 // 标签页面
 // Hero + 标签云 + 点击标签后展示文章列表
+// 文章卡片全部在服务端预渲染（PostListCard 组件），
+// JS 仅负责切换可见性，保证样式完全一致。
 // ================================
 
 import BlogLayout from "../layouts/BlogLayout.astro";
 import PageHero from "../components/shared/PageHero.astro";
-import { contentConfig } from "../lib/config";
+import PostListCard from "../components/shared/PostListCard.astro";
+import { contentConfig, derivedData } from "../lib/config";
 import { navIcons } from "../lib/svg-icons";
 
 const tagIcon = navIcons.tag;
 
 const tagsPageConfig = contentConfig.pages.tags;
-const tags = tagsPageConfig.tags;
-const tagPosts = tagsPageConfig.tagPosts;
+const tags = derivedData.tagCloud;
+const tagPosts = derivedData.tagPosts;
 const colorCycle = tagsPageConfig.colorCycle;
 const colorNames = tagsPageConfig.colorNames;
+
+// 为每个拥有文章的标签准备数据
+const tagSlugsWithPosts = Object.keys(tagPosts);
 ---
 
 <BlogLayout title="标签 - YukiLog" stickyNav>
@@ -46,24 +52,28 @@ const colorNames = tagsPageConfig.colorNames;
         <h2 class="tag-posts-title" id="tagPostsTitle"></h2>
         <button class="tag-posts-close" id="tagPostsClose" aria-label="关闭">×</button>
       </div>
-      <div class="tag-posts-list" id="tagPostsList"></div>
+
+      {/* 预渲染每个标签的文章列表，默认隐藏 */}
+      {tagSlugsWithPosts.map((slug) => (
+        <div class="tag-group" data-tag-group={slug}>
+          {tagPosts[slug].map((post, i) => (
+            <PostListCard post={post} index={i} />
+          ))}
+        </div>
+      ))}
+
       <p class="tag-posts-empty" id="tagPostsEmpty">{tagsPageConfig.emptyText}</p>
     </section>
   </div>
 </BlogLayout>
 
-<script define:vars={{ tagPosts }}>
-  // 将 Astro 传入的占位数据挂到 window 上供使用
-  window.__tagPosts = tagPosts;
-</script>
-
 <script>
   const bubbles = document.querySelectorAll<HTMLElement>('.tag-bubble');
   const postsSection = document.getElementById('tagPosts')!;
   const postsTitle = document.getElementById('tagPostsTitle')!;
-  const postsList = document.getElementById('tagPostsList')!;
   const postsEmpty = document.getElementById('tagPostsEmpty')!;
   const postsClose = document.getElementById('tagPostsClose')!;
+  const tagGroups = document.querySelectorAll<HTMLElement>('.tag-group');
 
   let activeSlug: string | null = null;
 
@@ -72,9 +82,8 @@ const colorNames = tagsPageConfig.colorNames;
     (entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          const section = entry.target as HTMLElement;
-          section.classList.add('visible');
-          cloudObserver.unobserve(section);
+          entry.target.classList.add('visible');
+          cloudObserver.unobserve(entry.target);
         }
       });
     },
@@ -83,13 +92,44 @@ const colorNames = tagsPageConfig.colorNames;
   const cloudSection = document.querySelector('.tag-cloud-section');
   if (cloudSection) cloudObserver.observe(cloudSection);
 
+  // 卡片入场 observer
+  const cardObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          cardObserver.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.1 }
+  );
+
+  function showTagGroup(slug: string) {
+    // 隐藏所有标签组
+    tagGroups.forEach((g) => g.classList.remove('active'));
+    postsEmpty.style.display = 'none';
+
+    // 显示目标标签组
+    const target = document.querySelector<HTMLElement>(`.tag-group[data-tag-group="${slug}"]`);
+    if (target) {
+      target.classList.add('active');
+      // 为卡片触发入场动画
+      target.querySelectorAll<HTMLElement>('.post-list-card').forEach((card) => {
+        card.classList.remove('visible');
+        cardObserver.observe(card);
+      });
+    } else {
+      postsEmpty.style.display = 'block';
+    }
+  }
+
   // 点击标签
   bubbles.forEach((btn) => {
     btn.addEventListener('click', () => {
       const slug = btn.dataset.slug!;
       const name = btn.querySelector('.tag-name')!.textContent!;
 
-      // 切换高亮
       if (activeSlug === slug) {
         closePostsPanel();
         return;
@@ -99,37 +139,10 @@ const colorNames = tagsPageConfig.colorNames;
       bubbles.forEach((b) => b.classList.remove('active'));
       btn.classList.add('active');
 
-      // 渲染文章
-      const tagPosts = (window as any).__tagPosts as Record<
-        string,
-        Array<{ title: string; slug: string; created_at: string; summary: string }>
-      >;
-      const posts = tagPosts[slug] || [];
-
       postsTitle.textContent = `# ${name}`;
-
-      if (posts.length > 0) {
-        postsEmpty.style.display = 'none';
-        postsList.innerHTML = posts
-          .map(
-            (p, i) => `
-            <a href="/posts/${p.slug}" class="tag-post-card" style="--pi: ${i}">
-              <div class="tag-post-info">
-                <h3 class="tag-post-title">${p.title}</h3>
-                <p class="tag-post-summary">${p.summary}</p>
-              </div>
-              <time class="tag-post-date">${new Date(p.created_at).toLocaleDateString('zh-CN', { month: 'long', day: 'numeric' })}</time>
-            </a>`
-          )
-          .join('');
-      } else {
-        postsList.innerHTML = '';
-        postsEmpty.style.display = 'block';
-      }
-
+      showTagGroup(slug);
       postsSection.classList.add('show');
 
-      // 平滑滚动到文章区域
       postsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   });
@@ -140,7 +153,18 @@ const colorNames = tagsPageConfig.colorNames;
   function closePostsPanel() {
     activeSlug = null;
     bubbles.forEach((b) => b.classList.remove('active'));
+    tagGroups.forEach((g) => g.classList.remove('active'));
     postsSection.classList.remove('show');
+  }
+
+  // 支持 ?tag=xxx 自动选中标签
+  const urlParams = new URLSearchParams(window.location.search);
+  const autoTag = urlParams.get('tag');
+  if (autoTag) {
+    const targetBtn = document.querySelector<HTMLElement>(`.tag-bubble[data-slug="${autoTag}"]`);
+    if (targetBtn) {
+      setTimeout(() => targetBtn.click(), 700);
+    }
   }
 </script>
 
@@ -199,65 +223,35 @@ const colorNames = tagsPageConfig.colorNames;
       opacity 400ms $ease-gentle,
       color $transition-fast $ease-gentle;
     
-    // 入场动画
     opacity: 0;
     transform: translateY(12px);
     transition-delay: calc(var(--i) * 40ms);
 
-    // 根据 size 调整字号
     &[data-size="1"] { font-size: $font-size-xs; padding: 6px 14px; }
     &[data-size="2"] { font-size: $font-size-sm; }
     &[data-size="3"] { font-size: $font-size-base; }
     &[data-size="4"] { font-size: $font-size-lg; padding: 10px 22px; }
     &[data-size="5"] { font-size: $font-size-xl; padding: 12px 26px; }
 
-    // 随机背景色
     &[data-color="pink"] {
       background: rgba($lian-pink, 0.12);
       border-color: rgba($lian-pink, 0.2);
-      
-      .tag-count {
-        background: rgba($lian-pink, 0.15);
-        color: $lian-pink;
-      }
-
-      &:hover {
-        background: rgba($lian-pink, 0.2);
-        box-shadow: $shadow-pink;
-        transform: translateY(-2px);
-      }
+      .tag-count { background: rgba($lian-pink, 0.15); color: $lian-pink; }
+      &:hover { background: rgba($lian-pink, 0.2); box-shadow: $shadow-pink; transform: translateY(-2px); }
     }
 
     &[data-color="blue"] {
       background: rgba($lian-blue, 0.12);
       border-color: rgba($lian-blue, 0.2);
-
-      .tag-count {
-        background: rgba($lian-blue, 0.15);
-        color: $lian-blue;
-      }
-
-      &:hover {
-        background: rgba($lian-blue, 0.2);
-        box-shadow: $shadow-blue;
-        transform: translateY(-2px);
-      }
+      .tag-count { background: rgba($lian-blue, 0.15); color: $lian-blue; }
+      &:hover { background: rgba($lian-blue, 0.2); box-shadow: $shadow-blue; transform: translateY(-2px); }
     }
 
     &[data-color="white"] {
       background: white;
       border-color: $lian-border;
-
-      .tag-count {
-        background: rgba($lian-text-muted, 0.1);
-        color: $lian-text-muted;
-      }
-
-      &:hover {
-        background: $lian-white;
-        box-shadow: $shadow-sm;
-        transform: translateY(-2px);
-      }
+      .tag-count { background: rgba($lian-text-muted, 0.1); color: $lian-text-muted; }
+      &:hover { background: $lian-white; box-shadow: $shadow-sm; transform: translateY(-2px); }
     }
 
     &.active {
@@ -265,11 +259,7 @@ const colorNames = tagsPageConfig.colorNames;
       color: white;
       border-color: $lian-blue;
       box-shadow: $shadow-blue-hover;
-
-      .tag-count {
-        background: rgba(white, 0.25);
-        color: white;
-      }
+      .tag-count { background: rgba(white, 0.25); color: white; }
     }
   }
 
@@ -296,11 +286,10 @@ const colorNames = tagsPageConfig.colorNames;
     opacity: 0;
     transition:
       max-height 500ms $ease-gentle,
-      opacity 400ms $ease-gentle,
-      margin-top 400ms $ease-gentle;
+      opacity 400ms $ease-gentle;
 
     &.show {
-      max-height: 2000px;
+      max-height: 5000px;
       opacity: 1;
     }
   }
@@ -344,80 +333,15 @@ const colorNames = tagsPageConfig.colorNames;
     }
   }
 
-  .tag-posts-list {
-    display: flex;
+  // 标签文章组：默认隐藏，激活后显示
+  .tag-group {
+    display: none;
     flex-direction: column;
-    gap: $spacing-sm;
-  }
-
-  // 文章卡片（JS 动态生成，使用 :global）
-  :global(.tag-post-card) {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
     gap: $spacing-md;
-    padding: $spacing-md $spacing-lg;
-    background: white;
-    border-radius: $radius-sm;
-    text-decoration: none;
-    box-shadow: $shadow-sm;
-    transition:
-      box-shadow $transition-base $ease-gentle,
-      transform $transition-base $ease-gentle;
-    
-    // 入场动画
-    animation: post-card-in 400ms $ease-gentle forwards;
-    animation-delay: calc(var(--pi) * 80ms);
-    opacity: 0;
 
-    &:hover {
-      box-shadow: $shadow-pink;
-      transform: translateY(-2px);
+    &.active {
+      display: flex;
     }
-  }
-
-  @keyframes post-card-in {
-    from {
-      opacity: 0;
-      transform: translateY(12px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  :global(.tag-post-info) {
-    flex: 1;
-    min-width: 0;
-  }
-
-  :global(.tag-post-title) {
-    font-size: $font-size-base;
-    font-weight: $font-weight-medium;
-    color: $lian-text;
-    margin: 0 0 4px;
-    transition: color $transition-fast $ease-gentle;
-  }
-
-  :global(.tag-post-card:hover .tag-post-title) {
-    color: $lian-blue;
-  }
-
-  :global(.tag-post-summary) {
-    font-size: $font-size-sm;
-    color: $lian-text-light;
-    margin: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  :global(.tag-post-date) {
-    font-size: $font-size-xs;
-    color: $lian-text-muted;
-    flex-shrink: 0;
-    font-family: $font-family-code;
   }
 
   .tag-posts-empty {
@@ -438,12 +362,6 @@ const colorNames = tagsPageConfig.colorNames;
     }
 
     .tag-cloud {
-      gap: $spacing-xs;
-    }
-
-    :global(.tag-post-card) {
-      flex-direction: column;
-      align-items: flex-start;
       gap: $spacing-xs;
     }
   }
