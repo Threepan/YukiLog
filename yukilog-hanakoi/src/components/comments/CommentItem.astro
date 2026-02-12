@@ -1,0 +1,282 @@
+---
+// ================================
+// 单条评论组件（递归渲染）
+// 显示评论内容、头像、元信息、回复按钮
+// ================================
+
+import { marked } from 'marked';
+import type { CommentNode } from '../../lib/mock-comments';
+import { getRelativeTime } from '../../lib/mock-comments';
+
+interface Props {
+  node: CommentNode;
+  depth?: number; // 嵌套深度
+}
+
+const { node, depth = 0 } = Astro.props;
+const { comment, children } = node;
+
+// 配置 marked 用于评论的 markdown 渲染
+marked.setOptions({
+  breaks: true, // 支持换行
+  gfm: true,    // GitHub Flavored Markdown
+});
+
+// 渲染评论内容（Markdown）
+const renderedContent = marked.parse(comment.content);
+const relativeTime = getRelativeTime(comment.created_at);
+
+// 最大嵌套深度（避免过深）
+const maxDepth = 4;
+const isMaxDepth = depth >= maxDepth;
+---
+
+<div class="comment-item" data-comment-id={comment.id} data-depth={depth}>
+  
+  <div class="comment-card">
+    <!-- 头像 -->
+    <div class="comment-avatar">
+      <img src={comment.avatar_url} alt={comment.guest_nick} loading="lazy" />
+    </div>
+    
+    <!-- 内容区 -->
+    <div class="comment-body">
+      <!-- 头部：用户信息 -->
+      <div class="comment-header">
+        {comment.guest_website ? (
+          <a href={comment.guest_website} target="_blank" rel="noopener" class="comment-author">
+            {comment.guest_nick}
+          </a>
+        ) : (
+          <span class="comment-author">{comment.guest_nick}</span>
+        )}
+        
+        <span class="comment-time">{relativeTime}</span>
+      </div>
+
+      {comment.visitor_info && (
+        <div class="comment-meta" title={comment.visitor_info}>
+          <span class="meta-icon">📍</span>
+          <span class="meta-text">{comment.visitor_info}</span>
+        </div>
+      )}
+      
+      <!-- 内容 -->
+      <div class="comment-content markdown-body" set:html={renderedContent} />
+      
+      <!-- 操作栏 -->
+      <div class="comment-actions">
+        {!isMaxDepth && (
+          <button class="btn-reply" data-comment-id={comment.id} data-comment-nick={comment.guest_nick}>
+            💬 回复
+          </button>
+        )}
+      </div>
+      
+      <!-- 回复表单容器（动态插入） -->
+      <div class="reply-form-container" id={`reply-container-${comment.id}`}></div>
+    </div>
+  </div>
+  
+  <!-- 子评论（递归） - 稍后用连接线渲染 -->
+  {children.length > 0 && (
+    <div class="comment-children">
+      {children.map((child) => (
+        <Astro.self node={child} depth={depth + 1} />
+      ))}
+    </div>
+  )}
+</div>
+</div>
+
+<style lang="scss">
+@use "sass:color";
+
+  .comment-item {
+    position: relative;
+    margin-bottom: 0;
+    z-index: 1; // 显示在连接线上方
+    // 随机位置和旋转将由JS动态设置
+  }
+
+  .comment-card {
+    position: relative;
+    display: flex;
+    gap: 10px;
+    padding: 12px 14px;
+    background: $lian-white;
+    border: 1px solid rgba($lian-pink, 0.3);
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba($lian-text, 0.06);
+    transition:
+      transform $transition-fast $ease-gentle,
+      box-shadow $transition-fast $ease-gentle;
+    
+    &:hover {
+      box-shadow: 0 3px 10px rgba($lian-blue, 0.15);
+      z-index: 2;
+    }
+  }
+
+  .comment-avatar {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    
+    img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 1.5px solid rgba($lian-pink, 0.25);
+      object-fit: cover;
+    }
+  }
+
+  .comment-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .comment-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+    line-height: 1.2;
+  }
+
+  .comment-author {
+    font-size: 13px;
+    font-weight: $font-weight-semibold;
+    color: $lian-text;
+    text-decoration: none;
+    transition: color $transition-fast $ease-gentle;
+    
+    &[href]:hover {
+      color: $lian-pink;
+    }
+  }
+
+  .comment-time {
+    font-size: 11px;
+    color: $lian-text-muted;
+    letter-spacing: 0.02em;
+  }
+
+  .comment-meta {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    max-width: 100%;
+    margin-bottom: 6px;
+    padding: 3px 7px;
+    font-size: 10px;
+    color: $lian-text-muted;
+    background: rgba($lian-blue, 0.05);
+    border-left: 2px solid rgba($lian-blue, 0.3);
+    border-radius: 2px;
+  }
+
+  .meta-icon {
+    flex-shrink: 0;
+    font-size: 10px;
+  }
+
+  .meta-text {
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .comment-content {
+    margin-bottom: 6px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: $lian-text-light;
+    word-wrap: break-word;
+    
+    // Markdown 样式
+    :global(p) {
+      margin: 0 0 6px;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+    
+    :global(strong) {
+      font-weight: $font-weight-semibold;
+      color: $lian-text;
+    }
+    
+    :global(em) {
+      font-style: italic;
+    }
+    
+    :global(a) {
+      color: $lian-blue;
+      text-decoration: none;
+      border-bottom: 1px solid color.adjust($lian-blue, $lightness: 20%);
+      transition: border-color $transition-fast $ease-gentle;
+      
+      &:hover {
+        border-color: $lian-blue;
+      }
+    }
+    
+    :global(code) {
+      padding: 2px 5px;
+      background: rgba($lian-text-muted, 0.08);
+      border-radius: 3px;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 0.9em;
+      color: color.adjust($lian-pink, $lightness: -10%);
+    }
+  }
+
+  .comment-actions {
+    display: flex;
+    gap: $spacing-sm;
+  }
+
+  .btn-reply {
+    padding: 4px 10px;
+    background: rgba($lian-blue, 0.06);
+    border: 1px solid rgba($lian-blue, 0.2);
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: $font-weight-medium;
+    font-family: inherit;
+    color: $lian-blue;
+    cursor: pointer;
+    transition:
+      background $transition-fast $ease-gentle,
+      border-color $transition-fast $ease-gentle;
+    
+    &:hover {
+      background: rgba($lian-blue, 0.10);
+      border-color: rgba($lian-blue, 0.3);
+    }
+  }
+
+  .reply-form-container {
+    margin-top: 8px;
+  }
+
+  .comment-children {
+    //暂时留空，稍后添加手绘连接线
+  }
+
+  @media (max-width: $container-sm) {
+    .comment-avatar {
+      width: 32px;
+      height: 32px;
+    }
+    
+    .comment-card {
+      padding: 10px 12px;
+      gap: 8px;
+    }
+  }
+</style>

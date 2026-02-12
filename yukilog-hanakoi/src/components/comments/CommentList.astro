@@ -1,0 +1,118 @@
+---
+// ================================
+// 评论列表组件
+// 渲染整个评论树
+// ================================
+
+import CommentItem from './CommentItem.astro';
+import type { CommentNode } from '../../lib/mock-comments';
+
+interface Props {
+  comments: CommentNode[];
+  totalCount: number;
+}
+
+const { comments, totalCount } = Astro.props;
+---
+
+<div class="comment-list">
+  {totalCount > 0 ? (
+    <>
+      <div class="comment-list-header">
+        <h3 class="comment-count">
+          <span class="count-number">{totalCount}</span> 条评论
+        </h3>
+      </div>
+      
+      <div class="comment-list-body">
+        <!-- SVG 连接线层 -->
+        <svg class="connection-lines" id="comment-connections">
+          <!-- 连接线将通过JS动态生成 -->
+        </svg>
+        
+        {comments.map((node) => (
+          <CommentItem node={node} />
+        ))}
+      </div>
+    </>
+  ) : (
+    <div class="empty-state">
+      <div class="empty-icon">💬</div>
+      <p class="empty-text">这里还没有评论，来做第一个进来的人吧~ ~</p>
+    </div>
+  )}
+</div>
+
+<style lang="scss">
+@use "sass:color";
+
+  .comment-list {
+    margin-top: $spacing-md;
+  }
+
+  .comment-list-header {
+    margin-bottom: $spacing-md;
+    padding-bottom: $spacing-xs;
+    border-bottom: 2px solid $lian-divider;
+  }
+
+  .comment-count {
+    font-size: $font-size-base;
+    font-weight: $font-weight-semibold;
+    color: $lian-text;
+    margin: 0;
+    
+    .count-number {
+      color: $lian-pink;
+      font-size: $font-size-lg;
+    }
+  }
+
+  .comment-list-body {
+    position: relative;
+    // 子元素由 CommentItem 控制
+  }
+  
+  .connection-lines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: visible;
+  }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: $spacing-xl $spacing-lg;
+    text-align: center;
+  }
+
+  .empty-icon {
+    font-size: 48px;
+    opacity: 0.3;
+    margin-bottom: $spacing-sm;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .empty-text {
+    font-size: $font-size-sm;
+    color: $lian-text-muted;
+    font-style: italic;
+    margin: 0;
+  }
+</style>

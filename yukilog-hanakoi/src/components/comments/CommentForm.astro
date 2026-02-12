@@ -1,0 +1,440 @@
+---
+// ================================
+// 评论表单组件
+// 支持发表新评论和回复已有评论
+// ================================
+
+interface Props {
+  parentId?: number; // 回复时传入父评论 ID
+  parentNick?: string; // 回复时显示 @ 目标用户
+  isReply?: boolean; // 是否为回复表单
+}
+
+const { parentId, parentNick, isReply = false } = Astro.props;
+const formId = isReply ? `reply-form-${parentId}` : 'main-comment-form';
+---
+
+<div class={`comment-form ${isReply ? 'reply-form' : 'main-form'}`}>
+  {isReply && parentNick && (
+    <div class="reply-target">
+      <span class="reply-icon">↩️</span>
+      回复 <strong>@{parentNick}</strong>
+    </div>
+  )}
+  
+  <form id={formId} class="form-content">
+    <input type="hidden" name="parent_id" value={parentId || ''} />
+    
+    <!-- 主输入区 - 始终可见 -->
+    <div class="form-field main-input">
+      <textarea
+        id={`${formId}-content`}
+        name="content"
+        placeholder="💭 写点什么..."
+        required
+        rows={isReply ? 4 : 4}
+        maxlength="500"
+        data-expand-trigger
+      ></textarea>
+      <div class="char-count">
+        <span class="current">0</span> / 500
+      </div>
+    </div>
+    
+    <!-- 扩展字段区 - focus后展开 -->
+    <div class="expandable-fields" data-expandable>
+      <div class="form-row">
+        <div class="form-field">
+          <label for={`${formId}-nick`}>昵称 *</label>
+          <input
+            type="text"
+            id={`${formId}-nick`}
+            name="nickname"
+            placeholder="你的昵称"
+            required
+            maxlength="20"
+          />
+        </div>
+        
+        <div class="form-field">
+          <label for={`${formId}-email`}>邮箱 *</label>
+          <input
+            type="email"
+            id={`${formId}-email`}
+            name="email"
+            placeholder="your@email.com"
+            required
+          />
+        </div>
+      </div>
+      
+      <div class="form-field">
+        <label for={`${formId}-website`}>个人网站</label>
+        <input
+          type="url"
+          id={`${formId}-website`}
+          name="website"
+          placeholder="https://your-site.com （可选）"
+        />
+      </div>
+      
+      <div class="form-actions">
+        {isReply && (
+          <button type="button" class="btn-cancel" data-cancel-reply>
+            取消
+          </button>
+        )}
+        <button type="submit" class="btn-submit">
+          <span class="submit-text">{isReply ? '💬 回复' : '✉️ 提交'}</span>
+          <span class="submit-loading" style="display: none;">提交中...</span>
+        </button>
+      </div>
+      
+      <div class="form-hint">
+        支持 Markdown 基础语法 · 提交后需等待审核
+      </div>
+    </div>
+  </form>
+</div>
+
+<style lang="scss">
+@use "sass:color";
+
+  .comment-form {
+    background: $lian-white;
+    border: 1px solid rgba($lian-pink, 0.25);
+    border-radius: $radius-md;
+    padding: $spacing-md $spacing-lg;
+    box-shadow: 0 1px 3px rgba($lian-text, 0.04);
+    transition: box-shadow 300ms $ease-gentle;
+    
+    &.main-form {
+      margin-bottom: $spacing-lg;
+    }
+    
+    &.expanded {
+      box-shadow: 0 2px 8px rgba($lian-blue, 0.08);
+    }
+  }
+
+  .reply-target {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+    margin-bottom: $spacing-sm;
+    padding: 6px $spacing-sm;
+    background: rgba($lian-blue, 0.06);
+    border-left: 2px solid $lian-blue;
+    border-radius: 4px;
+    font-size: $font-size-xs;
+    color: $lian-text-light;
+
+    .reply-icon {
+      font-size: $font-size-sm;
+    }
+
+    strong {
+      color: $lian-blue;
+      font-weight: $font-weight-semibold;
+    }
+  }
+
+  .main-input {
+    margin-bottom: 0 !important;
+    
+    textarea {
+      border-radius: 8px;
+      min-height: 64px;
+      font-size: $font-size-sm;
+      
+      &::placeholder {
+        color: $lian-text-muted;
+        font-size: $font-size-sm;
+      }
+    }
+  }
+  
+  .expandable-fields {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition:
+      max-height 300ms $ease-gentle,
+      opacity 250ms $ease-gentle,
+      margin-top 300ms $ease-gentle;
+    
+    &.expanded {
+      max-height: 500px;
+      opacity: 1;
+      margin-top: $spacing-md;
+    }
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: $spacing-sm;
+    margin-bottom: $spacing-sm;
+  }
+
+  .form-field {
+    position: relative;
+    margin-bottom: $spacing-sm;
+
+    label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: $font-size-xs;
+      font-weight: $font-weight-medium;
+      color: $lian-text-light;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      padding: 8px $spacing-sm;
+      background: $lian-bg;
+      border: 1.5px solid color.adjust($lian-pink, $lightness: 28%);
+      border-radius: 6px;
+      font-size: $font-size-sm;
+      font-family: inherit;
+      color: $lian-text;
+      transition:
+        border-color $transition-fast $ease-gentle,
+        background $transition-fast $ease-gentle;
+
+      &::placeholder {
+        color: $lian-text-muted;
+      }
+
+      &:focus {
+        outline: none;
+        border-color: $lian-pink;
+        background: white;
+      }
+    }
+
+    textarea {
+      resize: vertical;
+      line-height: $line-height-base;
+      min-height: 70px;
+    }
+  }
+
+  .char-count {
+    position: absolute;
+    right: 8px;
+    bottom: -18px;
+    font-size: 11px;
+    color: $lian-text-muted;
+
+    .current {
+      color: $lian-text-light;
+      font-weight: $font-weight-medium;
+    }
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: $spacing-xs;
+    margin-top: $spacing-sm;
+  }
+
+  .btn-cancel,
+  .btn-submit {
+    padding: 7px $spacing-md;
+    border: none;
+    border-radius: 6px;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-medium;
+    font-family: inherit;
+    cursor: pointer;
+    transition:
+      background $transition-fast $ease-gentle,
+      box-shadow $transition-fast $ease-gentle,
+      transform $transition-fast $ease-gentle;
+  }
+
+  .btn-cancel {
+    background: rgba($lian-text-muted, 0.1);
+    color: $lian-text-light;
+
+    &:hover {
+      background: rgba($lian-text-muted, 0.15);
+    }
+  }
+
+  .btn-submit {
+    background: linear-gradient(135deg, $lian-pink, color.adjust($lian-pink, $lightness: 8%));
+    color: white;
+    box-shadow: 0 1px 3px rgba($lian-pink, 0.3);
+
+    &:hover {
+      box-shadow: 0 2px 6px rgba($lian-pink, 0.4);
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+  }
+
+  .form-hint {
+    margin-top: $spacing-sm;
+    font-size: 11px;
+    color: $lian-text-muted;
+    font-style: italic;
+    text-align: center;
+  }
+
+  @media (max-width: $container-sm) {
+    .form-row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script>
+  // 表单交互逻辑
+  function initCommentForm() {
+    const forms = document.querySelectorAll<HTMLFormElement>('.comment-form form');
+    
+    forms.forEach((form) => {
+      const textarea = form.querySelector<HTMLTextAreaElement>('[data-expand-trigger]');
+      const expandable = form.querySelector<HTMLElement>('[data-expandable]');
+      const commentFormContainer = form.closest('.comment-form');
+      const charCount = form.querySelector<HTMLElement>('.char-count .current');
+      const submitBtn = form.querySelector<HTMLButtonElement>('.btn-submit');
+      const cancelBtn = form.querySelector<HTMLButtonElement>('[data-cancel-reply]');
+      
+      // 渐进式展开 - Focus时展开额外字段
+      let isExpanded = false;
+      if (textarea && expandable) {
+        const expandForm = () => {
+          if (!isExpanded) {
+            expandable.classList.add('expanded');
+            commentFormContainer?.classList.add('expanded');
+            isExpanded = true;
+          }
+        };
+        
+        textarea.addEventListener('focus', expandForm);
+        textarea.addEventListener('input', expandForm);
+      }
+      
+      // 字符计数
+      if (textarea && charCount) {
+        textarea.addEventListener('input', () => {
+          charCount.textContent = textarea.value.length.toString();
+        });
+      }
+      
+      // 本地存储（防止误刷新丢失）
+      const formId = form.id;
+      const storageKey = `comment-form-${formId}`;
+      
+      // 恢复保存的数据
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        try {
+          const data = JSON.parse(saved);
+          (form.querySelector('[name="nickname"]') as HTMLInputElement).value = data.nickname || '';
+          (form.querySelector('[name="email"]') as HTMLInputElement).value = data.email || '';
+          (form.querySelector('[name="website"]') as HTMLInputElement).value = data.website || '';
+          if (textarea) textarea.value = data.content || '';
+          if (charCount) charCount.textContent = (data.content || '').length.toString();
+          
+          // 如果有保存的内容，自动展开
+          if (data.content && expandable) {
+            expandable.classList.add('expanded');
+            commentFormContainer?.classList.add('expanded');
+            isExpanded = true;
+          }
+        } catch (e) {
+          console.error('Failed to parse saved form data', e);
+        }
+      }
+      
+      // 自动保存
+      form.addEventListener('input', () => {
+        const data = {
+          nickname: (form.querySelector('[name="nickname"]') as HTMLInputElement).value,
+          email: (form.querySelector('[name="email"]') as HTMLInputElement).value,
+          website: (form.querySelector('[name="website"]') as HTMLInputElement).value,
+          content: textarea?.value || '',
+        };
+        localStorage.setItem(storageKey, JSON.stringify(data));
+      });
+      
+      // 表单提交
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        if (!submitBtn) return;
+        
+        // 显示 loading
+        const submitText = submitBtn.querySelector('.submit-text') as HTMLElement;
+        const submitLoading = submitBtn.querySelector('.submit-loading') as HTMLElement;
+        
+        submitText.style.display = 'none';
+        submitLoading.style.display = 'inline';
+        submitBtn.disabled = true;
+        
+        // 模拟提交（实际应调用 API）
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // 成功后清空表单和本地存储
+        form.reset();
+        if (charCount) charCount.textContent = '0';
+        localStorage.removeItem(storageKey);
+        
+        // 恢复按钮
+        submitText.style.display = 'inline';
+        submitLoading.style.display = 'none';
+        submitBtn.disabled = false;
+        
+        // 收起扩展区
+        if (expandable) {
+          expandable.classList.remove('expanded');
+          commentFormContainer?.classList.remove('expanded');
+          isExpanded = false;
+        }
+        
+        // 提示
+        alert('评论已提交，等待审核中... 🎉\n（这是 mock 模式，实际会调用 API）');
+        
+        // 如果是回复表单，关闭
+        if (cancelBtn) {
+          cancelBtn.click();
+        }
+      });
+      
+      // 取消回复
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+          const replyForm = form.closest('.comment-form');
+          if (replyForm) {
+            replyForm.remove();
+          }
+        });
+      }
+    });
+  }
+  
+  // 初始化
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initCommentForm);
+  } else {
+    initCommentForm();
+  }
+  
+  // Astro view transitions 兼容
+  document.addEventListener('astro:page-load', initCommentForm);
+</script>

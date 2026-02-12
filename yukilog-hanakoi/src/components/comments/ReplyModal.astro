@@ -1,0 +1,469 @@
+---
+// ================================
+// 回复弹窗组件
+// 用于显示回复表单的模态框
+// ================================
+
+import CommentForm from './CommentForm.astro';
+
+interface Props {
+  id?: string; // 弹窗唯一ID
+}
+
+const { id = 'reply-modal' } = Astro.props;
+---
+
+<div class="reply-modal" id={id} aria-hidden="true">
+  <div class="modal-overlay" data-close-modal></div>
+  
+  <div class="modal-container">
+    <div class="modal-header">
+      <h3 class="modal-title">
+        💬 回复<span class="reply-to-nick"></span>
+      </h3>
+      <button class="btn-close" data-close-modal aria-label="关闭弹窗">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    
+    <div class="modal-body">
+      <!-- 预渲染完整样式的CommentForm -->
+      <div data-reply-form-wrapper>
+        <CommentForm isReply={true} parentId={0} parentNick="" />
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 弹窗管理
+  function initReplyModal() {
+    const modals = document.querySelectorAll<HTMLElement>('.reply-modal');
+    
+    modals.forEach((modal) => {
+      const closeButtons = modal.querySelectorAll('[data-close-modal]');
+      
+      // 关闭弹窗
+      const closeModal = () => {
+        // 恢复滚动位置
+        const scrollY = document.body.style.top;
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        
+        if (scrollY) {
+          window.scrollTo(0, parseInt(scrollY || '0') * -1);
+        }
+        
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+      };
+      
+      // 绑定关闭按钮
+      closeButtons.forEach((btn) => {
+        btn.addEventListener('click', closeModal);
+      });
+      
+      // ESC 键关闭
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('is-open')) {
+          closeModal();
+        }
+      });
+    });
+  }
+  
+  // 打开弹窗的全局函数
+  (window as any).openReplyModal = (modalId: string, commentId: string, commentNick: string, buttonElement?: HTMLElement) => {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    
+    // 保存当前滚动位置
+    const scrollY = window.scrollY;
+    
+    // 更新标题中的昵称
+    const nickSpan = modal.querySelector('.reply-to-nick');
+    if (nickSpan) {
+      nickSpan.textContent = commentNick ? ` @${commentNick}` : '';
+    }
+    
+    // 更新表单的hidden input和reply-target
+    const form = modal.querySelector('form');
+    const parentIdInput = modal.querySelector('input[name="parent_id"]') as HTMLInputElement;
+    const replyTarget = modal.querySelector('.reply-target strong');
+    
+    if (parentIdInput) {
+      parentIdInput.value = commentId;
+    }
+    
+    if (replyTarget) {
+      replyTarget.textContent = `@${commentNick}`;
+    }
+    
+    // 计算弹窗位置（如果提供了按钮元素）
+    const container = modal.querySelector('.modal-container') as HTMLElement;
+    if (buttonElement && container) {
+      const buttonRect = buttonElement.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const modalWidth = Math.min(viewportWidth * 0.9, 600);
+      const modalMaxHeight = viewportHeight * 0.8;
+      
+      // 移动端保持居中
+      if (viewportWidth <= 768) {
+        container.style.top = '50%';
+        container.style.left = '50%';
+        container.style.transform = 'translate(-50%, -50%)';
+      } else {
+        // 桌面端：计算弹窗位置，优先在按钮右侧
+        let top = buttonRect.top + scrollY;
+        let left = buttonRect.right + 16; // 按钮右侧16px
+        
+        // 检查右侧是否有足够空间
+        if (left + modalWidth > viewportWidth) {
+          // 右侧空间不够，放在按钮下方
+          left = Math.max(16, Math.min(buttonRect.left, viewportWidth - modalWidth - 16));
+          top = buttonRect.bottom + scrollY + 8;
+        }
+        
+        // 确保不超出视口顶部和底部
+        const minTop = scrollY + 16;
+        const maxTop = scrollY + viewportHeight - modalMaxHeight - 16;
+        top = Math.max(minTop, Math.min(top, maxTop));
+        
+        // 确保不超出视口左侧
+        left = Math.max(16, left);
+        
+        // 应用位置
+        container.style.top = `${top}px`;
+        container.style.left = `${left}px`;
+        container.style.transform = 'none';
+      }
+    }
+    
+    // 更新form id和所有input id（确保唯一性）
+    if (form) {
+      const newFormId = `reply-form-${commentId}`;
+      form.id = newFormId;
+      
+      // 更新所有input的id和对应的label的for属性
+      const fields = form.querySelectorAll('.form-field');
+      fields.forEach((field) => {
+        const label = field.querySelector('label');
+        const input = field.querySelector('input, textarea');
+        
+        if (label && input) {
+          const inputName = input.getAttribute('name');
+          const newId = `${newFormId}-${inputName}`;
+          input.id = newId;
+          label.setAttribute('for', newId);
+        }
+      });
+      
+      // 绑定localStorage
+      const storageKey = `comment-form-reply-${commentId}`;
+      const saved = localStorage.getItem(storageKey);
+      
+      if (saved) {
+        try {
+          const data = JSON.parse(saved);
+          const nicknameInput = form.querySelector('[name="nickname"]') as HTMLInputElement;
+          const emailInput = form.querySelector('[name="email"]') as HTMLInputElement;
+          const websiteInput = form.querySelector('[name="website"]') as HTMLInputElement;
+          const contentTextarea = form.querySelector('[name="content"]') as HTMLTextAreaElement;
+          
+          if (nicknameInput) nicknameInput.value = data.nickname || '';
+          if (emailInput) emailInput.value = data.email || '';
+          if (websiteInput) websiteInput.value = data.website || '';
+          if (contentTextarea) {
+            contentTextarea.value = data.content || '';
+            const charCount = modal.querySelector('.char-count .current');
+            if (charCount) charCount.textContent = (data.content || '').length.toString();
+          }
+        } catch (e) {
+          console.error('Failed to parse saved form data', e);
+        }
+      }
+      
+      // 重新绑定提交事件（移除旧的）
+      const newForm = form.cloneNode(true) as HTMLFormElement;
+      form.parentNode?.replaceChild(newForm, form);
+      
+      // 绑定提交逻辑
+      newForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const submitBtn = newForm.querySelector('.btn-submit') as HTMLButtonElement;
+        const submitText = submitBtn?.querySelector('.submit-text') as HTMLElement;
+        const submitLoading = submitBtn?.querySelector('.submit-loading') as HTMLElement;
+        
+        if (submitText) submitText.style.display = 'none';
+        if (submitLoading) submitLoading.style.display = 'inline';
+        if (submitBtn) submitBtn.disabled = true;
+        
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        newForm.reset();
+        const charCount = modal.querySelector('.char-count .current');
+        if (charCount) charCount.textContent = '0';
+        localStorage.removeItem(storageKey);
+        
+        if (submitText) submitText.style.display = 'inline';
+        if (submitLoading) submitLoading.style.display = 'none';
+        if (submitBtn) submitBtn.disabled = false;
+        
+        alert('回复已提交，等待审核中... 🎉\n（这是 mock 模式，实际会调用 API）');
+        
+        (window as any).closeReplyModal(modalId);
+      });
+      
+      // 绑定input事件保存到localStorage
+      newForm.addEventListener('input', () => {
+        const nicknameInput = newForm.querySelector('[name="nickname"]') as HTMLInputElement;
+        const emailInput = newForm.querySelector('[name="email"]') as HTMLInputElement;
+        const websiteInput = newForm.querySelector('[name="website"]') as HTMLInputElement;
+        const contentTextarea = newForm.querySelector('[name="content"]') as HTMLTextAreaElement;
+        
+        const data = {
+          nickname: nicknameInput?.value || '',
+          email: emailInput?.value || '',
+          website: websiteInput?.value || '',
+          content: contentTextarea?.value || '',
+        };
+        localStorage.setItem(storageKey, JSON.stringify(data));
+        
+        // 更新字符计数
+        if (contentTextarea) {
+          const charCount = modal.querySelector('.char-count .current');
+          if (charCount) charCount.textContent = contentTextarea.value.length.toString();
+        }
+      });
+    }
+    
+    // 打开弹窗
+    modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden', 'false');
+    
+    // 固定body位置防止滚动，同时保持视觉位置不变
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+    
+    // 聚焦到文本框（不触发滚动）
+    setTimeout(() => {
+      const textarea = modal.querySelector('textarea[name="content"]') as HTMLTextAreaElement;
+      if (textarea) {
+        textarea.focus({ preventScroll: true });
+      }
+    }, 300);
+  };
+  
+  // 关闭弹窗的全局函数
+  (window as any).closeReplyModal = (modalId: string = 'reply-modal') => {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    
+    // 恢复滚动位置
+    const scrollY = document.body.style.top;
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.width = '';
+    
+    if (scrollY) {
+      window.scrollTo(0, parseInt(scrollY || '0') * -1);
+    }
+    
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
+  };
+  
+  // 初始化
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initReplyModal);
+  } else {
+    initReplyModal();
+  }
+  
+  document.addEventListener('astro:page-load', initReplyModal);
+</script>
+
+<style lang="scss">
+@use "sass:color";
+
+  .reply-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    display: none;
+    pointer-events: none;
+    
+    &.is-open {
+      display: block;
+      pointer-events: auto;
+    }
+    
+    &[aria-hidden="false"] {
+      .modal-overlay {
+        animation: fadeIn 0.2s $ease-gentle;
+      }
+      
+      .modal-container {
+        animation: modalFadeIn 0.2s $ease-gentle;
+      }
+    }
+  }
+
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    cursor: pointer;
+  }
+
+  .modal-container {
+    position: absolute;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    
+    // 默认居中位置（会被JS动态更新）
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transform-origin: center center;
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: $spacing-md $spacing-lg;
+    border-bottom: 1px solid $lian-divider;
+    background: linear-gradient(135deg, rgba($lian-pink, 0.05), rgba($lian-blue, 0.05));
+  }
+
+  .modal-title {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+    color: $lian-text;
+    margin: 0;
+    
+    .reply-to-nick {
+      color: $lian-pink;
+      font-weight: $font-weight-bold;
+    }
+  }
+
+  .btn-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    color: $lian-text-muted;
+    cursor: pointer;
+    transition: all $transition-fast $ease-gentle;
+    
+    &:hover {
+      background: rgba($lian-text, 0.08);
+      color: $lian-text;
+    }
+    
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+
+  .modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: $spacing-md;
+    
+    // 弹窗中的CommentForm不需要外层背景
+    :global(.comment-form) {
+      background: transparent;
+      border: none;
+      padding: 0;
+      border-radius: 0;
+    }
+    
+    // 滚动条样式
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: rgba($lian-text, 0.05);
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: rgba($lian-pink, 0.3);
+      border-radius: 3px;
+      
+      &:hover {
+        background: rgba($lian-pink, 0.5);
+      }
+    }
+  }
+
+  // 动画
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes modalFadeIn {
+    from {
+      opacity: 0;
+      filter: blur(4px);
+    }
+    to {
+      opacity: 1;
+      filter: blur(0);
+    }
+  }
+
+  // 响应式
+  @media (max-width: $container-sm) {
+    .modal-container {
+      width: 95%;
+      max-height: 95vh;
+    }
+    
+    .modal-header {
+      padding: $spacing-sm $spacing-md;
+    }
+    
+    .modal-title {
+      font-size: $font-size-base;
+    }
+    
+    .modal-body {
+      padding: $spacing-sm;
+    }
+  }
+</style>
