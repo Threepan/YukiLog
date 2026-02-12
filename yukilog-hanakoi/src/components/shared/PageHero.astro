@@ -19,6 +19,7 @@ const { title, subtitle, icon } = Astro.props;
 const headerImageName = contentConfig.hero.headerGif;
 const headerImageModules = import.meta.glob("../../assets/image/header/*", {
   eager: true,
+  query: "?url",
   import: "default",
 }) as Record<string, string>;
 const heroBgSrc =
