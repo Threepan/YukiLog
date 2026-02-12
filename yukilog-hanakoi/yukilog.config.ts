@@ -32,7 +32,7 @@ export const designTokens = {
  * 站点基本配置
  * - 前台 SEO、页脚、个人信息面板、欢迎文案等统一来源
  */
-export const siteConfig: SiteConfig = {
+export const siteConfig = {
   name: "YukiLog",
   title: "恋的博客 - 一个温柔的技术日记本",
   description: "记录技术、思考、情绪与挣扎",
@@ -86,21 +86,21 @@ export const siteConfig: SiteConfig = {
     keywords: ["博客", "技术", "Rust", "TypeScript", "前端", "后端", "全栈"],
     ogImage: "/images/og-image.jpg",
   },
-};
+} satisfies SiteConfig;
 
 /**
  * 顶部导航配置
  * - NavBar 组件统一读取
  * - icon 字段对应 src/assets/icon/nav 下的文件名（不含扩展名）
  */
-export const navItems: NavItem[] = [
+export const navItems = [
   { label: "主页", href: "/", icon: "home" },
   { label: "主题", href: "/themes", icon: "theme" },
   { label: "归档", href: "/archive", icon: "archive" },
   { label: "标签", href: "/tags", icon: "tag" },
   { label: "友链", href: "/links", icon: "links" },
   { label: "关于", href: "/about", icon: "about" },
-];
+] satisfies NavItem[];
 
 /**
  * 文案与资源配置（首批）
