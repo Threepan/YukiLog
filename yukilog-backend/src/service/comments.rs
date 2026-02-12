@@ -1,6 +1,7 @@
 use sea_orm::DatabaseConnection;
 use chrono::{DateTime, FixedOffset};
 use serde::{Deserialize, Serialize};
+use woothee::parser::Parser;
 
 use crate::domain::status::CommentStatus;
 use crate::repo;
@@ -25,11 +26,14 @@ pub struct Comment {
     pub status: CommentStatus,
     pub ip: Option<String>,
     pub ua: Option<String>,
+    pub visitor_info: Option<String>,  // 解析后的访客信息（如 "上海 · Desktop Chrome 136.0 · macOS 15"）
     pub created_at: DateTime<FixedOffset>,
 }
 
 impl From<repo::comments::CommentDto> for Comment {
     fn from(dto: repo::comments::CommentDto) -> Self {
+        let visitor_info = parse_visitor_info(dto.ua.as_deref());
+        
         Self {
             id: dto.id,
             post_id: dto.post_id.unwrap_or(0),
@@ -42,6 +46,7 @@ impl From<repo::comments::CommentDto> for Comment {
             status: dto.status.unwrap_or(CommentStatus::Pending),
             ip: dto.ip,
             ua: dto.ua,
+            visitor_info,
             created_at: dto.created_at.unwrap_or_else(|| chrono::Utc::now().into()),
         }
     }
@@ -340,4 +345,57 @@ fn build_comment_tree(comments: Vec<Comment>) -> Vec<CommentNode> {
     }
 
     build_nodes(None, &children_map)
+}
+
+/// 解析 User-Agent 为可读的访客信息
+/// 
+/// # 参数
+/// 
+/// * `ua` - User-Agent 字符串
+/// 
+/// # 返回
+/// 
+/// * `Some(String)` - 解析成功，返回如 "Desktop Chrome 136.0 · macOS 15"
+/// * `None` - UA 为空或解析失败
+/// 
+/// # 示例
+/// 
+/// ```rust
+/// let ua = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)...";
+/// let info = parse_visitor_info(Some(ua));
+/// // Some("Desktop Chrome 136.0 · macOS 15")
+/// ```
+fn parse_visitor_info(ua: Option<&str>) -> Option<String> {
+    let ua_str = ua?;
+    
+    let parser = Parser::new();
+    let result = parser.parse(ua_str)?;
+    
+    // 设备类型
+    let device_type = match result.category {
+        "pc" => "Desktop",
+        "smartphone" => "Mobile",
+        "mobilephone" => "Mobile",
+        "appliance" => "Mobile",
+        "crawler" => "Bot",
+        _ => "Unknown",
+    };
+    
+    // 浏览器
+    let browser = if result.name.is_empty() {
+        "Unknown".to_string()
+    } else {
+        format!("{} {}", result.name, result.version)
+    };
+    
+    // 操作系统
+    let os = if result.os.is_empty() {
+        "Unknown OS".to_string()
+    } else if result.os_version.is_empty() {
+        result.os.to_string()
+    } else {
+        format!("{} {}", result.os, result.os_version)
+    };
+    
+    Some(format!("{} {} · {}", device_type, browser, os))
 }
