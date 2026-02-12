@@ -15,7 +15,7 @@ use crate::handler::{
 use crate::service::{
     self,
     error::ServiceError,
-    posts::{Post, PostFilter, PostSortBy},
+    posts::{PostFilter, PostSortBy, PostWithRelations},
 };
 
 // ================================
@@ -82,7 +82,7 @@ pub struct ListPostsQuery {
 pub async fn list_posts(
     State(state): State<AppState>,
     Query(params): Query<ListPostsQuery>,
-) -> Result<Json<ApiResponse<PagedData<Post>>>, ServiceError> {
+) -> Result<Json<ApiResponse<PagedData<PostWithRelations>>>, ServiceError> {
     let page = params.page.unwrap_or(1).max(1);
     let page_size = params.page_size.unwrap_or(10).min(100).max(1);
 
@@ -108,8 +108,8 @@ pub async fn list_posts(
         page: Some(page),
     };
 
-    // 获取文章列表
-    let posts = service::posts::list_posts(&state.db, filter.clone()).await?;
+    // 获取文章列表（含关联数据）
+    let posts = service::posts::list_posts_with_relations(&state.db, filter.clone()).await?;
 
     // 获取总数（SELECT COUNT(*)）
     let count_filter = PostFilter {
@@ -152,15 +152,16 @@ pub async fn list_posts(
 pub async fn get_post(
     State(state): State<AppState>,
     Path(slug): Path<String>,
-) -> Result<Json<ApiResponse<Post>>, ServiceError> {
-    let post = service::posts::get_post_by_slug(&state.db, &slug).await?;
+) -> Result<Json<ApiResponse<PostWithRelations>>, ServiceError> {
+    // 获取文章及关联数据（include_draft = false）
+    let post_with_rels = service::posts::get_post_with_relations(&state.db, &slug, false).await?;
 
     // 仅返回已发布的文章
-    if post.status != PostStatus::Published {
+    if post_with_rels.post.status != PostStatus::Published {
         return Err(ServiceError::NotFound);
     }
 
-    Ok(ok(post))
+    Ok(ok(post_with_rels))
 }
 
 /// POST /api/public/posts/:slug/view
