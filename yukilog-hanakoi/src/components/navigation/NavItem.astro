@@ -5,11 +5,12 @@
 // ================================
 
 import { navIcons } from '../../lib/svg-icons';
+import type { NavIconName } from '../../types';
 
 interface Props {
   label: string;
   href: string;
-  icon?: string;
+  icon?: NavIconName;
   index: number;
 }
 
@@ -17,7 +18,7 @@ const { label, href, icon, index } = Astro.props;
 const isActive = Astro.url.pathname === href;
 const isHome = href === '/';
 
-const iconSvg = icon && icon in navIcons ? navIcons[icon as keyof typeof navIcons] : null;
+const iconSvg = icon ? navIcons[icon] : null;
 ---
 
 <a

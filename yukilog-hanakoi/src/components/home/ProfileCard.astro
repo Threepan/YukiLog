@@ -12,7 +12,7 @@ import avatarImage from '../../assets/icon/logo/logo.jpg';
 
 const resolvedSocialIcons = siteConfig.social.map((s) => ({
   ...s,
-  svg: socialIcons[s.icon as keyof typeof socialIcons] ?? '',
+  svg: socialIcons[s.icon] ?? '',
 }));
 ---
 

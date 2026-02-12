@@ -10,7 +10,7 @@ import { socialIcons, svgIcons } from '../../lib/svg-icons';
 
 const resolvedSocialIcons = siteConfig.social.map((s) => ({
   ...s,
-  svg: socialIcons[s.icon as keyof typeof socialIcons] ?? '',
+  svg: socialIcons[s.icon] ?? '',
 }));
 
 // 欢迎文字拆分为单字
