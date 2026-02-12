@@ -60,7 +60,7 @@ export const siteConfig: SiteConfig = {
   ],
 
   // 站点统计
-  startDate: "2026-02-12",
+  startDate: "2026-02-11",
 
   // SEO
   seo: {
