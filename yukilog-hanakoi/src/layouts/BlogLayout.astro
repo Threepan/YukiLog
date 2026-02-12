@@ -25,6 +25,7 @@ const { title, description, keywords, ogImage, stickyNav = false } = Astro.props
   keywords={keywords}
   ogImage={ogImage}
 >
+  <slot name="head" slot="head" />
   <NavBar stickyOnly={stickyNav} />
   <ScrollProgress />
   
