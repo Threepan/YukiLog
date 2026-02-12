@@ -11,6 +11,8 @@ import folderOpen from "../assets/icon/ui/folder-open.svg?raw";
 import refreshCcw from "../assets/icon/ui/refresh-ccw.svg?raw";
 import light from "../assets/icon/ui/light.svg?raw";
 import search from "../assets/icon/ui/search.svg?raw";
+import openingQuotationMark from "../assets/icon/ui/opening-quotation-mark.svg?raw";
+import closingQuotationMark from "../assets/icon/ui/closing-quotation-mark.svg?raw";
 
 export const svgIcons = {
   arrowUp,
@@ -26,4 +28,6 @@ export const svgIcons = {
   refreshCcw,
   light,
   search,
+  openingQuotationMark,
+  closingQuotationMark,
 } as const;
