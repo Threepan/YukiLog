@@ -28,6 +28,19 @@ const { title, description, keywords, ogImage } = Astro.props;
   </head>
   <body>
     <slot />
+    
+    <script>
+      // 页面失去焦点时修改标题
+      const originalTitle = document.title;
+      
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          document.title = '...你 ... 要走了吗?';
+        } else {
+          document.title = originalTitle;
+        }
+      });
+    </script>
   </body>
 </html>
 
