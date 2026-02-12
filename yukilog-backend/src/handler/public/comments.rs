@@ -35,8 +35,8 @@ pub struct CreateCommentRequest {
 pub struct CreateCommentResponse {
     /// 评论 ID
     pub id: i64,
-    /// Gravatar URL
-    pub avatar_url: String,
+    /// 头像 URL（优先website favicon，其次Gravatar）
+    pub avatar_url: Option<String>,
     /// 创建时间
     pub created_at: chrono::DateTime<chrono::FixedOffset>,
 }
@@ -191,8 +191,17 @@ pub async fn create_comment(
         ));
     }
 
-    // 生成 Gravatar URL
-    let avatar_url = generate_gravatar_url(&req.email);
+    // 生成头像 URL：优先 website favicon，其次 Gravatar，最后置空
+    let avatar_url = if let Some(ref website) = req.website {
+        // 如果提供了网站，尝试使用网站 favicon
+        Some(format!("{}/favicon.ico", website.trim_end_matches('/')))
+    } else if !req.email.is_empty() {
+        // 否则使用邮箱生成 Gravatar
+        Some(generate_gravatar_url(&req.email))
+    } else {
+        // 都没有就置空
+        None
+    };
 
     // 获取 IP 和 User-Agent
     let user_agent = get_user_agent(&headers);
