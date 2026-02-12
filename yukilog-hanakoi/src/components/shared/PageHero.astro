@@ -11,15 +11,25 @@ interface Props {
   icon: string; // raw SVG string
 }
 
+import { contentConfig } from "../../lib/config";
+
 const { title, subtitle, icon } = Astro.props;
 
-// 背景图硬编码
-import heroBg from "../../assets/image/header/mc.gif";
+// 背景图来自全局配置（yukilog.config.ts）
+const headerImageName = contentConfig.hero.headerGif;
+const headerImageModules = import.meta.glob("../../assets/image/header/*", {
+  eager: true,
+  import: "default",
+}) as Record<string, string>;
+const heroBgSrc =
+  Object.entries(headerImageModules).find(([path]) =>
+    path.endsWith(`/${headerImageName}`)
+  )?.[1] ?? Object.values(headerImageModules)[0] ?? "";
 ---
 
 <div class="page-hero">
   <div class="hero-bg">
-    <img src={heroBg.src} alt="" aria-hidden="true" />
+    <img src={heroBgSrc} alt="" aria-hidden="true" />
   </div>
   <div class="hero-content">
     <span class="hero-icon" set:html={icon} />

@@ -5,7 +5,7 @@
 // stickyOnly: 非首页直接以岛屿模式展示
 // ================================
 
-import { navItems } from '../../lib/config.ts';
+import { contentConfig, navItems } from '../../lib/config.ts';
 import NavItem from './NavItem.astro';
 
 interface Props {
@@ -27,11 +27,12 @@ function deduplicateSvgIds(svg: string, suffix: string): string {
 }
 const lightIconFixed = deduplicateSvgIds(lightIcon.default, '_fixed');
 const searchIconFixed = deduplicateSvgIds(searchIcon.default, '_fixed');
+const brandText = contentConfig.components.navbar.brand;
 ---
 
 <nav class="navbar" id="navbar" data-sticky-only={stickyOnly ? 'true' : undefined}>
   <div class="navbar-container">
-    <a href="/" class="navbar-inner-logo">YukiLog</a>
+    <a href="/" class="navbar-inner-logo">{brandText}</a>
     
     <div class="navbar-items">
       {navItems.map((item, index) => (
@@ -51,7 +52,7 @@ const searchIconFixed = deduplicateSvgIds(searchIcon.default, '_fixed');
 </nav>
 
 <div class="navbar-fixed-elements" id="navbar-fixed">
-  <a href="/" class="navbar-logo">YukiLog</a>
+  <a href="/" class="navbar-logo">{brandText}</a>
   
   <div class="navbar-actions">
     <button class="navbar-action-btn" id="theme-toggle" aria-label="切换主题">

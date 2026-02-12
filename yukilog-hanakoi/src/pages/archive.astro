@@ -6,35 +6,12 @@
 
 import BlogLayout from "../layouts/BlogLayout.astro";
 import PageHero from "../components/shared/PageHero.astro";
+import { contentConfig } from "../lib/config";
 
 import archiveIcon from "../assets/icon/nav/archive.svg?raw";
 
-// ================================
-// 占位数据，后续接入后端 API
-// ================================
-const archiveData = [
-  {
-    year: 2026,
-    posts: [
-      { title: "YukiLog 前端架构复盘", slug: "yukilog-frontend-review", created_at: "2026-02-10", month: 2, day: 10 },
-      { title: "Rust Axum 中间件实践", slug: "rust-axum-middleware", created_at: "2026-02-03", month: 2, day: 3 },
-      { title: "新年的第一篇博客", slug: "first-post-2026", created_at: "2026-01-15", month: 1, day: 15 },
-      { title: "如何从零搭建一个博客系统", slug: "build-blog-from-scratch", created_at: "2026-01-08", month: 1, day: 8 },
-    ],
-  },
-  {
-    year: 2025,
-    posts: [
-      { title: "年终总结：代码与生活", slug: "year-end-2025", created_at: "2025-12-28", month: 12, day: 28 },
-      { title: "深夜的胡思乱想", slug: "midnight-thoughts", created_at: "2025-12-15", month: 12, day: 15 },
-      { title: "Sea-ORM 踩坑日记", slug: "sea-orm-notes", created_at: "2025-11-20", month: 11, day: 20 },
-      { title: "第一次被人夸代码写得好看", slug: "first-code-compliment", created_at: "2025-11-05", month: 11, day: 5 },
-      { title: "关于「造轮子」这件事", slug: "about-reinventing-wheel", created_at: "2025-10-18", month: 10, day: 18 },
-      { title: "Astro 初体验", slug: "astro-first-look", created_at: "2025-09-22", month: 9, day: 22 },
-      { title: "学习全栈的第一个月", slug: "first-month-fullstack", created_at: "2025-09-01", month: 9, day: 1 },
-    ],
-  },
-];
+const archivePageConfig = contentConfig.pages.archive;
+const archiveData = archivePageConfig.years;
 
 // 统计总文章数
 const totalPosts = archiveData.reduce((sum, y) => sum + y.posts.length, 0);
@@ -43,7 +20,7 @@ const totalPosts = archiveData.reduce((sum, y) => sum + y.posts.length, 0);
 <BlogLayout title="归档 - YukiLog" stickyNav>
   <PageHero
     title="归档"
-    subtitle={`共 ${totalPosts} 篇文章，记录着走过的路`}
+    subtitle={`${archivePageConfig.heroSubtitlePrefix} ${totalPosts} ${archivePageConfig.heroSubtitleSuffix}`}
     icon={archiveIcon}
   />
 
@@ -86,7 +63,7 @@ const totalPosts = archiveData.reduce((sum, y) => sum + y.posts.length, 0);
       <!-- 时间轴终点 -->
       <div class="timeline-end">
         <span class="end-dot"></span>
-        <span class="end-text">故事从这里开始</span>
+        <span class="end-text">{archivePageConfig.timelineEndText}</span>
       </div>
     </div>
   </div>

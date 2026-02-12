@@ -8,66 +8,18 @@ import BlogLayout from "../layouts/BlogLayout.astro";
 import FriendSpotlight from "../components/links/FriendSpotlight.astro";
 import FriendCard from "../components/links/FriendCard.astro";
 import ApplyLinkModal from "../components/links/ApplyLinkModal.astro";
+import { contentConfig } from "../lib/config";
 
-// ================================
-// 最好的他（前端硬编码）
-// ================================
-const bestFriend = {
-  name: "Duo 云站",
-  description: "MathForest官方🌲|程序及数学可视化✨|屑魔女游世界🔮",
-  avatar: "https://www.mduo.cloud/elaina_q.jpg",
-  url: "https://www.mduo.cloud/",
-  message: "愿你的梦中常有我相伴",
-};
-
-// ================================
-// 其他友链 - 占位数据，后续接入后端 API
-// ================================
-const friends = [
-  {
-    name: "一只小透明",
-    description: "记录平凡日子里的不平凡",
-    avatar: null,
-    url: "https://example.com/1",
-  },
-  {
-    name: "桜の記録",
-    description: "全栈开发者的技术笔记",
-    avatar: null,
-    url: "https://example.com/2",
-  },
-  {
-    name: "云深不知处",
-    description: "诗和远方的数字花园",
-    avatar: null,
-    url: "https://example.com/3",
-  },
-  {
-    name: "CodeDreamer",
-    description: "把代码写成诗",
-    avatar: null,
-    url: "https://example.com/4",
-  },
-  {
-    name: "月光邮局",
-    description: "收集世界各地的温柔",
-    avatar: null,
-    url: "https://example.com/5",
-  },
-  {
-    name: "像素森林",
-    description: "独立游戏与像素艺术",
-    avatar: null,
-    url: "https://example.com/6",
-  },
-];
+const linksPageConfig = contentConfig.pages.links;
+const bestFriend = linksPageConfig.bestFriend;
+const friends = linksPageConfig.friends;
 ---
 
 <BlogLayout title="友链 - YukiLog" stickyNav>
   <div class="links-page">
     <!-- 页头独白 -->
     <header class="links-header">
-      <p class="links-greeting">能走到这里的人，大概都是温柔的吧。</p>
+      <p class="links-greeting">{contentConfig.pages.links.greeting}</p>
       <div class="links-divider"></div>
     </header>
 
@@ -76,7 +28,7 @@ const friends = [
 
     <!-- 朋友们 - 散落便签 -->
     <section class="friends-section">
-      <h2 class="friends-title">朋友们</h2>
+      <h2 class="friends-title">{linksPageConfig.friendsTitle}</h2>
       <div class="friends-grid">
         {friends.map((friend, i) => (
           <FriendCard {...friend} index={i} />

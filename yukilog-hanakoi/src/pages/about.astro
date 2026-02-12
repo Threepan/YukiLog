@@ -8,7 +8,7 @@ import BlogLayout from "../layouts/BlogLayout.astro";
 import MusicPlayer from "../components/shared/MusicPlayer.astro";
 import { Image } from "astro:assets";
 import avatarImage from "../assets/icon/logo/logo.jpg";
-import { siteConfig } from "../lib/config";
+import { contentConfig, siteConfig } from "../lib/config";
 
 const socialLinks = siteConfig.social;
 
@@ -31,7 +31,7 @@ const closeQuote = await import('../assets/icon/ui/closing-quotation-mark.svg?ra
           class="avatar"
         />
       </div>
-      <h1 class="greeting">你好，我是<span class="name-highlight"> 恋</span></h1>
+      <h1 class="greeting">{contentConfig.pages.about.opening}<span class="name-highlight"> 恋</span></h1>
     </header>
 
     <!-- 正文：左右双栏对话 -->

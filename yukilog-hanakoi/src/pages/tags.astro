@@ -6,53 +6,15 @@
 
 import BlogLayout from "../layouts/BlogLayout.astro";
 import PageHero from "../components/shared/PageHero.astro";
+import { contentConfig } from "../lib/config";
 
 import tagIcon from "../assets/icon/nav/tag.svg?raw";
 
-// ================================
-// 占位数据，后续接入后端 API
-// ================================
-const tags = [
-  { name: "Rust", slug: "rust", count: 8, size: 4 },
-  { name: "Astro", slug: "astro", count: 6, size: 3 },
-  { name: "TypeScript", slug: "typescript", count: 7, size: 4 },
-  { name: "CSS", slug: "css", count: 5, size: 3 },
-  { name: "Vue", slug: "vue", count: 4, size: 2 },
-  { name: "Axum", slug: "axum", count: 3, size: 2 },
-  { name: "Sea-ORM", slug: "sea-orm", count: 2, size: 1 },
-  { name: "PostgreSQL", slug: "postgresql", count: 3, size: 2 },
-  { name: "Docker", slug: "docker", count: 2, size: 1 },
-  { name: "生活", slug: "life", count: 6, size: 3 },
-  { name: "情绪", slug: "emotion", count: 4, size: 2 },
-  { name: "思考", slug: "thought", count: 5, size: 3 },
-  { name: "全栈", slug: "fullstack", count: 3, size: 2 },
-  { name: "开源", slug: "open-source", count: 2, size: 1 },
-  { name: "SCSS", slug: "scss", count: 3, size: 2 },
-  { name: "Linux", slug: "linux", count: 2, size: 1 },
-  { name: "架构设计", slug: "architecture", count: 4, size: 2 },
-  { name: "年终总结", slug: "year-review", count: 1, size: 1 },
-];
-
-// 占位文章数据（按标签关联）
-const tagPosts: Record<string, Array<{ title: string; slug: string; created_at: string; summary: string }>> = {
-  rust: [
-    { title: "Rust Axum 中间件实践", slug: "rust-axum-middleware", created_at: "2026-02-03", summary: "探索 Axum 的中间件机制和错误处理模式" },
-    { title: "关于「造轮子」这件事", slug: "about-reinventing-wheel", created_at: "2025-10-18", summary: "为什么明知有现成方案还要自己写" },
-    { title: "Sea-ORM 踩坑日记", slug: "sea-orm-notes", created_at: "2025-11-20", summary: "在 Rust 生态里找一个顺手的 ORM" },
-  ],
-  astro: [
-    { title: "Astro 初体验", slug: "astro-first-look", created_at: "2025-09-22", summary: "用 Astro 搭一个静态博客，到底有多舒服" },
-    { title: "YukiLog 前端架构复盘", slug: "yukilog-frontend-review", created_at: "2026-02-10", summary: "回顾一个月的前端开发经历" },
-  ],
-  life: [
-    { title: "深夜的胡思乱想", slug: "midnight-thoughts", created_at: "2025-12-15", summary: "凌晨三点睡不着写的东西" },
-    { title: "年终总结：代码与生活", slug: "year-end-2025", created_at: "2025-12-28", summary: "2025 年发生了很多事" },
-  ],
-};
-// 确定性分配背景色：粉、蓝、白 循环但带偏移
-// 0=pink, 1=blue, 2=white
-const colorCycle = [0, 2, 1, 0, 1, 2, 1, 0, 2, 0, 1, 2, 0, 2, 1, 0, 1, 2];
-const colorNames = ['pink', 'blue', 'white'] as const;
+const tagsPageConfig = contentConfig.pages.tags;
+const tags = tagsPageConfig.tags;
+const tagPosts = tagsPageConfig.tagPosts;
+const colorCycle = tagsPageConfig.colorCycle;
+const colorNames = tagsPageConfig.colorNames;
 ---
 
 <BlogLayout title="标签 - YukiLog" stickyNav>
@@ -84,7 +46,7 @@ const colorNames = ['pink', 'blue', 'white'] as const;
         <button class="tag-posts-close" id="tagPostsClose" aria-label="关闭">×</button>
       </div>
       <div class="tag-posts-list" id="tagPostsList"></div>
-      <p class="tag-posts-empty" id="tagPostsEmpty">这个标签下暂时还没有文章</p>
+      <p class="tag-posts-empty" id="tagPostsEmpty">{tagsPageConfig.emptyText}</p>
     </section>
   </div>
 </BlogLayout>

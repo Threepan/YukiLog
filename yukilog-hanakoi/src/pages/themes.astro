@@ -6,51 +6,13 @@
 
 import BlogLayout from "../layouts/BlogLayout.astro";
 import PageHero from "../components/shared/PageHero.astro";
+import { contentConfig } from "../lib/config";
 
 // 导航图标作为 Hero icon
 import themeIcon from "../assets/icon/nav/theme.svg?raw";
 
-// ================================
-// 占位数据，后续接入后端 API
-// ================================
-const themes = [
-  {
-    name: "前端开发",
-    slug: "frontend",
-    description: "HTML、CSS、JavaScript 以及各种框架的探索与实践",
-    post_count: 12,
-  },
-  {
-    name: "后端开发",
-    slug: "backend",
-    description: "Rust、Node.js、数据库设计和 API 架构",
-    post_count: 8,
-  },
-  {
-    name: "学习笔记",
-    slug: "study-notes",
-    description: "读书、课程、技术文档的消化与整理",
-    post_count: 15,
-  },
-  {
-    name: "生活碎片",
-    slug: "life",
-    description: "日常的观察、感受和一些不太重要的小事",
-    post_count: 6,
-  },
-  {
-    name: "情绪日记",
-    slug: "emotion",
-    description: "写给深夜的自己，那些不说出口的话",
-    post_count: 4,
-  },
-  {
-    name: "项目记录",
-    slug: "projects",
-    description: "从零开始造轮子的全过程",
-    post_count: 9,
-  },
-];
+const themesPageConfig = contentConfig.pages.themes;
+const themes = themesPageConfig.items;
 // 确定性微旋转角度（交替正负，模拟散落感）
 const rotations = [1.2, -1.8, 2.1, -0.9, 1.6, -2.3, 0.7, -1.4];
 // 确定性水平错位
@@ -58,7 +20,7 @@ const offsets = [0, 24, -16, 32, -8, 20, -28, 12];
 ---
 
 <BlogLayout title="主题 - YukiLog" stickyNav>
-  <PageHero title="主题" subtitle="按类别浏览文章" icon={themeIcon} />
+  <PageHero title="主题" subtitle={themesPageConfig.heroSubtitle} icon={themeIcon} />
 
   <div class="themes-page">
     <div class="themes-scatter">

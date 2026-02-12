@@ -7,94 +7,10 @@
 
 import ArticleCard from "./ArticleCard.astro";
 import type { PostCardData } from "../../types";
+import { contentConfig } from "../../lib/config";
 
-// ================================
-// 占位数据 - 后续接入后端 API
-// ================================
-const placeholderPosts: PostCardData[] = [
-  {
-    title: "用 Rust 和 Axum 从零搭建博客后端",
-    slug: "build-blog-backend-with-rust-axum",
-    summary: "从项目初始化到 RESTful API 设计，完整记录用 Rust 实现博客后端的全过程。数据库选型、ORM 搭建、错误处理与中间件设计等核心环节一一解析。",
-    cover_image: "https://list.yeastar.xin/d/%E6%81%8B/fastfetch/1f57b6c355024848e0ccfa0f864273328c22fa76130ae3183bd15453f06d3a17.jpg",
-    created_at: "2026-02-11T10:00:00+08:00",
-    view_count: 128,
-    theme: { name: "技术", slug: "tech" },
-    tags: [
-      { name: "Rust", slug: "rust" },
-      { name: "Axum", slug: "axum" },
-      { name: "后端", slug: "backend" },
-    ],
-  },
-  {
-    title: "Astro + Vue 3：打造轻盈优雅的博客前端",
-    slug: "astro-vue3-blog-frontend",
-    summary: "选择 Astro 作为 SSG 框架，搭配 Vue 3 实现交互组件。从双屏首页设计到响应式布局，分享这套轻量而富有表现力的前端方案。",
-    cover_image: "https://list.yeastar.xin/d/%E6%81%8B/fastfetch/20250809_033215.jpg",
-    created_at: "2026-02-12T14:30:00+08:00",
-    view_count: 96,
-    theme: { name: "技术", slug: "tech" },
-    tags: [
-      { name: "Astro", slug: "astro" },
-      { name: "Vue", slug: "vue" },
-      { name: "前端", slug: "frontend" },
-    ],
-  },
-  {
-    title: "写给自己的一封信",
-    slug: "letter-to-myself",
-    summary: "在某个安静的夜晚写下的独白。关于选择、关于坚持、关于那些不太被看见的角落。也许你也有过这样的时刻。",
-    cover_image: "https://list.yeastar.xin/d/%E6%81%8B/fastfetch/56934dfd210ab238a1ce39ad8adbd7dedc9c744ef910455de9d774f1a2a373b6.jpg",
-    created_at: "2026-02-10T22:15:00+08:00",
-    view_count: 256,
-    theme: { name: "随笔", slug: "essay" },
-    tags: [
-      { name: "情绪", slug: "emotion" },
-      { name: "独白", slug: "monologue" },
-    ],
-  },
-  {
-    title: "SeaORM 实战：优雅地管理数据库实体与关系",
-    slug: "seaorm-entity-relations",
-    summary: "深入 SeaORM 的实体定义、关系映射与查询构建。比较 Active Record 与 Query Builder 两种模式，探索 Rust 生态中数据库操作的最佳实践。",
-    cover_image: "https://list.yeastar.xin/d/%E6%81%8B/fastfetch/bf4c8fd473f4b2e3cb7163d14a8182ed2ea203261f29e9fbc5c1f93e5fcb60be.jpg",
-    created_at: "2026-02-09T16:00:00+08:00",
-    view_count: 87,
-    theme: { name: "技术", slug: "tech" },
-    tags: [
-      { name: "Rust", slug: "rust" },
-      { name: "SeaORM", slug: "seaorm" },
-      { name: "数据库", slug: "database" },
-    ],
-  },
-  {
-    title: "深夜的代码与猫",
-    slug: "late-night-code-and-cat",
-    summary: "凌晨两点，屏幕发出微弱的光。窗外是安静的城市，身边是蜷缩的猫。这大概就是我最喜欢的编程时间。",
-    cover_image: "https://list.yeastar.xin/d/%E6%81%8B/fastfetch/8755c1590031b234f650056457e8b851ab52d4f523667f25303b9c9f1b6f1242.jpg",
-    created_at: "2026-02-08T02:30:00+08:00",
-    view_count: 194,
-    theme: { name: "随笔", slug: "essay" },
-    tags: [
-      { name: "日常", slug: "daily" },
-      { name: "编程", slug: "coding" },
-    ],
-  },
-  {
-    title: "SCSS 变量系统设计：构建一致性的视觉语言",
-    slug: "scss-variable-system-design",
-    summary: "如何利用 SCSS 变量、Mixins 与设计 Token 打造一套温柔而统一的设计系统。记录 YukiLog 视觉风格从零搭建的完整思路。",
-    cover_image: "https://list.yeastar.xin/d/%E6%81%8B/fastfetch/Image_1762911570825.jpg",
-    created_at: "2026-02-07T11:00:00+08:00",
-    view_count: 73,
-    theme: { name: "技术", slug: "tech" },
-    tags: [
-      { name: "SCSS", slug: "scss" },
-      { name: "设计系统", slug: "design-system" },
-      { name: "CSS", slug: "css" },
-    ],
-  },
-];
+const placeholderPosts = contentConfig.pages.home.articleList
+  .placeholderPosts as unknown as PostCardData[];
 ---
 
 <section class="article-list-section" id="article-list">
@@ -106,7 +22,7 @@ const placeholderPosts: PostCardData[] = [
   
   <!-- 加载更多占位 -->
   <div class="load-more" id="load-more-sentinel">
-    <span class="load-more-text">—— 暂时只有这些了 ——</span>
+    <span class="load-more-text">{contentConfig.pages.home.articleList.loadMoreText}</span>
   </div>
 </section>
 
