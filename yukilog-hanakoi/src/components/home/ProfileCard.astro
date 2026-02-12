@@ -6,7 +6,7 @@
 // ================================
 
 import { siteConfig } from '../../lib/config.ts';
-import { socialIcons } from '../../lib/svg-icons';
+import { socialIcons, uiIcons } from '../../lib/svg-icons';
 import { Image } from 'astro:assets';
 import avatarImage from '../../assets/icon/logo/logo.jpg';
 
@@ -14,6 +14,9 @@ const resolvedSocialIcons = siteConfig.social.map((s) => ({
   ...s,
   svg: socialIcons[s.icon] ?? '',
 }));
+
+const author = siteConfig.author;
+const systemLogText = `# system.log █\n> [${author.systemLog.timestamp}]  \n> "${author.systemLog.message}"`;
 ---
 
 <div class="profile-card" id="profile-card">
@@ -32,7 +35,19 @@ const resolvedSocialIcons = siteConfig.social.map((s) => ({
   <div class="profile-nickname">{siteConfig.author.nickname}</div>
 
   <!-- 个人签名 -->
-  <div class="profile-bio">{siteConfig.author.bio}</div>
+  <div class="profile-bio">{author.bio}</div>
+
+  <!-- 扩展信息 -->
+  <div class="profile-meta">
+    <div class="profile-meta-item">
+      <span class="profile-meta-icon" set:html={uiIcons.cake}></span>
+      <span class="profile-meta-text">{author.birthday}</span>
+    </div>
+    <div class="profile-meta-item">
+      <span class="profile-meta-dot" aria-hidden="true"></span>
+      <span class="profile-meta-text">{author.genderIdentity}</span>
+    </div>
+  </div>
 
   <!-- 分隔线 -->
   <div class="profile-divider"></div>
@@ -63,6 +78,10 @@ const resolvedSocialIcons = siteConfig.social.map((s) => ({
         </a>
       )
     )}
+  </div>
+
+  <div class="profile-log">
+    <pre>{systemLogText}</pre>
   </div>
 </div>
 
@@ -138,6 +157,50 @@ const resolvedSocialIcons = siteConfig.social.map((s) => ({
   max-width: 260px;
 }
 
+.profile-meta {
+  margin-top: $spacing-sm;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.profile-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: $lian-text-muted;
+  font-size: $font-size-xs;
+  padding: 0 4px;
+}
+
+.profile-meta-icon {
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $lian-pink;
+
+  :global(svg) {
+    width: 100%;
+    height: 100%;
+    stroke: currentColor;
+  }
+}
+
+.profile-meta-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: $lian-blue;
+  opacity: 0.8;
+}
+
+.profile-meta-text {
+  line-height: 1.2;
+}
+
 // ==================
 // 分隔线
 // ==================
@@ -210,6 +273,24 @@ const resolvedSocialIcons = siteConfig.social.map((s) => ({
     .social-name {
       color: var(--icon-color);
     }
+  }
+}
+
+.profile-log {
+  width: 100%;
+  margin-top: $spacing-md;
+
+  pre {
+    margin: 0;
+    padding: $spacing-sm;
+    border-radius: $radius-sm;
+    background: rgba($lian-text, 0.04);
+    border: 1px solid $lian-divider;
+    color: $lian-text-light;
+    font-size: 11px;
+    line-height: 1.5;
+    font-family: $font-family-code;
+    white-space: pre-wrap;
   }
 }
 
