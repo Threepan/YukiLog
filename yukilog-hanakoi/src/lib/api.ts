@@ -7,6 +7,7 @@ import type {
   ApiResponse,
   PaginatedData,
   Post,
+  PostWithRelations,
   PostListParams,
   Theme,
   Tag,
@@ -60,16 +61,16 @@ export const postsApi = {
   /**
    * 获取文章列表（支持分页、筛选、排序）
    */
-  async list(params?: PostListParams): Promise<PaginatedData<Post>> {
+  async list(params?: PostListParams): Promise<PaginatedData<PostWithRelations>> {
     const query = new URLSearchParams(params as any).toString();
-    return fetchApi<PaginatedData<Post>>(`/api/public/posts?${query}`);
+    return fetchApi<PaginatedData<PostWithRelations>>(`/api/public/posts?${query}`);
   },
 
   /**
    * 获取文章详情
    */
-  async getBySlug(slug: string): Promise<Post> {
-    return fetchApi<Post>(`/api/public/posts/${slug}`);
+  async getBySlug(slug: string): Promise<PostWithRelations> {
+    return fetchApi<PostWithRelations>(`/api/public/posts/${slug}`);
   },
 
   /**
@@ -237,9 +238,20 @@ function createAuthHeaders(): HeadersInit {
 }
 
 export const adminApi = {
-  // 文章管理（后期实现）
+  // 文章管理
   posts: {
-    // TODO: 创建、更新、删除文章
+    async list(params?: PostListParams): Promise<PaginatedData<PostWithRelations>> {
+      const query = new URLSearchParams(params as any).toString();
+      const headers = createAuthHeaders();
+      return fetchApi<PaginatedData<PostWithRelations>>(`/api/admin/posts?${query}`, { headers });
+    },
+    
+    async getBySlug(slug: string): Promise<PostWithRelations> {
+      const headers = createAuthHeaders();
+      return fetchApi<PostWithRelations>(`/api/admin/posts/${slug}`, { headers });
+    },
+    
+    // TODO: create, update, delete
   },
 
   // 评论管理（后期实现）
