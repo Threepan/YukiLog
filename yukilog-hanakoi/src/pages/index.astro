@@ -7,6 +7,7 @@ import BlogLayout from "../layouts/BlogLayout.astro";
 import MusicPlayer from "../components/shared/MusicPlayer.astro";
 import WelcomeCard from "../components/home/WelcomeCard.astro";
 import ProfileCard from "../components/home/ProfileCard.astro";
+import HitokotoCard from "../components/home/HitokotoCard.astro";
 
 // 箭头图标
 const arrowIcon = await import('../assets/icon/ui/arrow.svg?raw');
@@ -39,12 +40,15 @@ const randomBackground =
   
   <div class="home-second-screen" id="second-screen">
     <div class="second-screen-container">
-      <aside class="sidebar">
+      <!-- 左侧栏 -->
+      <aside class="sidebar sidebar-left">
         <ProfileCard />
       </aside>
       
-      <main class="main-content">
-      </main>
+      <!-- 右侧栏 -->
+      <aside class="sidebar sidebar-right">
+        <HitokotoCard />
+      </aside>
     </div>
   </div>
   
@@ -126,23 +130,26 @@ const randomBackground =
     max-width: $container-xl;
     margin: 0 auto;
     padding: 0 $spacing-xl;
-    transform: translateX(-250px);
     display: grid;
-    grid-template-columns: 280px 1fr;
+    grid-template-columns: 280px 1fr 280px;
     gap: $spacing-xl;
     align-items: start;
   }
   
   .sidebar {
     position: sticky;
-    top: 70px; // navbar (50px) + 10px top + 10px gap
+    top: 70px;
     display: flex;
     flex-direction: column;
     gap: $spacing-lg;
   }
   
-  .main-content {
-    min-height: 400px;
+  .sidebar-left {
+    grid-column: 1;
+  }
+  
+  .sidebar-right {
+    grid-column: 3;
   }
   
   // 响应式：小屏改为单列
@@ -154,6 +161,11 @@ const randomBackground =
     
     .sidebar {
       position: static;
+    }
+    
+    .sidebar-left,
+    .sidebar-right {
+      grid-column: 1;
     }
   }
 </style>
@@ -189,4 +201,7 @@ const randomBackground =
   // 观察所有需要入场动画的元素
   const profileCard = document.getElementById('profile-card');
   if (profileCard) observer.observe(profileCard);
+  
+  const hitokotoCard = document.getElementById('hitokoto-card');
+  if (hitokotoCard) observer.observe(hitokotoCard);
 </script>

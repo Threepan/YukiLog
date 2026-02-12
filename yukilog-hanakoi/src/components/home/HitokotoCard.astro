@@ -1,0 +1,233 @@
+---
+// ================================
+// 一言卡片（Hitokoto）
+// 第二屏右上 - 每次访问显示一条随机二次元语录
+// 动画: 从右往左滑入 60px + 淡入
+// ================================
+
+// 引用括号图标
+const openQuote = await import('../../assets/icon/ui/opening-quotation-mark.svg?raw');
+const closeQuote = await import('../../assets/icon/ui/closing-quotation-mark.svg?raw');
+---
+
+<div class="hitokoto-card" id="hitokoto-card">
+  <!-- 标题 -->
+  <div class="hitokoto-header">
+    <span class="hitokoto-label">一言</span>
+    <button class="hitokoto-refresh" id="hitokoto-refresh" aria-label="换一条" title="换一条">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- 引用内容 -->
+  <div class="hitokoto-body">
+    <span class="hitokoto-quote-icon quote-open" set:html={openQuote.default}></span>
+    <p class="hitokoto-text" id="hitokoto-text">
+      加载中...
+    </p>
+    <span class="hitokoto-quote-icon quote-close" set:html={closeQuote.default}></span>
+  </div>
+
+  <!-- 出处 -->
+  <div class="hitokoto-source" id="hitokoto-source">
+    <span class="hitokoto-from"></span>
+  </div>
+</div>
+
+<style lang="scss">
+.hitokoto-card {
+  background: $lian-white;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-md;
+  padding: $spacing-lg;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  
+  // 初始隐藏，等待动画触发
+  opacity: 0;
+  transform: translateX(60px);
+  transition: opacity 600ms cubic-bezier(0.22, 0.61, 0.36, 1),
+              transform 600ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  
+  &.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+// ==================
+// 标题栏
+// ==================
+.hitokoto-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.hitokoto-label {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $lian-text-light;
+  letter-spacing: 0.05em;
+}
+
+.hitokoto-refresh {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  color: $lian-text-muted;
+  cursor: pointer;
+  border-radius: $radius-sm;
+  transition: color $transition-base $ease-gentle,
+              background $transition-base $ease-gentle;
+  
+  svg {
+    transition: transform 400ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+  
+  &:hover {
+    color: $lian-blue;
+    background: $lian-bg;
+    
+    svg {
+      transform: rotate(90deg);
+    }
+  }
+  
+  &:active svg {
+    transform: rotate(180deg);
+  }
+}
+
+// ==================
+// 引用内容
+// ==================
+.hitokoto-body {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-sm;
+  padding: 0 $spacing-xs;
+}
+
+.hitokoto-quote-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  margin-top: 4px;
+  opacity: 0.4;
+  
+  :global(svg) {
+    width: 100%;
+    height: 100%;
+  }
+  
+  &.quote-close {
+    align-self: flex-end;
+    margin-top: 0;
+    margin-bottom: 4px;
+  }
+}
+
+.hitokoto-text {
+  font-size: $font-size-base;
+  font-weight: $font-weight-medium;
+  color: $lian-text;
+  line-height: $line-height-relaxed;
+  margin: 0;
+  flex: 1;
+  min-height: 1.6em;
+  transition: opacity 300ms $ease-gentle;
+  
+  &.loading {
+    opacity: 0.4;
+  }
+}
+
+// ==================
+// 出处
+// ==================
+.hitokoto-source {
+  margin-top: $spacing-md;
+  padding-top: $spacing-sm;
+  border-top: 1px solid $lian-divider;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 1.4em;
+}
+
+.hitokoto-from {
+  font-size: $font-size-sm;
+  color: $lian-text-light;
+  font-style: italic;
+  transition: opacity 300ms $ease-gentle;
+  
+  &.loading {
+    opacity: 0.4;
+  }
+}
+
+// ==================
+// 响应式
+// ==================
+@media (max-width: $container-md) {
+  .hitokoto-card {
+    padding: $spacing-md;
+  }
+  
+  .hitokoto-text {
+    font-size: $font-size-sm;
+  }
+}
+</style>
+
+<script>
+  const textEl = document.getElementById('hitokoto-text');
+  const sourceEl = document.getElementById('hitokoto-source');
+  const refreshBtn = document.getElementById('hitokoto-refresh');
+
+  async function fetchHitokoto() {
+    if (!textEl || !sourceEl) return;
+    
+    const fromEl = sourceEl.querySelector('.hitokoto-from');
+    
+    // 加载态
+    textEl.classList.add('loading');
+    if (fromEl) fromEl.classList.add('loading');
+
+    try {
+      const res = await fetch('https://v1.hitokoto.cn/?c=a');
+      const data = await res.json();
+      
+      textEl.textContent = data.hitokoto || '...';
+      
+      // 构建出处文字
+      let source = '';
+      if (data.from_who && data.from) {
+        source = `—— ${data.from_who}「${data.from}」`;
+      } else if (data.from) {
+        source = `——「${data.from}」`;
+      }
+      if (fromEl) fromEl.textContent = source;
+    } catch {
+      textEl.textContent = '获取失败，点击刷新重试';
+    } finally {
+      textEl.classList.remove('loading');
+      if (fromEl) fromEl.classList.remove('loading');
+    }
+  }
+
+  // 首次加载
+  fetchHitokoto();
+
+  // 刷新按钮
+  refreshBtn?.addEventListener('click', fetchHitokoto);
+</script>
