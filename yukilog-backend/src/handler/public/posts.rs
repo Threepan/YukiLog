@@ -219,3 +219,75 @@ pub async fn increment_post_view(
     tracing::debug!("Post {} view incremented for IP: {}", slug, ip);
     Ok(ok(()))
 }
+
+// ================================
+// 搜索
+// ================================
+
+#[derive(Debug, Deserialize)]
+pub struct SearchQuery {
+    /// 搜索关键词
+    pub q: String,
+    /// 分页：页码（从 1 开始，默认 1）
+    pub page: Option<u64>,
+    /// 分页：每页数量（默认 10，最大 50）
+    pub page_size: Option<u64>,
+}
+
+/// GET /api/public/search?q=keyword&page=1&page_size=10
+///
+/// 全文搜索文章（ILIKE 模糊匹配 title + summary + content）
+///
+/// # 搜索范围
+///
+/// 仅搜索已发布（published）的文章，匹配 title / summary / content 中的关键词。
+///
+/// # 排序
+///
+/// 按相关性排序：标题匹配 > 摘要匹配 > 内容匹配 > 创建时间倒序
+///
+/// # 高亮
+///
+/// 搜索结果中 title / summary / content 中的关键词会用 `<mark>` 标签包裹。
+/// content 字段会被截取为关键词附近约 200 字符的摘要。
+///
+/// # 响应
+///
+/// ```json
+/// {
+///   "success": true,
+///   "data": {
+///     "items": [...],
+///     "total": 5,
+///     "page": 1,
+///     "page_size": 10,
+///     "total_pages": 1
+///   }
+/// }
+/// ```
+pub async fn search_posts(
+    State(state): State<AppState>,
+    Query(params): Query<SearchQuery>,
+) -> Result<Json<ApiResponse<PagedData<PostWithRelations>>>, ServiceError> {
+    let keyword = params.q.trim().to_string();
+
+    // 关键词不能为空且长度合理
+    if keyword.is_empty() {
+        return Err(ServiceError::InvalidInput(
+            "搜索关键词不能为空".to_string(),
+        ));
+    }
+    if keyword.len() > 100 {
+        return Err(ServiceError::InvalidInput(
+            "搜索关键词过长（最多 100 个字符）".to_string(),
+        ));
+    }
+
+    let page = params.page.unwrap_or(1).max(1);
+    let page_size = params.page_size.unwrap_or(10).min(50).max(1);
+
+    let (results, total) =
+        service::posts::search_posts(&state.db, &keyword, page, page_size).await?;
+
+    Ok(paged(results, total, page, page_size))
+}
