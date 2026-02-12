@@ -170,7 +170,7 @@ export const contentConfig = {
       ],
     },
     about: {
-      opening: "你好，我是恋",
+      opening: "你好，我是",
     },
     themes: {
       heroSubtitle: "按类别浏览文章",
