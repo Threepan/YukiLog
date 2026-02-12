@@ -43,6 +43,12 @@ export interface SiteConfig {
     nickname: string;
     avatar: string;
     bio: string;
+    birthday: string;
+    genderIdentity: string;
+    systemLog: {
+      timestamp: string;
+      message: string;
+    };
   };
   
   // 社交链接
