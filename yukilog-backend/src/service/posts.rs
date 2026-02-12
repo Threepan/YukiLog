@@ -45,8 +45,7 @@ impl From<repo::posts::PostDto> for Post {
     }
 }
 
-#[allow(dead_code)]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct PostWithRelations {
     pub post: Post,
     pub theme: Option<Theme>,
@@ -195,7 +194,6 @@ pub async fn get_post_by_slug(
     Ok(post_dto.into())
 }
 
-#[allow(dead_code)]
 /// 4. 获取文章及其关联数据
 pub async fn get_post_with_relations(
     db: &DatabaseConnection,
@@ -219,6 +217,52 @@ pub async fn get_post_with_relations(
     let tags = get_post_tags(db, post.id).await?;
 
     Ok(PostWithRelations { post, theme, tags })
+}
+
+/// 4-2. 列出文章（含关联数据）
+/// 
+/// 优化版本：使用批量查询减少数据库往返
+pub async fn list_posts_with_relations(
+    db: &DatabaseConnection,
+    filter: PostFilter,
+) -> ServiceResult<Vec<PostWithRelations>> {
+    // 1. 先获取文章列表
+    let posts = list_posts(db, filter).await?;
+    
+    if posts.is_empty() {
+        return Ok(vec![]);
+    }
+    
+    // 2. 提取所有 theme_id 和 post_id
+    let theme_ids: Vec<i64> = posts.iter()
+        .filter_map(|p| p.theme_id)
+        .collect();
+    let post_ids: Vec<i64> = posts.iter()
+        .map(|p| p.id)
+        .collect();
+    
+    // 3. 批量查询所有主题（一次查询）
+    let themes = if !theme_ids.is_empty() {
+        crate::service::themes::get_themes_by_ids(db, &theme_ids).await?
+    } else {
+        vec![]
+    };
+    let theme_map: std::collections::HashMap<i64, Theme> = themes
+        .into_iter()
+        .map(|t| (t.id, t))
+        .collect();
+    
+    // 4. 批量查询所有标签（一次查询）
+    let tags_map = get_posts_tags_batch(db, &post_ids).await?;
+    
+    // 5. 组装数据
+    let results = posts.into_iter().map(|post| {
+        let theme = post.theme_id.and_then(|tid| theme_map.get(&tid).cloned());
+        let tags = tags_map.get(&post.id).cloned().unwrap_or_default();
+        PostWithRelations { post, theme, tags }
+    }).collect();
+    
+    Ok(results)
 }
 
 /// 5. 列出文章
@@ -493,6 +537,28 @@ pub async fn get_post_tags<C: ConnectionTrait>(
 ) -> ServiceResult<Vec<Tag>> {
     let tag_dtos = repo::post_tags::get_tags_by_post_id(db, post_id).await?;
     Ok(tag_dtos.into_iter().map(Into::into).collect())
+}
+
+/// 批量获取多篇文章的标签（辅助方法）
+async fn get_posts_tags_batch(
+    db: &DatabaseConnection,
+    post_ids: &[i64],
+) -> ServiceResult<std::collections::HashMap<i64, Vec<Tag>>> {
+    if post_ids.is_empty() {
+        return Ok(std::collections::HashMap::new());
+    }
+    
+    // 使用 repo 层批量查询 post_tags 关联
+    let post_tags = repo::post_tags::get_tags_by_post_ids(db, post_ids).await?;
+    
+    // 转换为 HashMap<post_id, Vec<Tag>>
+    let mut map: std::collections::HashMap<i64, Vec<Tag>> = std::collections::HashMap::new();
+    for (post_id, tag_dto) in post_tags {
+        map.entry(post_id)
+            .or_insert_with(Vec::new)
+            .push(tag_dto.into());
+    }
+    Ok(map)
 }
 
 // ================================
