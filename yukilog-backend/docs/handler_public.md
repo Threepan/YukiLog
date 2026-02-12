@@ -220,8 +220,11 @@ GET    /api/public/posts/:slug/comments/:id   - 懒加载回复
 POST   /api/public/posts/:slug/comments        - 发表评论 (频率限制 10秒)
 ```
 
+**访客信息解析**：  
+使用 `woothee` 库自动解析 User-Agent 为可读格式，如 "Desktop Chrome 136.0 · macOS 15"。解析失败时 `visitor_info` 为 `null`。
+
 **头像生成策略**：  
-优先级：① 若提供 website，尝试获取 `{website}/favicon.ico`；② 若提供 email，使用 Gravatar；③ 否则返回 `null`。
+头像由前端动态生成，优先级：① 若提供 website，使用 `{website}/favicon.ico`；② 若提供 email，使用 Gravatar；③ 否则使用默认头像。
 
 #### 接口定义
 
@@ -267,8 +270,6 @@ pub struct CreateCommentRequest {
 pub struct CreateCommentResponse {
     /// 评论 ID
     pub id: i64,
-    /// 头像 URL (website favicon / Gravatar / null)
-    pub avatar_url: Option<String>,
     /// 创建时间
     pub created_at: chrono::DateTime<chrono::FixedOffset>,
 }
