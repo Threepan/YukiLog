@@ -539,6 +539,62 @@ pub async fn get_post_tags<C: ConnectionTrait>(
     Ok(tag_dtos.into_iter().map(Into::into).collect())
 }
 
+/// 10. 全文搜索文章（ILIKE 模糊搜索）
+///
+/// 搜索 title + summary + content，仅已发布文章，返回带关联数据的结果。
+/// 搜索结果中 content 被替换为高亮摘要（关键词用 <mark> 包裹）。
+pub async fn search_posts(
+    db: &DatabaseConnection,
+    keyword: &str,
+    page: u64,
+    page_size: u64,
+) -> ServiceResult<(Vec<PostWithRelations>, u64)> {
+    // 1. 执行搜索
+    let (dtos, total) = repo::posts::search_posts(db, keyword, page_size, page).await?;
+
+    if dtos.is_empty() {
+        return Ok((vec![], total));
+    }
+
+    // 2. 转换为 Post，并将 content 替换为高亮摘要
+    let posts: Vec<Post> = dtos.into_iter().map(|dto| {
+        let mut post: Post = dto.into();
+        post.content = generate_search_excerpt(&post.content, keyword, 200);
+        // summary 也高亮
+        if let Some(ref summary) = post.summary {
+            post.summary = Some(highlight_keyword(summary, keyword));
+        }
+        // title 也高亮
+        post.title = highlight_keyword(&post.title, keyword);
+        post
+    }).collect();
+
+    // 3. 批量查询关联数据（复用已有逻辑）
+    let theme_ids: Vec<i64> = posts.iter().filter_map(|p| p.theme_id).collect();
+    let post_ids: Vec<i64> = posts.iter().map(|p| p.id).collect();
+
+    let themes = if !theme_ids.is_empty() {
+        crate::service::themes::get_themes_by_ids(db, &theme_ids).await?
+    } else {
+        vec![]
+    };
+    let theme_map: std::collections::HashMap<i64, Theme> = themes
+        .into_iter()
+        .map(|t| (t.id, t))
+        .collect();
+
+    let tags_map = get_posts_tags_batch(db, &post_ids).await?;
+
+    // 4. 组装
+    let results = posts.into_iter().map(|post| {
+        let theme = post.theme_id.and_then(|tid| theme_map.get(&tid).cloned());
+        let tags = tags_map.get(&post.id).cloned().unwrap_or_default();
+        PostWithRelations { post, theme, tags }
+    }).collect();
+
+    Ok((results, total))
+}
+
 /// 批量获取多篇文章的标签（辅助方法）
 async fn get_posts_tags_batch(
     db: &DatabaseConnection,
@@ -570,4 +626,62 @@ fn is_valid_slug(slug: &str) -> bool {
         && slug
             .chars()
             .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_')
+}
+
+/// 生成搜索摘要：在 content 中找到关键词附近的文本，截取并高亮
+///
+/// 如果 content 中包含关键词，截取关键词前后各 max_len/2 字符作为摘要；
+/// 如果不包含，截取开头 max_len 字符。关键词用 <mark> 包裹。
+fn generate_search_excerpt(content: &str, keyword: &str, max_len: usize) -> String {
+    let content_lower = content.to_lowercase();
+    let keyword_lower = keyword.to_lowercase();
+
+    if let Some(pos) = content_lower.find(&keyword_lower) {
+        // 以关键词为中心截取
+        let half = max_len / 2;
+        let start = if pos > half { pos - half } else { 0 };
+        let end = (pos + keyword.len() + half).min(content.len());
+
+        // 确保按字符边界截取（UTF-8 安全）
+        let start = content.floor_char_boundary(start);
+        let end = content.ceil_char_boundary(end);
+        let slice = &content[start..end];
+
+        let mut excerpt = String::new();
+        if start > 0 {
+            excerpt.push_str("...");
+        }
+        excerpt.push_str(&highlight_keyword(slice, keyword));
+        if end < content.len() {
+            excerpt.push_str("...");
+        }
+        excerpt
+    } else {
+        // 未找到（理论上不会走到这，因为 SQL 已经匹配了）
+        let end = max_len.min(content.len());
+        let end = content.ceil_char_boundary(end);
+        let mut excerpt = content[..end].to_string();
+        if end < content.len() {
+            excerpt.push_str("...");
+        }
+        excerpt
+    }
+}
+
+/// 高亮关键词：大小写不敏感替换为 <mark>keyword</mark>
+fn highlight_keyword(text: &str, keyword: &str) -> String {
+    let keyword_lower = keyword.to_lowercase();
+    let text_lower = text.to_lowercase();
+    let mut result = String::with_capacity(text.len() + keyword.len() * 2);
+    let mut last_end = 0;
+
+    for (start, _) in text_lower.match_indices(&keyword_lower) {
+        result.push_str(&text[last_end..start]);
+        result.push_str("<mark>");
+        result.push_str(&text[start..start + keyword.len()]);
+        result.push_str("</mark>");
+        last_end = start + keyword.len();
+    }
+    result.push_str(&text[last_end..]);
+    result
 }
