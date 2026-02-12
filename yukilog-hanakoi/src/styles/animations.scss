@@ -2,6 +2,8 @@
 // 动画定义 - 恋的温柔动画系统
 // ================================
 
+@use "sass:list";
+@use "sass:color";
 @use './variables.scss' as *;
 
 // 导航栏渐入
@@ -162,7 +164,7 @@
 @mixin color-transition($properties...) {
   $transitions: ();
   @each $prop in $properties {
-    $transitions: append($transitions, #{$prop} $transition-base $ease-gentle, comma);
+    $transitions: list.append($transitions, #{$prop} $transition-base $ease-gentle, comma);
   }
   transition: $transitions;
 }
@@ -188,7 +190,7 @@
   background: linear-gradient(
     90deg,
     $lian-bg 0%,
-    lighten($lian-bg, 2%) 50%,
+    color.adjust($lian-bg, $lightness: 2%) 50%,
     $lian-bg 100%
   );
   background-size: 200% 100%;

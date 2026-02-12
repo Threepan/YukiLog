@@ -3,6 +3,8 @@
 // 恋的温柔博客系统
 // ================================
 
+@use "sass:color";
+
 // 导入样式模块（variables 已通过 Vite additionalData 注入）
 @use './animations.scss' as *;
 @use './typography.scss' as *;
@@ -156,7 +158,7 @@ button {
   color: white;
   
   &:hover {
-    background: darken($lian-blue, 8%);
+    background: color.adjust($lian-blue, $lightness: -8%);
   }
 }
 
@@ -165,7 +167,7 @@ button {
   color: white;
   
   &:hover {
-    background: darken($lian-pink, 8%);
+    background: color.adjust($lian-pink, $lightness: -8%);
   }
 }
 
@@ -259,12 +261,12 @@ textarea.input {
   @include color-transition(background-color, color);
   
   &:hover {
-    background: darken($lian-bg, 5%);
+    background: color.adjust($lian-bg, $lightness: -5%);
   }
   
   &.tag-blue {
     background: rgba($lian-blue, 0.15);
-    color: darken($lian-blue, 15%);
+    color: color.adjust($lian-blue, $lightness: -15%);
     
     &:hover {
       background: rgba($lian-blue, 0.25);
@@ -273,7 +275,7 @@ textarea.input {
   
   &.tag-pink {
     background: rgba($lian-pink, 0.15);
-    color: darken($lian-pink, 15%);
+    color: color.adjust($lian-pink, $lightness: -15%);
     
     &:hover {
       background: rgba($lian-pink, 0.25);
@@ -331,7 +333,7 @@ textarea.input {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: lighten($lian-text-muted, 10%);
+  background: color.adjust($lian-text-muted, $lightness: 10%);
   border-radius: $radius-sm;
   
   &:hover {

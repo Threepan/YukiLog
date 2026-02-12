@@ -29,6 +29,8 @@ const uptime = getSiteUptime(siteConfig.startDate);
 </footer>
 
 <style lang="scss">
+@use "sass:color";
+
 .footer {
   background: $lian-white;
   border-top: 1px solid $lian-border;
@@ -62,7 +64,7 @@ const uptime = getSiteUptime(siteConfig.startDate);
     transition: color $transition-fast $ease-out;
     
     &:hover {
-      color: darken($lian-blue, 10%);
+      color: color.adjust($lian-blue, $lightness: -10%);
     }
   }
 }

@@ -66,6 +66,8 @@ const coverSrc = post.cover_image || placeholderCover;
 </article>
 
 <style lang="scss">
+@use "sass:color";
+
   .article-card {
     display: grid;
     grid-template-columns: 4fr 6fr;
@@ -215,7 +217,7 @@ const coverSrc = post.cover_image || placeholderCover;
 
     &:hover {
       background: rgba($lian-blue, 0.2);
-      color: darken($lian-blue, 10%);
+      color: color.adjust($lian-blue, $lightness: -10%);
     }
   }
 
@@ -247,7 +249,7 @@ const coverSrc = post.cover_image || placeholderCover;
 
     &:hover {
       background: rgba($lian-pink, 0.18);
-      color: darken($lian-pink, 10%);
+      color: color.adjust($lian-pink, $lightness: -10%);
     }
   }
 

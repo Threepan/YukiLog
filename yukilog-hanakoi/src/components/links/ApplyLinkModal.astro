@@ -61,6 +61,8 @@ const applyConfig = contentConfig.components.applyLinkModal;
 </div>
 
 <style lang="scss">
+@use "sass:color";
+
   // 申请区域
   .apply-section {
     display: flex;
@@ -267,7 +269,7 @@ const applyConfig = contentConfig.components.applyLinkModal;
     padding: 12px 0;
     border: none;
     border-radius: $radius-sm;
-    background: linear-gradient(135deg, $lian-pink, lighten($lian-pink, 8%));
+    background: linear-gradient(135deg, $lian-pink, color.adjust($lian-pink, $lightness: 8%));
     color: white;
     font-size: $font-size-base;
     font-weight: $font-weight-semibold;

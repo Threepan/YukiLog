@@ -2,6 +2,7 @@
 // 字体排版 - 恋的文字美学
 // ================================
 
+@use "sass:color";
 @use './variables.scss' as *;
 @use './animations.scss' as *;
 
@@ -53,7 +54,7 @@ a {
   @include color-transition(color, opacity);
   
   &:hover {
-    color: darken($lian-blue, 10%);
+    color: color.adjust($lian-blue, $lightness: -10%);
   }
   
   &:active {
