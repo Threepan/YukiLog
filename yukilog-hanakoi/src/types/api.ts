@@ -245,3 +245,23 @@ export interface LoginResponse {
   token: string;
   expires_in: number; // 秒
 }
+
+// ================================
+// 搜索（Search）
+// ================================
+
+/**
+ * 搜索查询参数
+ */
+export interface SearchQuery {
+  q: string;
+  page?: number;
+  page_size?: number;
+}
+
+/**
+ * 搜索响应 = PaginatedData<PostWithRelations>
+ * 特殊说明：搜索结果中的 content 是高亮摘要（非完整内容），
+ * title 和 summary 中的关键词被 <mark> 标签包裹。
+ */
+export type SearchResponse = PaginatedData<PostWithRelations>;
