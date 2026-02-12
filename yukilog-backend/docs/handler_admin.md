@@ -152,11 +152,12 @@ pub struct MergeTagsRequest {
 
 ---
 
-## Posts 文章 - 4 个接口
+## Posts 文章 - 5 个接口
 
 ```bash
 GET     /api/admin/posts        - 文章列表 (含草稿, 分页+过滤)
 POST    /api/admin/posts        - 创建文章
+GET     /api/admin/posts/:slug  - 获取单篇文章 (含草稿)
 PUT     /api/admin/posts/:slug  - 更新文章
 DELETE  /api/admin/posts/:slug  - 删除文章
 ```
@@ -164,12 +165,19 @@ DELETE  /api/admin/posts/:slug  - 删除文章
 #### 接口定义
 
 ```rust
-/// 获取所有文章（含草稿）
+/// 获取所有文章（含草稿、关联数据）
 pub async fn list_posts(
     State(state): State<AppState>,
     Extension(claims): Extension<Claims>,
     Query(params): Query<ListPostsQuery>,
-) -> Result<Json<ApiResponse<PagedData<Post>>>, ServiceError>
+) -> Result<Json<ApiResponse<PagedData<PostWithRelations>>>, ServiceError>
+
+/// 获取单篇文章（含草稿、关联数据）
+pub async fn get_post(
+    State(state): State<AppState>,
+    Extension(claims): Extension<Claims>,
+    Path(slug): Path<String>,
+) -> Result<Json<ApiResponse<PostWithRelations>>, ServiceError>
 
 /// 创建文章
 pub async fn create_post(
