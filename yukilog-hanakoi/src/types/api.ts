@@ -71,6 +71,15 @@ export interface Post {
 }
 
 /**
+ * 文章（含关联数据）
+ */
+export interface PostWithRelations {
+  post: Post;
+  theme: Theme | null;
+  tags: Tag[];
+}
+
+/**
  * 创建文章请求体
  */
 export interface CreatePostRequest {
