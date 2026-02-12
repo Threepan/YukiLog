@@ -254,17 +254,18 @@ const searchIconFixed = deduplicateSvgIds(searchIcon.default, '_fixed');
 
 <script>
   // 导航栏显隐逻辑
+  // 进入第二屏的时候应该切换为浮动岛屿样式
+  // 所以这里的代码是对innerHeight进行取值, 然后监听屏幕滚动
   const navbar = document.getElementById('navbar');
   const navbarFixed = document.getElementById('navbar-fixed');
   if (!navbar || !navbarFixed) throw new Error('Navbar not found');
 
-  // 使用实际视口高度作为阈值
   const getThreshold = () => window.innerHeight;
 
   // 监听滚动
   window.addEventListener('scroll', () => {
     const threshold = getThreshold();
-    if (window.scrollY >= threshold) {
+    if (window.scrollY >= threshold - 50) {
       navbar.classList.add('sticky');
       navbarFixed.classList.add('hidden');
     } else {
