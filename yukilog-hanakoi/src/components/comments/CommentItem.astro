@@ -7,6 +7,7 @@
 import { marked } from 'marked';
 import type { CommentNode } from '../../types/api';
 import { getRelativeTime } from '../../lib/mock-comments';
+import { getCommentAvatar } from '../../lib/avatar';
 
 interface Props {
   node: CommentNode;
@@ -26,6 +27,9 @@ marked.setOptions({
 const renderedContent = marked.parse(comment.content);
 const relativeTime = getRelativeTime(comment.created_at);
 
+// 动态生成头像 URL：website favicon → Gravatar → 默认头像
+const avatarUrl = getCommentAvatar(comment.guest_website, comment.guest_email);
+
 // 最大嵌套深度（避免过深）
 const maxDepth = 4;
 const isMaxDepth = depth >= maxDepth;
@@ -36,7 +40,7 @@ const isMaxDepth = depth >= maxDepth;
   <div class="comment-card">
     <!-- 头像 -->
     <div class="comment-avatar">
-      <img src={comment.avatar_url} alt={comment.guest_nick} loading="lazy" />
+      <img src={avatarUrl} alt={comment.guest_nick} loading="lazy" />
     </div>
     
     <!-- 内容区 -->
