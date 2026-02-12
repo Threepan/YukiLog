@@ -66,6 +66,10 @@ export const socialIcons = {
   gmail: socialGmail,
 } as const;
 
+export type UiIconKey = keyof typeof uiIcons;
+export type NavIconKey = keyof typeof navIcons;
+export type SocialIconKey = keyof typeof socialIcons;
+
 export const svgIcons = {
   ...uiIcons,
   ...navIcons,
