@@ -9,6 +9,7 @@ import type {
   Post,
   PostWithRelations,
   PostListParams,
+  SearchQuery,
   Theme,
   Tag,
   CommentNode,
@@ -80,6 +81,20 @@ export const postsApi = {
     await fetch(`${API_BASE}/api/public/posts/${slug}/view`, {
       method: 'POST',
     });
+  },
+
+  /**
+   * 全文搜索文章
+   * 搜索结果中 title/summary/content 的关键词会被 <mark> 标签包裹
+   * content 被截取为关键词附近的摘要
+   */
+  async search(params: SearchQuery): Promise<PaginatedData<PostWithRelations>> {
+    const query = new URLSearchParams({
+      q: params.q,
+      ...(params.page && { page: String(params.page) }),
+      ...(params.page_size && { page_size: String(params.page_size) }),
+    }).toString();
+    return fetchApi<PaginatedData<PostWithRelations>>(`/api/public/search?${query}`);
   },
 };
 
