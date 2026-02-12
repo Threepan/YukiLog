@@ -188,13 +188,17 @@ Origin: https://yukilog.com                         # 我从哪儿来
 
 2. **检查格式**
 
-检查 `Bearer <token>` 格式, 然后决定继续验证, 或者抛出 **401 Unauthorized**
+检查 `Bearer <token>` 格式，然后决定继续验证，或者返回 **401 Unauthorized JSON 响应**
 
 3. **验证 Token**
 
-这里使用 `JWT_SECRET` 验证签名和过期时间, 就是你在 [.env](../.env.example) 里配置的那一个
+这里使用 `JWT_SECRET` 验证签名和过期时间，就是你在 [.env](../.env.example) 里配置的那一个
 
-要么解析出 `Claims`, 要么抛出 **401 Unauthorized**
+要么解析出 `Claims`，要么返回 **401 Unauthorized JSON 响应**，并区分错误类型：
+
+* **缺少令牌或格式错误** → `{ success: false, data: null, message: "缺少认证令牌或格式错误" }`
+* **令牌签名无效** → `{ success: false, data: null, message: "认证令牌无效" }`
+* **令牌已过期** → `{ success: false, data: null, message: "认证令牌已过期" }`
 
 4. **将 `Claims` 存入 `Request Extensions`**
 
@@ -226,6 +230,8 @@ Body: {"title": "...", "content": "..."}
 [中间件 jwt_auth]
 1. 提取 "Bearer eyJ..."
 2. 验证 token → 解析出 Claims {sub: "admin", exp: 1314520}
+   （如果过期：返回 401 JSON: {"success": false, "message": "认证令牌已过期"}）
+   （如果无效：返回 401 JSON: {"success": false, "message": "认证令牌无效"}）
 3. req.extensions_mut().insert(claims)
 4. next.run(req)
 
