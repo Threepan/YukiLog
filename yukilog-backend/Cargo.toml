@@ -59,8 +59,11 @@ regex = "1.10"
 # Redis 缓存和限流
 redis = { version = "0.24", features = ["tokio-comp", "connection-manager"] }
 
-# Gravatar MD5 哈希
+# Gravatar 头像 MD5
 md5 = "0.7"
+
+# User-Agent 解析
+woothee = "0.13"
 
 [[bin]]
 name = "hash_password"
