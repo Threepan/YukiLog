@@ -119,6 +119,32 @@ where
     Ok(tags_models.into_iter().map(crate::repo::tags::TagDto::from).collect())
 }
 
+/// 批量获取多篇文章的标签
+pub async fn get_tags_by_post_ids<C>(
+    db: &C,
+    post_ids: &[i64],
+) -> RepoResult<Vec<(i64, crate::repo::tags::TagDto)>>
+where
+    C: ConnectionTrait,
+{
+    use crate::entities::prelude::Tags;
+    
+    // 使用 JOIN 查询一次性获取所有数据
+    let results: Vec<(post_tags::Model, crate::entities::tags::Model)> = post_tags::Entity::find()
+        .filter(post_tags::Column::PostId.is_in(post_ids.iter().copied()))
+        .find_also_related(Tags)
+        .all(db)
+        .await?
+        .into_iter()
+        .filter_map(|(pt, opt_tag)| opt_tag.map(|tag| (pt, tag)))
+        .collect();
+    
+    Ok(results
+        .into_iter()
+        .map(|(pt, tag)| (pt.post_id, crate::repo::tags::TagDto::from(tag)))
+        .collect())
+}
+
 /// 将 source tag 的所有文章关联迁移到 target tag（主键冲突时忽略）
 pub async fn migrate_post_tags<C>(
     db: &C,
