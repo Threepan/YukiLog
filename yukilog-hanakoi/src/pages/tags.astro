@@ -1,0 +1,487 @@
+---
+// ================================
+// 标签页面
+// Hero + 标签云 + 点击标签后展示文章列表
+// ================================
+
+import BlogLayout from "../layouts/BlogLayout.astro";
+import PageHero from "../components/shared/PageHero.astro";
+
+import tagIcon from "../assets/icon/nav/tag.svg?raw";
+
+// ================================
+// 占位数据，后续接入后端 API
+// ================================
+const tags = [
+  { name: "Rust", slug: "rust", count: 8, size: 4 },
+  { name: "Astro", slug: "astro", count: 6, size: 3 },
+  { name: "TypeScript", slug: "typescript", count: 7, size: 4 },
+  { name: "CSS", slug: "css", count: 5, size: 3 },
+  { name: "Vue", slug: "vue", count: 4, size: 2 },
+  { name: "Axum", slug: "axum", count: 3, size: 2 },
+  { name: "Sea-ORM", slug: "sea-orm", count: 2, size: 1 },
+  { name: "PostgreSQL", slug: "postgresql", count: 3, size: 2 },
+  { name: "Docker", slug: "docker", count: 2, size: 1 },
+  { name: "生活", slug: "life", count: 6, size: 3 },
+  { name: "情绪", slug: "emotion", count: 4, size: 2 },
+  { name: "思考", slug: "thought", count: 5, size: 3 },
+  { name: "全栈", slug: "fullstack", count: 3, size: 2 },
+  { name: "开源", slug: "open-source", count: 2, size: 1 },
+  { name: "SCSS", slug: "scss", count: 3, size: 2 },
+  { name: "Linux", slug: "linux", count: 2, size: 1 },
+  { name: "架构设计", slug: "architecture", count: 4, size: 2 },
+  { name: "年终总结", slug: "year-review", count: 1, size: 1 },
+];
+
+// 占位文章数据（按标签关联）
+const tagPosts: Record<string, Array<{ title: string; slug: string; created_at: string; summary: string }>> = {
+  rust: [
+    { title: "Rust Axum 中间件实践", slug: "rust-axum-middleware", created_at: "2026-02-03", summary: "探索 Axum 的中间件机制和错误处理模式" },
+    { title: "关于「造轮子」这件事", slug: "about-reinventing-wheel", created_at: "2025-10-18", summary: "为什么明知有现成方案还要自己写" },
+    { title: "Sea-ORM 踩坑日记", slug: "sea-orm-notes", created_at: "2025-11-20", summary: "在 Rust 生态里找一个顺手的 ORM" },
+  ],
+  astro: [
+    { title: "Astro 初体验", slug: "astro-first-look", created_at: "2025-09-22", summary: "用 Astro 搭一个静态博客，到底有多舒服" },
+    { title: "YukiLog 前端架构复盘", slug: "yukilog-frontend-review", created_at: "2026-02-10", summary: "回顾一个月的前端开发经历" },
+  ],
+  life: [
+    { title: "深夜的胡思乱想", slug: "midnight-thoughts", created_at: "2025-12-15", summary: "凌晨三点睡不着写的东西" },
+    { title: "年终总结：代码与生活", slug: "year-end-2025", created_at: "2025-12-28", summary: "2025 年发生了很多事" },
+  ],
+};
+// 确定性分配背景色：粉、蓝、白 循环但带偏移
+// 0=pink, 1=blue, 2=white
+const colorCycle = [0, 2, 1, 0, 1, 2, 1, 0, 2, 0, 1, 2, 0, 2, 1, 0, 1, 2];
+const colorNames = ['pink', 'blue', 'white'] as const;
+---
+
+<BlogLayout title="标签 - YukiLog" stickyNav>
+  <PageHero title="标签" subtitle={`共 ${tags.length} 个标签`} icon={tagIcon} />
+
+  <div class="tags-page">
+    <!-- 标签云 -->
+    <section class="tag-cloud-section">
+      <div class="tag-cloud">
+        {tags.map((tag, i) => (
+          <button
+            class="tag-bubble"
+            data-slug={tag.slug}
+            data-size={tag.size}
+            data-color={colorNames[colorCycle[i % colorCycle.length]]}
+            style={`--i: ${i}`}
+          >
+            <span class="tag-name">{tag.name}</span>
+            <span class="tag-count">{tag.count}</span>
+          </button>
+        ))}
+      </div>
+    </section>
+
+    <!-- 选中标签后的文章列表 -->
+    <section class="tag-posts-section" id="tagPosts">
+      <div class="tag-posts-header" id="tagPostsHeader">
+        <h2 class="tag-posts-title" id="tagPostsTitle"></h2>
+        <button class="tag-posts-close" id="tagPostsClose" aria-label="关闭">×</button>
+      </div>
+      <div class="tag-posts-list" id="tagPostsList"></div>
+      <p class="tag-posts-empty" id="tagPostsEmpty">这个标签下暂时还没有文章</p>
+    </section>
+  </div>
+</BlogLayout>
+
+<script define:vars={{ tagPosts }}>
+  // 将 Astro 传入的占位数据挂到 window 上供使用
+  window.__tagPosts = tagPosts;
+</script>
+
+<script>
+  const bubbles = document.querySelectorAll<HTMLElement>('.tag-bubble');
+  const postsSection = document.getElementById('tagPosts')!;
+  const postsTitle = document.getElementById('tagPostsTitle')!;
+  const postsList = document.getElementById('tagPostsList')!;
+  const postsEmpty = document.getElementById('tagPostsEmpty')!;
+  const postsClose = document.getElementById('tagPostsClose')!;
+
+  let activeSlug: string | null = null;
+
+  // 标签云入场
+  const cloudObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const section = entry.target as HTMLElement;
+          section.classList.add('visible');
+          cloudObserver.unobserve(section);
+        }
+      });
+    },
+    { threshold: 0.1 }
+  );
+  const cloudSection = document.querySelector('.tag-cloud-section');
+  if (cloudSection) cloudObserver.observe(cloudSection);
+
+  // 点击标签
+  bubbles.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const slug = btn.dataset.slug!;
+      const name = btn.querySelector('.tag-name')!.textContent!;
+
+      // 切换高亮
+      if (activeSlug === slug) {
+        closePostsPanel();
+        return;
+      }
+
+      activeSlug = slug;
+      bubbles.forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      // 渲染文章
+      const tagPosts = (window as any).__tagPosts as Record<
+        string,
+        Array<{ title: string; slug: string; created_at: string; summary: string }>
+      >;
+      const posts = tagPosts[slug] || [];
+
+      postsTitle.textContent = `# ${name}`;
+
+      if (posts.length > 0) {
+        postsEmpty.style.display = 'none';
+        postsList.innerHTML = posts
+          .map(
+            (p, i) => `
+            <a href="/posts/${p.slug}" class="tag-post-card" style="--pi: ${i}">
+              <div class="tag-post-info">
+                <h3 class="tag-post-title">${p.title}</h3>
+                <p class="tag-post-summary">${p.summary}</p>
+              </div>
+              <time class="tag-post-date">${new Date(p.created_at).toLocaleDateString('zh-CN', { month: 'long', day: 'numeric' })}</time>
+            </a>`
+          )
+          .join('');
+      } else {
+        postsList.innerHTML = '';
+        postsEmpty.style.display = 'block';
+      }
+
+      postsSection.classList.add('show');
+
+      // 平滑滚动到文章区域
+      postsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  // 关闭面板
+  postsClose.addEventListener('click', closePostsPanel);
+
+  function closePostsPanel() {
+    activeSlug = null;
+    bubbles.forEach((b) => b.classList.remove('active'));
+    postsSection.classList.remove('show');
+  }
+</script>
+
+<style lang="scss">
+  .tags-page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: $spacing-xl $spacing-lg $spacing-xxl * 2;
+  }
+
+  // ================================
+  // 标签云
+  // ================================
+  .tag-cloud-section {
+    opacity: 0;
+    transform: translateY(20px);
+    transition:
+      opacity 600ms $ease-gentle,
+      transform 600ms $ease-gentle;
+
+    &.visible {
+      opacity: 1;
+      transform: translateY(0);
+
+      .tag-bubble {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  }
+
+  .tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: $spacing-sm;
+    padding: $spacing-md 0;
+  }
+
+  .tag-bubble {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    border: 1.5px solid transparent;
+    border-radius: 24px;
+    background: white;
+    color: $lian-text;
+    cursor: pointer;
+    font-family: inherit;
+    transition:
+      border-color $transition-fast $ease-gentle,
+      background $transition-fast $ease-gentle,
+      box-shadow $transition-fast $ease-gentle,
+      transform $transition-fast $ease-gentle,
+      opacity 400ms $ease-gentle,
+      color $transition-fast $ease-gentle;
+    
+    // 入场动画
+    opacity: 0;
+    transform: translateY(12px);
+    transition-delay: calc(var(--i) * 40ms);
+
+    // 根据 size 调整字号
+    &[data-size="1"] { font-size: $font-size-xs; padding: 6px 14px; }
+    &[data-size="2"] { font-size: $font-size-sm; }
+    &[data-size="3"] { font-size: $font-size-base; }
+    &[data-size="4"] { font-size: $font-size-lg; padding: 10px 22px; }
+    &[data-size="5"] { font-size: $font-size-xl; padding: 12px 26px; }
+
+    // 随机背景色
+    &[data-color="pink"] {
+      background: rgba($lian-pink, 0.12);
+      border-color: rgba($lian-pink, 0.2);
+      
+      .tag-count {
+        background: rgba($lian-pink, 0.15);
+        color: $lian-pink;
+      }
+
+      &:hover {
+        background: rgba($lian-pink, 0.2);
+        box-shadow: $shadow-pink;
+        transform: translateY(-2px);
+      }
+    }
+
+    &[data-color="blue"] {
+      background: rgba($lian-blue, 0.12);
+      border-color: rgba($lian-blue, 0.2);
+
+      .tag-count {
+        background: rgba($lian-blue, 0.15);
+        color: $lian-blue;
+      }
+
+      &:hover {
+        background: rgba($lian-blue, 0.2);
+        box-shadow: $shadow-blue;
+        transform: translateY(-2px);
+      }
+    }
+
+    &[data-color="white"] {
+      background: white;
+      border-color: $lian-border;
+
+      .tag-count {
+        background: rgba($lian-text-muted, 0.1);
+        color: $lian-text-muted;
+      }
+
+      &:hover {
+        background: $lian-white;
+        box-shadow: $shadow-sm;
+        transform: translateY(-2px);
+      }
+    }
+
+    &.active {
+      background: $lian-blue;
+      color: white;
+      border-color: $lian-blue;
+      box-shadow: $shadow-blue-hover;
+
+      .tag-count {
+        background: rgba(white, 0.25);
+        color: white;
+      }
+    }
+  }
+
+  .tag-name {
+    font-weight: $font-weight-medium;
+  }
+
+  .tag-count {
+    font-size: $font-size-xs;
+    padding: 1px 8px;
+    border-radius: 10px;
+    transition:
+      background $transition-fast $ease-gentle,
+      color $transition-fast $ease-gentle;
+  }
+
+  // ================================
+  // 文章列表面板
+  // ================================
+  .tag-posts-section {
+    margin-top: $spacing-xl;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition:
+      max-height 500ms $ease-gentle,
+      opacity 400ms $ease-gentle,
+      margin-top 400ms $ease-gentle;
+
+    &.show {
+      max-height: 2000px;
+      opacity: 1;
+    }
+  }
+
+  .tag-posts-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: $spacing-md;
+    padding-bottom: $spacing-sm;
+    border-bottom: 1.5px solid $lian-divider;
+  }
+
+  .tag-posts-title {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-semibold;
+    color: $lian-blue;
+    margin: 0;
+    letter-spacing: 0.02em;
+  }
+
+  .tag-posts-close {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: rgba($lian-text-muted, 0.08);
+    color: $lian-text-muted;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: $font-size-lg;
+    transition:
+      background $transition-fast $ease-gentle,
+      color $transition-fast $ease-gentle;
+
+    &:hover {
+      background: rgba($lian-pink, 0.12);
+      color: $lian-pink;
+    }
+  }
+
+  .tag-posts-list {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+  }
+
+  // 文章卡片（JS 动态生成，使用 :global）
+  :global(.tag-post-card) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-md;
+    padding: $spacing-md $spacing-lg;
+    background: white;
+    border-radius: $radius-sm;
+    text-decoration: none;
+    box-shadow: $shadow-sm;
+    transition:
+      box-shadow $transition-base $ease-gentle,
+      transform $transition-base $ease-gentle;
+    
+    // 入场动画
+    animation: post-card-in 400ms $ease-gentle forwards;
+    animation-delay: calc(var(--pi) * 80ms);
+    opacity: 0;
+
+    &:hover {
+      box-shadow: $shadow-pink;
+      transform: translateY(-2px);
+    }
+  }
+
+  @keyframes post-card-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  :global(.tag-post-info) {
+    flex: 1;
+    min-width: 0;
+  }
+
+  :global(.tag-post-title) {
+    font-size: $font-size-base;
+    font-weight: $font-weight-medium;
+    color: $lian-text;
+    margin: 0 0 4px;
+    transition: color $transition-fast $ease-gentle;
+  }
+
+  :global(.tag-post-card:hover .tag-post-title) {
+    color: $lian-blue;
+  }
+
+  :global(.tag-post-summary) {
+    font-size: $font-size-sm;
+    color: $lian-text-light;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  :global(.tag-post-date) {
+    font-size: $font-size-xs;
+    color: $lian-text-muted;
+    flex-shrink: 0;
+    font-family: $font-family-code;
+  }
+
+  .tag-posts-empty {
+    display: none;
+    text-align: center;
+    color: $lian-text-muted;
+    font-size: $font-size-sm;
+    font-style: italic;
+    padding: $spacing-xl 0;
+  }
+
+  // ================================
+  // 响应式
+  // ================================
+  @media (max-width: $container-sm) {
+    .tags-page {
+      padding: $spacing-lg $spacing-sm $spacing-xxl;
+    }
+
+    .tag-cloud {
+      gap: $spacing-xs;
+    }
+
+    :global(.tag-post-card) {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: $spacing-xs;
+    }
+  }
+</style>
