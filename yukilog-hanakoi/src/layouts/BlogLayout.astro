@@ -15,6 +15,7 @@ import BaseLayout from './BaseLayout.astro';
 import NavBar from '../components/navigation/NavBar.astro';
 import Footer from '../components/shared/Footer.astro';
 import ScrollProgress from '../components/shared/ScrollProgress.astro';
+import SearchOverlay from '../components/shared/SearchOverlay.astro';
 
 const { title, description, keywords, ogImage, stickyNav = false } = Astro.props;
 ---
@@ -27,6 +28,7 @@ const { title, description, keywords, ogImage, stickyNav = false } = Astro.props
 >
   <slot name="head" slot="head" />
   <NavBar stickyOnly={stickyNav} />
+  <SearchOverlay />
   <ScrollProgress />
   
   <main>
