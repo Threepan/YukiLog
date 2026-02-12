@@ -1,0 +1,218 @@
+---
+// ================================
+// 文章目录组件
+// 功能：层级缩进 / 滚动追踪高亮 / 点击平滑跳转 / 左侧指示线 / 上下渐隐
+// ================================
+
+interface Heading {
+  id: string;
+  text: string;
+  level: number;
+}
+
+interface Props {
+  headings: Heading[];
+}
+
+const { headings } = Astro.props;
+
+// 找到最小 level 作为基准缩进
+const minLevel = Math.min(...headings.map((h) => h.level));
+---
+
+<nav class="toc-container" aria-label="文章目录">
+  <div class="toc-title">目录</div>
+  <div class="toc-scroll-area">
+    <ul class="toc-list">
+      {headings.map((h, i) => (
+        <li
+          class="toc-item"
+          data-toc-index={i}
+          data-heading-id={h.id}
+          style={`--indent: ${h.level - minLevel}`}
+        >
+          <a href={`#${h.id}`} class="toc-link" data-heading-id={h.id}>
+            {h.text}
+          </a>
+        </li>
+      ))}
+    </ul>
+    {/* 左侧指示线 */}
+    <div class="toc-indicator" aria-hidden="true"></div>
+  </div>
+</nav>
+
+<script>
+  /**
+   * TOC 滚动追踪
+   * - IntersectionObserver 监听所有标题元素
+   * - 更新当前激活项 + 移动指示线
+   */
+  function initTOC() {
+    const tocItems = document.querySelectorAll<HTMLLIElement>(".toc-item");
+    const indicator = document.querySelector<HTMLDivElement>(".toc-indicator");
+    const scrollArea =
+      document.querySelector<HTMLDivElement>(".toc-scroll-area");
+
+    if (!tocItems.length || !indicator) return;
+
+    // 收集所有对应的标题 DOM
+    const headingEls: (HTMLElement | null)[] = Array.from(tocItems).map(
+      (item) => {
+        const id = item.dataset.headingId;
+        return id ? document.getElementById(id) : null;
+      },
+    );
+
+    let activeIndex = -1;
+
+    function setActive(index: number) {
+      if (index === activeIndex) return;
+      activeIndex = index;
+
+      tocItems.forEach((item, i) => {
+        if (i === index) {
+          item.classList.add("active");
+        } else {
+          item.classList.remove("active");
+        }
+      });
+
+      // 移动指示线
+      if (index >= 0 && index < tocItems.length) {
+        const activeItem = tocItems[index];
+        const link = activeItem.querySelector(".toc-link") as HTMLElement;
+        if (link && scrollArea) {
+          const scrollRect = scrollArea.getBoundingClientRect();
+          const linkRect = link.getBoundingClientRect();
+          const top = linkRect.top - scrollRect.top + scrollArea.scrollTop;
+          const height = linkRect.offsetHeight;
+          indicator.style.transform = `translateY(${top}px)`;
+          indicator.style.height = `${height}px`;
+          indicator.style.opacity = "1";
+
+          // 自动滚动 TOC 让高亮项保持可见
+          const areaHeight = scrollArea.clientHeight;
+          const itemTop = activeItem.offsetTop - scrollArea.offsetTop;
+          const itemBottom = itemTop + activeItem.offsetHeight;
+          const scrollTop = scrollArea.scrollTop;
+          const visibleTop = scrollTop + areaHeight * 0.15;
+          const visibleBottom = scrollTop + areaHeight * 0.85;
+
+          if (itemTop < visibleTop) {
+            scrollArea.scrollTo({ top: Math.max(0, itemTop - areaHeight * 0.2), behavior: "smooth" });
+          } else if (itemBottom > visibleBottom) {
+            scrollArea.scrollTo({ top: itemBottom - areaHeight * 0.8, behavior: "smooth" });
+          }
+        }
+      } else {
+        indicator.style.opacity = "0";
+      }
+    }
+
+    // IntersectionObserver: 当标题进入/离开视口时触发
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // 找到最靠近视口顶部、且在视口上半部分的标题
+        let bestIndex = activeIndex;
+        let bestTop = Infinity;
+
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            const idx = headingEls.indexOf(entry.target as HTMLElement);
+            if (idx !== -1) {
+              const top = entry.boundingClientRect.top;
+              if (top < bestTop) {
+                bestTop = top;
+                bestIndex = idx;
+              }
+            }
+          }
+        }
+
+        // fallback: 如果没有标题在视口中，用 scroll position 推算
+        if (bestIndex === activeIndex) {
+          const scrollY = window.scrollY + window.innerHeight * 0.25;
+          for (let i = headingEls.length - 1; i >= 0; i--) {
+            const el = headingEls[i];
+            if (el && el.offsetTop <= scrollY) {
+              bestIndex = i;
+              break;
+            }
+          }
+        }
+
+        setActive(bestIndex);
+      },
+      {
+        rootMargin: "-80px 0px -40% 0px",
+        threshold: 0,
+      },
+    );
+
+    headingEls.forEach((el) => {
+      if (el) observer.observe(el);
+    });
+
+    // 滚动事件作为补充（处理 Observer 无法覆盖的边界情况）
+    let ticking = false;
+    window.addEventListener(
+      "scroll",
+      () => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => {
+          const scrollY = window.scrollY + window.innerHeight * 0.25;
+          let best = 0;
+          for (let i = headingEls.length - 1; i >= 0; i--) {
+            const el = headingEls[i];
+            if (el && el.offsetTop <= scrollY) {
+              best = i;
+              break;
+            }
+          }
+          setActive(best);
+          ticking = false;
+        });
+      },
+      { passive: true },
+    );
+
+    // 点击平滑滚动
+    tocItems.forEach((item, i) => {
+      const link = item.querySelector(".toc-link");
+      if (!link) return;
+      link.addEventListener("click", (e) => {
+        e.preventDefault();
+        const el = headingEls[i];
+        if (el) {
+          const top = el.offsetTop - 96;
+          window.scrollTo({ top, behavior: "smooth" });
+          setActive(i);
+        }
+      });
+    });
+
+    // 初始化：页面加载时判断当前位置
+    requestAnimationFrame(() => {
+      const scrollY = window.scrollY + window.innerHeight * 0.25;
+      let best = 0;
+      for (let i = headingEls.length - 1; i >= 0; i--) {
+        const el = headingEls[i];
+        if (el && el.offsetTop <= scrollY) {
+          best = i;
+          break;
+        }
+      }
+      setActive(best);
+    });
+  }
+
+  // Astro view transitions 兼容
+  document.addEventListener("astro:page-load", initTOC);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initTOC);
+  } else {
+    initTOC();
+  }
+</script>
