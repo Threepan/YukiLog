@@ -4,6 +4,8 @@
 // 左图标 + 右文字，支持滑入动画
 // ================================
 
+import { navIcons } from '../../lib/svg-icons';
+
 interface Props {
   label: string;
   href: string;
@@ -15,17 +17,7 @@ const { label, href, icon, index } = Astro.props;
 const isActive = Astro.url.pathname === href;
 const isHome = href === '/';
 
-// 动态导入图标
-const icons: Record<string, any> = {
-  home: await import('../../assets/icon/nav/home.svg?raw'),
-  theme: await import('../../assets/icon/nav/theme.svg?raw'),
-  archive: await import('../../assets/icon/nav/archive.svg?raw'),
-  tag: await import('../../assets/icon/nav/tag.svg?raw'),
-  links: await import('../../assets/icon/nav/links.svg?raw'),
-  about: await import('../../assets/icon/nav/about.svg?raw'),
-};
-
-const iconSvg = icon && icons[icon] ? icons[icon].default : null;
+const iconSvg = icon && icon in navIcons ? navIcons[icon as keyof typeof navIcons] : null;
 ---
 
 <a

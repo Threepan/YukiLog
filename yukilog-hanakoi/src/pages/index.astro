@@ -10,9 +10,9 @@ import ProfileCard from "../components/home/ProfileCard.astro";
 import HitokotoCard from "../components/home/HitokotoCard.astro";
 import SiteInfoCard from "../components/home/SiteInfoCard.astro";
 import ArticleList from "../components/home/ArticleList.astro";
+import { uiIcons } from "../lib/svg-icons";
 
-// 箭头图标
-const arrowIcon = await import('../assets/icon/ui/arrow.svg?raw');
+const arrowIcon = uiIcons.arrow;
 
 // 导入所有背景图（使用 ?url 获取路径）
 const backgrounds = import.meta.glob("../assets/image/background/*.jpg", {
@@ -36,7 +36,7 @@ const randomBackground =
     <WelcomeCard />
     
     <button class="scroll-arrow" id="scroll-arrow" aria-label="滚动到下一屏">
-      <span set:html={arrowIcon.default}></span>
+      <span set:html={arrowIcon}></span>
     </button>
   </div>
   

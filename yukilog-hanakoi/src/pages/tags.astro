@@ -7,8 +7,9 @@
 import BlogLayout from "../layouts/BlogLayout.astro";
 import PageHero from "../components/shared/PageHero.astro";
 import { contentConfig } from "../lib/config";
+import { navIcons } from "../lib/svg-icons";
 
-import tagIcon from "../assets/icon/nav/tag.svg?raw";
+const tagIcon = navIcons.tag;
 
 const tagsPageConfig = contentConfig.pages.tags;
 const tags = tagsPageConfig.tags;

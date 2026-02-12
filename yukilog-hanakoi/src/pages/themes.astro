@@ -7,9 +7,9 @@
 import BlogLayout from "../layouts/BlogLayout.astro";
 import PageHero from "../components/shared/PageHero.astro";
 import { contentConfig } from "../lib/config";
+import { navIcons } from "../lib/svg-icons";
 
-// 导航图标作为 Hero icon
-import themeIcon from "../assets/icon/nav/theme.svg?raw";
+const themeIcon = navIcons.theme;
 
 const themesPageConfig = contentConfig.pages.themes;
 const themes = themesPageConfig.items;

@@ -6,28 +6,12 @@
 // ================================
 
 import { contentConfig, siteConfig } from '../../lib/config.ts';
-import { svgIcons } from '../../lib/svg-icons';
+import { socialIcons, svgIcons } from '../../lib/svg-icons';
 
-// 社交图标映射（config icon name → 实际文件名）
-const iconFileMap: Record<string, string> = {
-  github: 'github',
-  qq: 'qq',
-  bilibili: 'bilibili',
-  twitter: 'x',
-  'netease-music': 'cloudmusic',
-  gmail: 'gmail',
-};
-
-const socialIcons = await Promise.all(
-  siteConfig.social.map(async (s) => {
-    const fileName = iconFileMap[s.icon] || s.icon;
-    const mod = await import(`../../assets/icon/social/${fileName}.svg?raw`);
-    return {
-      ...s,
-      svg: mod.default,
-    };
-  })
-);
+const resolvedSocialIcons = siteConfig.social.map((s) => ({
+  ...s,
+  svg: socialIcons[s.icon as keyof typeof socialIcons] ?? '',
+}));
 
 // 欢迎文字拆分为单字
 const welcomeText = siteConfig.welcomeText;
@@ -66,7 +50,7 @@ const quoteText = contentConfig.components.welcomeCard.quoteText;
 
       <!-- ABBB: 社交图标 -->
       <div class="welcome-social">
-        {socialIcons.map((s) => (
+        {resolvedSocialIcons.map((s) => (
           s.icon === 'gmail' ? (
             <span
               class="social-icon-btn"
