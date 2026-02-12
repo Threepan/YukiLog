@@ -116,6 +116,16 @@ export const contentConfig = {
   hero: {
     headerGif: "mc.gif",
   },
+  markdown: {
+    headingPrefixes: {
+      h1: "✨ ",
+      h2: "✦ ",
+      h3: "▸ ",
+      h4: "• ",
+      h5: "· ",
+      h6: "— ",
+    },
+  },
   components: {
     navbar: {
       brand: "YukiLog",
@@ -255,6 +265,19 @@ export const contentConfig = {
       articleList: {
         loadMoreText: "—— 暂时只有这些了 ——",
         placeholderPosts: [
+          {
+            title: "Markdown 渲染占位测试",
+            slug: "markdown-style-placeholder",
+            summary: "用于验证标题前缀、动态下划线、表格样式与代码块样式的测试文章。",
+            cover_image: "https://list.yeastar.xin/d/%E6%81%8B/fastfetch/1761672341793.jpeg",
+            created_at: "2026-02-12T20:00:00+08:00",
+            view_count: 1,
+            theme: { name: "测试", slug: "test" },
+            tags: [
+              { name: "Markdown", slug: "markdown" },
+              { name: "样式", slug: "style" },
+            ],
+          },
           {
             title: "用 Rust 和 Axum 从零搭建博客后端",
             slug: "build-blog-backend-with-rust-axum",
