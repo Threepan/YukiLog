@@ -31,6 +31,8 @@ export type {
 
 // 博客类型
 export type {
+  NavIconName,
+  SocialIconName,
   NavItem,
   SocialLink,
   SiteConfig,
