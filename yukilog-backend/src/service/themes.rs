@@ -200,7 +200,6 @@ pub async fn adjust_post_count<C: ConnectionTrait>(
 // 辅助函数（给其他 service 调用）
 // ================================
 
-#[allow(dead_code)]
 /// 通过 ID 获取主题
 pub async fn get_theme_by_id<C: ConnectionTrait>(
     db: &C,
@@ -208,6 +207,15 @@ pub async fn get_theme_by_id<C: ConnectionTrait>(
 ) -> ServiceResult<Theme> {
     let dto = repo_themes::get_theme_by_id(db, theme_id).await?;
     Ok(dto.into())
+}
+
+/// 批量按ID获取主题（返回完整 Theme 对象）
+pub async fn get_themes_by_ids<C: ConnectionTrait>(
+    db: &C,
+    ids: &[i64],
+) -> ServiceResult<Vec<Theme>> {
+    let themes = repo_themes::get_themes_by_ids(db, ids).await?;
+    Ok(themes.into_iter().map(Into::into).collect())
 }
 
 /// 通过多个 slug 批量获取主题 ID
