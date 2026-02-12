@@ -28,7 +28,7 @@ pub struct Comment {
     pub status: CommentStatus,
     pub ip: Option<String>,
     pub ua: Option<String>,
-    pub visitor_info: Option<String>, // 解析后的访客信息（如 "上海 · Desktop Chrome 136.0 · macOS 15"）
+    pub visitor_info: Option<String>, // 解析后的访客信息（如 "Desktop Chrome 136.0 · macOS 15"）
     pub created_at: DateTime<FixedOffset>,
 }
 
