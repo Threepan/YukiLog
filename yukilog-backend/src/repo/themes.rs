@@ -202,3 +202,15 @@ where
         .await?;
     Ok(models.into_iter().map(|m| m.id).collect())
 }
+
+/// 批量按ID获取主题（返回完整 ThemeDto）
+pub async fn get_themes_by_ids<C>(db: &C, ids: &[i64]) -> RepoResult<Vec<ThemeDto>>
+where
+    C: ConnectionTrait,
+{
+    let models = themes::Entity::find()
+        .filter(themes::Column::Id.is_in(ids.iter().copied()))
+        .all(db)
+        .await?;
+    Ok(models.into_iter().map(ThemeDto::from).collect())
+}
