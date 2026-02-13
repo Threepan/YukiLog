@@ -56,6 +56,8 @@ pub fn public_routes() -> Router<AppState> {
         .route("/api/public/posts/:slug/view", post(public::posts::increment_post_view))
         // Search (1个)
         .route("/api/public/search", get(public::posts::search_posts))
+        // Stats (1个)
+        .route("/api/public/stats", get(public::posts::get_site_stats))
         // Comments (3个)
         .route("/api/public/posts/:slug/comments", get(public::comments::get_post_comments))
         .route("/api/public/posts/:slug/comments", post(public::comments::create_comment))
