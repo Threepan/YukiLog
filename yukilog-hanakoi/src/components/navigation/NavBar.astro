@@ -72,7 +72,7 @@ const searchIconFixed = deduplicateSvgIds(searchIcon, '_fixed');
   transform: translateX(-50%);
   width: 100%;
   height: 50px;
-  background: $lian-white;
+  background: var(--color-white);
   z-index: $z-nav;
   opacity: 0;
   pointer-events: none;
@@ -93,7 +93,7 @@ const searchIconFixed = deduplicateSvgIds(searchIcon, '_fixed');
     width: auto;
     top: 10px;
     border-radius: $radius-xl;
-    box-shadow: $shadow-blue, 0 4px 16px rgba(0, 0, 0, 0.04);
+    box-shadow: $shadow-blue, var(--shadow-xs);
   }
 }
 
@@ -133,14 +133,14 @@ const searchIconFixed = deduplicateSvgIds(searchIcon, '_fixed');
 .navbar-logo {
   font-size: 1.5rem;
   font-weight: $font-weight-bold;
-  color: $lian-text;
+  color: var(--color-text);
   text-decoration: none;
   flex-shrink: 0;
   pointer-events: auto;
   white-space: nowrap;
 
   &:hover {
-    color: $lian-blue;
+    color: var(--color-blue);
   }
 }
 
@@ -148,14 +148,14 @@ const searchIconFixed = deduplicateSvgIds(searchIcon, '_fixed');
 .navbar-inner-logo {
   font-size: 1.5rem;
   font-weight: $font-weight-bold;
-  color: $lian-text;
+  color: var(--color-text);
   text-decoration: none;
   flex-shrink: 0;
   white-space: nowrap;
   display: none;
   
   &:hover {
-    color: $lian-blue;
+    color: var(--color-blue);
   }
 
   .navbar.sticky & {
@@ -224,13 +224,13 @@ const searchIconFixed = deduplicateSvgIds(searchIcon, '_fixed');
   flex-shrink: 0;
   pointer-events: auto;
   
-  // 固定元素中的按钮用白色（在暗背景上）
+  // 固定元素中的按钮
   .navbar-action-btn {
-    color: $lian-text;
+    color: var(--color-text);
     
     &:hover {
-      background: rgba(255, 255, 255, 0.15);
-      color: $lian-blue;
+      background: var(--white-alpha-15);
+      color: var(--color-blue);
     }
   }
 }
@@ -243,7 +243,7 @@ const searchIconFixed = deduplicateSvgIds(searchIcon, '_fixed');
   justify-content: center;
   border: none;
   background: none;
-  color: $lian-text;
+  color: var(--color-text);
   cursor: pointer;
   border-radius: $radius-sm;
   transition: all $transition-fast $ease-out;
@@ -255,8 +255,8 @@ const searchIconFixed = deduplicateSvgIds(searchIcon, '_fixed');
   }
   
   &:hover {
-    background: $lian-bg;
-    color: $lian-blue;
+    background: var(--color-bg);
+    color: var(--color-blue);
   }
 }
 
