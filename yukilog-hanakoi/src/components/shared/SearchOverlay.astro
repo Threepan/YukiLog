@@ -98,7 +98,7 @@ const sc = contentConfig.components.search;
   .search-backdrop {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: var(--overlay-bg);
     backdrop-filter: blur(8px);
     animation: fadeIn $transition-base $ease-gentle;
   }
@@ -116,8 +116,8 @@ const sc = contentConfig.components.search;
     max-height: 70vh;
     background: white;
     border-radius: $radius-lg;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 
-                0 0 0 1px rgba($lian-blue, 0.1);
+    box-shadow: 0 20px 60px var(--shadow-2xl), 
+                0 0 0 1px var(--blue-alpha-10);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -130,8 +130,8 @@ const sc = contentConfig.components.search;
   // 搜索输入区域
   .search-header {
     padding: $spacing-md $spacing-lg;
-    background: linear-gradient(135deg, rgba($lian-blue, 0.02) 0%, rgba($lian-pink, 0.02) 100%);
-    border-bottom: 2px solid rgba($lian-blue, 0.08);
+    background: linear-gradient(135deg, var(--blue-alpha-02) 0%, var(--pink-alpha-02) 100%);
+    border-bottom: 2px solid var(--blue-alpha-08);
     flex-shrink: 0;
   }
 
@@ -147,7 +147,7 @@ const sc = contentConfig.components.search;
 
     &:focus-within {
       border-color: $lian-blue;
-      box-shadow: 0 0 0 4px rgba($lian-blue, 0.1);
+      box-shadow: 0 0 0 4px var(--blue-alpha-10);
       transform: translateY(-2px);
     }
   }
@@ -192,11 +192,11 @@ const sc = contentConfig.components.search;
     font-family: $font-family-code;
     font-weight: $font-weight-medium;
     color: $lian-text;
-    background: linear-gradient(135deg, rgba($lian-blue, 0.05) 0%, rgba($lian-pink, 0.05) 100%);
-    border: 1px solid rgba($lian-blue, 0.2);
+    background: var(--gradient-blue-pink);
+    border: 1px solid var(--blue-alpha-20);
     border-radius: 6px;
     line-height: 1.4;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 3px var(--shadow-xs);
   }
 
   // 搜索结果区域
@@ -244,12 +244,12 @@ const sc = contentConfig.components.search;
       padding: 3px 8px;
       font-family: $font-family-code;
       font-weight: $font-weight-medium;
-      background: linear-gradient(135deg, rgba($lian-blue, 0.05) 0%, rgba($lian-pink, 0.05) 100%);
-      border: 1px solid rgba($lian-blue, 0.2);
+      background: var(--gradient-blue-pink);
+      border: 1px solid var(--blue-alpha-20);
       border-radius: 4px;
       font-size: $font-size-xs;
       margin: 0 3px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 1px 3px var(--shadow-xs);
     }
   }
 
@@ -258,7 +258,7 @@ const sc = contentConfig.components.search;
     width: 32px;
     height: 32px;
     margin: 0 auto $spacing-md;
-    border: 3px solid rgba($lian-border, 0.3);
+    border: 3px solid var(--border-alpha-30);
     border-top-color: $lian-blue;
     border-right-color: $lian-pink;
     border-radius: 50%;
@@ -284,14 +284,14 @@ const sc = contentConfig.components.search;
     border: 1px solid $lian-divider;
     border-radius: $radius-sm;
     transition: all $transition-base $ease-gentle;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 3px var(--shadow-xs);
 
     &.active,
     &:hover {
-      background: linear-gradient(135deg, rgba($lian-blue, 0.03) 0%, rgba($lian-pink, 0.03) 100%);
-      border-color: rgba($lian-blue, 0.2);
+      background: linear-gradient(135deg, var(--blue-alpha-03) 0%, var(--pink-alpha-03) 100%);
+      border-color: var(--blue-alpha-20);
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba($lian-blue, 0.15);
+      box-shadow: 0 4px 12px var(--blue-alpha-15);
     }
 
     a {
@@ -310,12 +310,12 @@ const sc = contentConfig.components.search;
     line-height: $line-height-tight;
 
     :global(mark) {
-      background: linear-gradient(135deg, rgba($lian-blue, 0.15) 0%, rgba($lian-pink, 0.15) 100%);
+      background: linear-gradient(135deg, var(--blue-alpha-15) 0%, var(--pink-alpha-15) 100%);
       color: $lian-blue;
       padding: 2px 6px;
       border-radius: 4px;
       font-weight: $font-weight-bold;
-      border: 1px solid rgba($lian-blue, 0.2);
+      border: 1px solid var(--blue-alpha-20);
     }
   }
 
@@ -330,7 +330,7 @@ const sc = contentConfig.components.search;
     overflow: hidden;
 
     :global(mark) {
-      background: linear-gradient(135deg, rgba($lian-pink, 0.12) 0%, rgba($lian-pink, 0.18) 100%);
+      background: linear-gradient(135deg, var(--pink-alpha-12) 0%, var(--pink-alpha-18) 100%);
       color: $lian-pink;
       padding: 1px 4px;
       border-radius: 3px;
@@ -352,13 +352,13 @@ const sc = contentConfig.components.search;
     font-size: $font-size-xs;
     font-weight: $font-weight-semibold;
     color: $lian-pink;
-    background: linear-gradient(135deg, rgba($lian-pink, 0.08) 0%, rgba($lian-pink, 0.12) 100%);
-    border: 1px solid rgba($lian-pink, 0.2);
+    background: linear-gradient(135deg, var(--pink-alpha-08) 0%, var(--pink-alpha-12) 100%);
+    border: 1px solid var(--pink-alpha-20);
     border-radius: 12px;
     transition: all $transition-fast $ease-gentle;
 
     &:hover {
-      background: linear-gradient(135deg, rgba($lian-pink, 0.15) 0%, rgba($lian-pink, 0.2) 100%);
+      background: linear-gradient(135deg, var(--pink-alpha-15) 0%, var(--pink-alpha-20) 100%);
       transform: scale(1.05);
     }
   }
@@ -380,17 +380,17 @@ const sc = contentConfig.components.search;
     padding: $spacing-xs $spacing-md;
     font-size: $font-size-sm;
     font-weight: $font-weight-medium;
-    color: white;
+    color: var(--color-on-primary);
     background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
     border: none;
     border-radius: $radius-sm;
     cursor: pointer;
     transition: all $transition-base $ease-gentle;
-    box-shadow: 0 2px 8px rgba($lian-blue, 0.2);
+    box-shadow: var(--shadow-blue-sm);
 
     &:hover:not(:disabled) {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba($lian-blue, 0.3);
+      box-shadow: var(--shadow-blue-lg);
     }
 
     &:active:not(:disabled) {
@@ -410,7 +410,7 @@ const sc = contentConfig.components.search;
     font-family: $font-family-code;
     font-weight: $font-weight-medium;
     padding: $spacing-xs $spacing-sm;
-    background: linear-gradient(135deg, rgba($lian-blue, 0.05) 0%, rgba($lian-pink, 0.05) 100%);
+    background: var(--gradient-blue-pink);
     border-radius: $radius-sm;
   }
 
