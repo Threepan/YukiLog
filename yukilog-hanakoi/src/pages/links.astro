@@ -4,15 +4,42 @@
 // 导航栏直接以 sticky 岛屿模式展示
 // ================================
 
+export const prerender = false;
+
 import BlogLayout from "../layouts/BlogLayout.astro";
 import FriendSpotlight from "../components/links/FriendSpotlight.astro";
 import FriendCard from "../components/links/FriendCard.astro";
 import ApplyLinkModal from "../components/links/ApplyLinkModal.astro";
 import { contentConfig } from "../lib/config";
+import { linksApi } from "../lib/api";
 
 const linksPageConfig = contentConfig.pages.links;
 const bestFriend = linksPageConfig.bestFriend;
-const friends = linksPageConfig.friends;
+
+// 从后端 API 获取友链列表
+let apiLinks = [];
+let apiError = null;
+try {
+  const response = await linksApi.list();
+  // 只显示已通过审核的友链
+  apiLinks = response.filter((link) => link.status === "approved");
+} catch (error) {
+  console.error("获取友链列表失败：", error);
+  apiError = error;
+}
+
+// 如果 API 失败，显示错误页
+if (apiError) {
+  return Astro.redirect("/500");
+}
+
+// 将 API 返回的友链转换为组件所需格式
+const friends = apiLinks.map((link) => ({
+  name: link.name,
+  description: link.description || "",
+  avatar: link.avatar_url,
+  url: link.url,
+}));
 ---
 
 <BlogLayout title="友链 - YukiLog" stickyNav>
