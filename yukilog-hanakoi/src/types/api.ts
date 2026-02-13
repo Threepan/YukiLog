@@ -315,3 +315,19 @@ export interface MergeTagsRequest {
   source_id: number;
   target_id: number;
 }
+
+// ================================
+// 站点统计（Site Stats）
+// ================================
+
+/**
+ * 站点统计数据
+ */
+export interface SiteStats {
+  /** 已发布文章总数 */
+  total_posts: number;
+  /** 所有文章浏览量总和 */
+  total_views: number;
+  /** 所有文章内容字符总长度 */
+  total_words: number;
+}

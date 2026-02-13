@@ -31,6 +31,7 @@ import type {
   UpdateLinkRequest,
   LoginRequest,
   LoginResponse,
+  SiteStats,
 } from '../types';
 
 // API 基础地址（区分 SSR 和浏览器环境）
@@ -232,6 +233,19 @@ export const linksApi = {
       method: 'POST',
       body: JSON.stringify(data),
     });
+  },
+};
+
+// ================================
+// 站点统计 API
+// ================================
+
+export const statsApi = {
+  /**
+   * 获取站点统计数据（文章总数、总浏览量、总字数）
+   */
+  async get(): Promise<SiteStats> {
+    return fetchApi<SiteStats>('/api/public/stats');
   },
 };
 
