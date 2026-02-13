@@ -1,14 +1,27 @@
 ---
 // ================================
 // 站点信息卡片
-// 第二屏右下 - 主站链接、浏览量、运行时长、GitHub
+// 第二屏右下 - 文章数、字数、浏览量、运行时长、GitHub
 // 动画: 从右往左滑入 100px + 淡入，延迟 400ms
 // ================================
 
 import { contentConfig, siteConfig } from '../../lib/config.ts';
 import { svgIcons } from '../../lib/svg-icons';
+import { statsApi } from '../../lib/api';
 
 const infoConfig = contentConfig.components.siteInfoCard;
+
+// 获取站点统计数据
+const stats = await statsApi.get().catch(() => ({
+  total_posts: 0,
+  total_views: 0,
+  total_words: 0,
+}));
+
+// 格式化字数（转换为k）
+const formattedWords = stats.total_words >= 1000 
+  ? `${(stats.total_words / 1000).toFixed(1)}k`
+  : stats.total_words.toString();
 ---
 
 <div class="siteinfo-card" id="siteinfo-card" data-enter-delay="400">
@@ -19,17 +32,27 @@ const infoConfig = contentConfig.components.siteInfoCard;
 
   <!-- 信息列表 -->
   <div class="siteinfo-list">
-    <!-- 前往主站 -->
-    <a href={infoConfig.mainSite.url} target="_blank" rel="noopener noreferrer" class="siteinfo-item">
+    <!-- 文章总数 -->
+    <div class="siteinfo-item">
       <div class="siteinfo-icon">
-        <span set:html={svgIcons.globe}></span>
+        <span set:html={svgIcons.document}></span>
       </div>
       <div class="siteinfo-detail">
-        <span class="siteinfo-name">{infoConfig.mainSite.name}</span>
-        <span class="siteinfo-value link-value">{infoConfig.mainSite.value}</span>
+        <span class="siteinfo-name">文章总数</span>
+        <span class="siteinfo-value">{stats.total_posts} 篇</span>
       </div>
-      <span class="siteinfo-arrow" set:html={svgIcons.chevronRight}></span>
-    </a>
+    </div>
+
+    <!-- 总字数 -->
+    <div class="siteinfo-item">
+      <div class="siteinfo-icon">
+        <span set:html={svgIcons.book}></span>
+      </div>
+      <div class="siteinfo-detail">
+        <span class="siteinfo-name">总字数</span>
+        <span class="siteinfo-value">{formattedWords} 字</span>
+      </div>
+    </div>
 
     <!-- 总浏览量 -->
     <div class="siteinfo-item">
@@ -37,8 +60,8 @@ const infoConfig = contentConfig.components.siteInfoCard;
         <span set:html={svgIcons.eye}></span>
       </div>
       <div class="siteinfo-detail">
-        <span class="siteinfo-name">{infoConfig.labels.totalViews}</span>
-        <span class="siteinfo-value" id="siteinfo-views">--</span>
+        <span class="siteinfo-name">总浏览量</span>
+        <span class="siteinfo-value">{stats.total_views.toLocaleString()} 次</span>
       </div>
     </div>
 
@@ -69,7 +92,7 @@ const infoConfig = contentConfig.components.siteInfoCard;
 
 <style lang="scss">
 .siteinfo-card {
-  background: $lian-white;
+  background: var(--color-white);
   border-radius: $radius-lg;
   box-shadow: $shadow-blue;
   padding: $spacing-lg;
@@ -99,7 +122,7 @@ const infoConfig = contentConfig.components.siteInfoCard;
 .siteinfo-label {
   font-size: $font-size-sm;
   font-weight: $font-weight-semibold;
-  color: $lian-text-light;
+  color: var(--color-text-light);
   letter-spacing: 0.05em;
 }
 
@@ -118,12 +141,12 @@ const infoConfig = contentConfig.components.siteInfoCard;
   gap: $spacing-sm;
   padding: 10px 12px;
   border-radius: $radius-sm;
-  color: $lian-text;
+  color: var(--color-text);
   text-decoration: none;
   transition: background $transition-base $ease-gentle;
   
   &:hover {
-    background: $lian-bg;
+    background: var(--color-bg);
   }
   
   // 可点击的项（链接）
@@ -139,13 +162,13 @@ const infoConfig = contentConfig.components.siteInfoCard;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  color: $lian-blue;
-  background: rgba($lian-blue, 0.08);
+  color: var(--color-blue);
+  background: var(--blue-alpha-08);
   border-radius: 8px;
   transition: all $transition-base $ease-gentle;
   
   .siteinfo-item:hover & {
-    background: rgba($lian-blue, 0.14);
+    background: var(--blue-alpha-14);
   }
 }
 
@@ -159,29 +182,29 @@ const infoConfig = contentConfig.components.siteInfoCard;
 
 .siteinfo-name {
   font-size: $font-size-xs;
-  color: $lian-text-muted;
+  color: var(--color-text-muted);
   line-height: 1;
 }
 
 .siteinfo-value {
   font-size: $font-size-sm;
   font-weight: $font-weight-medium;
-  color: $lian-text;
+  color: var(--color-text);
   line-height: 1.3;
   
   &.link-value {
-    color: $lian-blue;
+    color: var(--color-blue);
   }
 }
 
 .siteinfo-arrow {
   flex-shrink: 0;
-  color: $lian-text-muted;
+  color: var(--color-text-muted);
   transition: transform $transition-base $ease-gentle;
   
   .siteinfo-item:hover & {
     transform: translateX(3px);
-    color: $lian-blue;
+    color: var(--color-blue);
   }
 }
 
