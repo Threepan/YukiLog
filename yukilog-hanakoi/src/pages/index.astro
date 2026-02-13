@@ -18,13 +18,13 @@ import { postsApi } from "../lib/api";
 
 const arrowIcon = uiIcons.arrow;
 
-// 从后端 API 获取最新 7 篇已发布文章
+// 从后端 API 获取最新 20 篇已发布文章
 let recentPosts: any[] = [];
 let apiError = null;
 try {
   const response = await postsApi.list({
     page: 1,
-    page_size: 7,
+    page_size: 20,
     status: "published",
   });
   recentPosts = response.items || [];

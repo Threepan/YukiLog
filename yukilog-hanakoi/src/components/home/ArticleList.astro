@@ -19,6 +19,7 @@ const placeholderPosts = posts as PostCardData[];
 ---
 
 <section class="article-list-section" id="article-list">
+  <h2 class="article-list-title">最近 {placeholderPosts.length} 篇博客</h2>
   <div class="article-list-container">
     {placeholderPosts.map((post, i) => (
       <ArticleCard post={post} index={i} />
@@ -37,13 +38,23 @@ const placeholderPosts = posts as PostCardData[];
     padding-bottom: $spacing-xxl;
   }
 
+  .article-list-title {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: $spacing-xxl * 2 $spacing-md 0;
+    font-size: $font-size-lg;
+    font-weight: $font-weight-medium;
+    color: $lian-text-light;
+    letter-spacing: 0.05em;
+  }
+
   .article-list-container {
     // 居中，并避开两侧固定侧栏
     // 侧栏宽度 280px + 间距 $spacing-xl(48px) 每侧 ≈ 328px
     // 再加内容区与侧栏的间隙 24px
     max-width: 800px;
     margin: 0 auto;
-    padding: $spacing-xxl * 2 $spacing-md 0;
+    padding: $spacing-lg $spacing-md 0;
     display: flex;
     flex-direction: column;
     gap: $spacing-xl;
@@ -63,6 +74,11 @@ const placeholderPosts = posts as PostCardData[];
 
   // 响应式：小屏无侧栏，全宽
   @media (max-width: $container-lg) {
+    .article-list-title {
+      max-width: 100%;
+      padding: $spacing-lg $spacing-md 0;
+    }
+
     .article-list-container {
       max-width: 100%;
       padding: $spacing-lg $spacing-md 0;
