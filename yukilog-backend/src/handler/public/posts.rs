@@ -291,3 +291,26 @@ pub async fn search_posts(
 
     Ok(paged(results, total, page, page_size))
 }
+
+/// GET /api/public/stats
+///
+/// 获取站点统计数据
+///
+/// # 响应
+///
+/// ```json
+/// {
+///   "success": true,
+///   "data": {
+///     "total_posts": 12,
+///     "total_views": 4567,
+///     "total_words": 123456
+///   }
+/// }
+/// ```
+pub async fn get_site_stats(
+    State(state): State<AppState>,
+) -> Result<Json<ApiResponse<service::posts::SiteStats>>, ServiceError> {
+    let stats = service::posts::get_site_stats(&state.db).await?;
+    Ok(ok(stats))
+}
