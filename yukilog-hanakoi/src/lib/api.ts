@@ -9,16 +9,26 @@ import type {
   Post,
   PostWithRelations,
   PostListParams,
+  CreatePostRequest,
+  UpdatePostRequest,
   SearchQuery,
   Theme,
+  CreateThemeRequest,
+  UpdateThemeRequest,
   Tag,
+  CreateTagRequest,
+  UpdateTagRequest,
+  MergeTagsRequest,
   CommentNode,
   Comment,
+  CommentListParams,
   CreateCommentRequest,
   CreateCommentResponse,
+  UpdateCommentRequest,
   Link,
   SubmitLinkRequest,
   SubmitLinkResponse,
+  UpdateLinkRequest,
   LoginRequest,
   LoginResponse,
 } from '../types';
@@ -253,7 +263,7 @@ function createAuthHeaders(): HeadersInit {
 }
 
 export const adminApi = {
-  // 文章管理
+  // ===== 文章管理 =====
   posts: {
     async list(params?: PostListParams): Promise<PaginatedData<PostWithRelations>> {
       const query = new URLSearchParams(params as any).toString();
@@ -266,16 +276,190 @@ export const adminApi = {
       return fetchApi<PostWithRelations>(`/api/admin/posts/${slug}`, { headers });
     },
     
-    // TODO: create, update, delete
+    async create(data: CreatePostRequest): Promise<Post> {
+      const headers = createAuthHeaders();
+      return fetchApi<Post>('/api/admin/posts', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(data),
+      });
+    },
+    
+    async update(slug: string, data: UpdatePostRequest): Promise<Post> {
+      const headers = createAuthHeaders();
+      return fetchApi<Post>(`/api/admin/posts/${slug}`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(data),
+      });
+    },
+    
+    async delete(slug: string): Promise<void> {
+      const headers = createAuthHeaders();
+      await fetchApi<void>(`/api/admin/posts/${slug}`, {
+        method: 'DELETE',
+        headers,
+      });
+    },
   },
 
-  // 评论管理（后期实现）
+  // ===== 评论管理 =====
   comments: {
-    // TODO: 审核、编辑、删除评论
+    async list(params?: CommentListParams): Promise<PaginatedData<Comment>> {
+      const query = params ? new URLSearchParams(params as any).toString() : '';
+      const headers = createAuthHeaders();
+      return fetchApi<PaginatedData<Comment>>(`/api/admin/comments?${query}`, { headers });
+    },
+    
+    async pending(): Promise<Comment[]> {
+      const headers = createAuthHeaders();
+      return fetchApi<Comment[]>('/api/admin/comments/pending', { headers });
+    },
+    
+    async approve(id: number): Promise<Comment> {
+      const headers = createAuthHeaders();
+      return fetchApi<Comment>(`/api/admin/comments/${id}/approve`, {
+        method: 'PUT',
+        headers,
+      });
+    },
+    
+    async reject(id: number): Promise<void> {
+      const headers = createAuthHeaders();
+      await fetchApi<void>(`/api/admin/comments/${id}/reject`, {
+        method: 'PUT',
+        headers,
+      });
+    },
+    
+    async update(id: number, data: UpdateCommentRequest): Promise<Comment> {
+      const headers = createAuthHeaders();
+      return fetchApi<Comment>(`/api/admin/comments/${id}`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(data),
+      });
+    },
+    
+    async delete(id: number): Promise<void> {
+      const headers = createAuthHeaders();
+      await fetchApi<void>(`/api/admin/comments/${id}`, {
+        method: 'DELETE',
+        headers,
+      });
+    },
   },
 
-  // 主题/标签/友链管理（后期实现）
-  themes: {},
-  tags: {},
-  links: {},
+  // ===== 主题管理 =====
+  themes: {
+    async create(data: CreateThemeRequest): Promise<Theme> {
+      const headers = createAuthHeaders();
+      return fetchApi<Theme>('/api/admin/themes', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(data),
+      });
+    },
+    
+    async update(id: number, data: UpdateThemeRequest): Promise<Theme> {
+      const headers = createAuthHeaders();
+      return fetchApi<Theme>(`/api/admin/themes/${id}`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(data),
+      });
+    },
+    
+    async delete(id: number): Promise<void> {
+      const headers = createAuthHeaders();
+      await fetchApi<void>(`/api/admin/themes/${id}`, {
+        method: 'DELETE',
+        headers,
+      });
+    },
+  },
+
+  // ===== 标签管理 =====
+  tags: {
+    async create(data: CreateTagRequest): Promise<Tag> {
+      const headers = createAuthHeaders();
+      return fetchApi<Tag>('/api/admin/tags', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(data),
+      });
+    },
+    
+    async update(id: number, data: UpdateTagRequest): Promise<Tag> {
+      const headers = createAuthHeaders();
+      return fetchApi<Tag>(`/api/admin/tags/${id}`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(data),
+      });
+    },
+    
+    async delete(id: number): Promise<void> {
+      const headers = createAuthHeaders();
+      await fetchApi<void>(`/api/admin/tags/${id}`, {
+        method: 'DELETE',
+        headers,
+      });
+    },
+    
+    async merge(data: MergeTagsRequest): Promise<Tag> {
+      const headers = createAuthHeaders();
+      return fetchApi<Tag>('/api/admin/tags/merge', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(data),
+      });
+    },
+  },
+
+  // ===== 友链管理 =====
+  links: {
+    async list(): Promise<Link[]> {
+      const headers = createAuthHeaders();
+      return fetchApi<Link[]>('/api/admin/links', { headers });
+    },
+    
+    async pending(): Promise<Link[]> {
+      const headers = createAuthHeaders();
+      return fetchApi<Link[]>('/api/admin/links/pending', { headers });
+    },
+    
+    async approve(id: number): Promise<Link> {
+      const headers = createAuthHeaders();
+      return fetchApi<Link>(`/api/admin/links/${id}/approve`, {
+        method: 'PUT',
+        headers,
+      });
+    },
+    
+    async markBroken(id: number): Promise<Link> {
+      const headers = createAuthHeaders();
+      return fetchApi<Link>(`/api/admin/links/${id}/broken`, {
+        method: 'PUT',
+        headers,
+      });
+    },
+    
+    async update(id: number, data: UpdateLinkRequest): Promise<Link> {
+      const headers = createAuthHeaders();
+      return fetchApi<Link>(`/api/admin/links/${id}`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(data),
+      });
+    },
+    
+    async delete(id: number): Promise<void> {
+      const headers = createAuthHeaders();
+      await fetchApi<void>(`/api/admin/links/${id}`, {
+        method: 'DELETE',
+        headers,
+      });
+    },
+  },
 };
