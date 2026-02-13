@@ -120,24 +120,26 @@ const totalPosts = archiveData.reduce((sum, y) => sum + y.posts.length, 0);
 </BlogLayout>
 
 <script>
-  // IntersectionObserver 逐个显示年份分组和文章
-  const yearGroups = document.querySelectorAll<HTMLElement>('.year-group');
-  const timelineEnd = document.querySelector<HTMLElement>('.timeline-end');
+  document.addEventListener('astro:page-load', () => {
+    const yearGroups = document.querySelectorAll<HTMLElement>('.year-group');
+    if (!yearGroups.length) return;
+    const timelineEnd = document.querySelector<HTMLElement>('.timeline-end');
 
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-          observer.unobserve(entry.target);
-        }
-      });
-    },
-    { threshold: 0.15 }
-  );
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.15 }
+    );
 
-  yearGroups.forEach((g) => observer.observe(g));
-  if (timelineEnd) observer.observe(timelineEnd);
+    yearGroups.forEach((g) => observer.observe(g));
+    if (timelineEnd) observer.observe(timelineEnd);
+  });
 </script>
 
 <style lang="scss">

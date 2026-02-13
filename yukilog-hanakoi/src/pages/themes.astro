@@ -65,26 +65,28 @@ const offsets = [0, 24, -16, 32, -8, 20, -28, 12];
 </BlogLayout>
 
 <script>
-  // 使用 IntersectionObserver 为卡片添加入场动画
-  const cards = document.querySelectorAll<HTMLElement>('.theme-card');
-  
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const el = entry.target as HTMLElement;
-          const i = parseInt(el.style.getPropertyValue('--i') || '0');
-          setTimeout(() => {
-            el.classList.add('visible');
-          }, i * 80);
-          observer.unobserve(el);
-        }
-      });
-    },
-    { threshold: 0.1 }
-  );
+  document.addEventListener('astro:page-load', () => {
+    const cards = document.querySelectorAll<HTMLElement>('.theme-card');
+    if (!cards.length) return;
 
-  cards.forEach((card) => observer.observe(card));
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const el = entry.target as HTMLElement;
+            const i = parseInt(el.style.getPropertyValue('--i') || '0');
+            setTimeout(() => {
+              el.classList.add('visible');
+            }, i * 80);
+            observer.unobserve(el);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    cards.forEach((card) => observer.observe(card));
+  });
 </script>
 
 <style lang="scss">

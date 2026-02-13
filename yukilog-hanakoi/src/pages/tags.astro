@@ -115,7 +115,9 @@ const tagSlugsWithPosts = Object.keys(tagPosts).filter(
 </BlogLayout>
 
 <script>
+  document.addEventListener('astro:page-load', () => {
   const bubbles = document.querySelectorAll<HTMLElement>('.tag-bubble');
+  if (!bubbles.length) return;
   const postsSection = document.getElementById('tagPosts')!;
   const postsTitle = document.getElementById('tagPostsTitle')!;
   const postsEmpty = document.getElementById('tagPostsEmpty')!;
@@ -213,6 +215,7 @@ const tagSlugsWithPosts = Object.keys(tagPosts).filter(
       setTimeout(() => targetBtn.click(), 700);
     }
   }
+  }); // end astro:page-load
 </script>
 
 <style lang="scss">
