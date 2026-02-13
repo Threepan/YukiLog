@@ -296,18 +296,18 @@
   --overlay-light: rgba(15, 20, 25, 0.95);
   --overlay-blur: rgba(26, 31, 38, 0.90);
   
-  /* 白色透明度 */
-  --white-alpha-15: rgba(255, 255, 255, 0.12);
-  --white-alpha-20: rgba(255, 255, 255, 0.15);
-  --white-alpha-30: rgba(255, 255, 255, 0.20);
-  --white-alpha-40: rgba(255, 255, 255, 0.25);
-  --white-alpha-50: rgba(255, 255, 255, 0.30);
-  --white-alpha-60: rgba(255, 255, 255, 0.40);
-  --white-alpha-70: rgba(255, 255, 255, 0.50);
-  --white-alpha-80: rgba(255, 255, 255, 0.60);
-  --white-alpha-85: rgba(255, 255, 255, 0.70);
-  --white-alpha-90: rgba(255, 255, 255, 0.80);
-  --white-alpha-95: rgba(255, 255, 255, 0.90);
+  /* 白色透明度 - 暗色模式下大幅降低避免刺眼 */
+  --white-alpha-15: rgba(255, 255, 255, 0.05);
+  --white-alpha-20: rgba(255, 255, 255, 0.08);
+  --white-alpha-30: rgba(255, 255, 255, 0.12);
+  --white-alpha-40: rgba(255, 255, 255, 0.15);
+  --white-alpha-50: rgba(255, 255, 255, 0.20);
+  --white-alpha-60: rgba(255, 255, 255, 0.25);
+  --white-alpha-70: rgba(255, 255, 255, 0.30);
+  --white-alpha-80: rgba(255, 255, 255, 0.40);
+  --white-alpha-85: rgba(255, 255, 255, 0.45);
+  --white-alpha-90: rgba(255, 255, 255, 0.55);
+  --white-alpha-95: rgba(255, 255, 255, 0.70);
   
   /* 渐变背景 - 暗色模式下更明显的渐变 */
   --gradient-blue-pink: linear-gradient(135deg, var(--blue-alpha-10) 0%, var(--pink-alpha-10) 100%);
