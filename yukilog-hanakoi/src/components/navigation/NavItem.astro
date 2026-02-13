@@ -40,7 +40,7 @@ const iconSvg = icon ? navIcons[icon] : null;
   align-items: center;
   gap: $spacing-xs;
   padding: $spacing-sm $spacing-md;
-  color: $lian-text;
+  color: var(--color-text);
   font-weight: $font-weight-medium;
   font-size: $font-size-base;
   text-decoration: none;
@@ -60,7 +60,7 @@ const iconSvg = icon ? navIcons[icon] : null;
   }
   
   &:hover {
-    color: $lian-blue;
+    color: var(--color-blue);
     
     &::after {
       width: 70%;
@@ -68,7 +68,7 @@ const iconSvg = icon ? navIcons[icon] : null;
   }
   
   &.active {
-    color: $lian-pink;
+    color: var(--color-pink);
     
     &::after {
       width: 70%;
