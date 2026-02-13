@@ -82,18 +82,4 @@ export function getTokenTimeLeft(): number {
   return Math.max(0, Math.floor(timeLeft / 1000));
 }
 
-/**
- * 开发模式：设置 Mock Token（绕过真实登录）
- * ⚠️ 仅用于开发阶段，生产环境需删除此函数
- */
-export function setDevToken(): void {
-  if (typeof window === 'undefined') return;
-  
-  // 设置一个 24 小时有效的 mock token
-  const mockToken = 'dev_mock_token_' + Date.now();
-  const expiresIn = 24 * 60 * 60; // 24 小时
-  
-  setToken(mockToken, expiresIn);
-  console.warn('🔓 开发模式：已设置 Mock Token，有效期 24 小时');
-}
 
