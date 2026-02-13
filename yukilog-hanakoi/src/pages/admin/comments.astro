@@ -1,0 +1,861 @@
+---
+// ================================
+// 评论管理页
+// ================================
+
+export const prerender = false;
+
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="评论管理" activeMenu="comments">
+  <!-- 待审核提示卡片 -->
+  <div id="pending-alert" class="pending-alert" style="display:none">
+    <span class="alert-icon">📬</span>
+    <span id="pending-count">0</span> 条评论待审核
+  </div>
+
+  <!-- 筛选区域 -->
+  <div class="filter-bar">
+    <div class="filter-tabs">
+      <button class="filter-tab active" data-status="">全部</button>
+      <button class="filter-tab" data-status="pending">待审核</button>
+      <button class="filter-tab" data-status="approved">已通过</button>
+      <button class="filter-tab" data-status="rejected">已拒绝</button>
+    </div>
+  </div>
+
+  <!-- 评论列表 -->
+  <div class="comments-table">
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      <p>加载中...</p>
+    </div>
+
+    <div id="empty" class="empty" style="display:none">
+      <p>暂无评论</p>
+    </div>
+
+    <table id="table-content" style="display:none">
+      <thead>
+        <tr>
+          <th>评论内容</th>
+          <th>作者</th>
+          <th>文章</th>
+          <th>状态</th>
+          <th>时间</th>
+          <th width="200">操作</th>
+        </tr>
+      </thead>
+      <tbody id="comments-tbody"></tbody>
+    </table>
+  </div>
+
+  <!-- 分页 -->
+  <div id="pagination" class="pagination"></div>
+
+  <!-- 编辑弹窗 -->
+  <div id="edit-modal" class="modal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>编辑评论</h3>
+        <button class="modal-close" id="modal-close-btn">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="edit-form">
+          <div class="form-group">
+            <label>评论内容</label>
+            <textarea id="edit-content" rows="4" required></textarea>
+          </div>
+          <div class="form-group">
+            <label>作者昵称</label>
+            <input type="text" id="edit-name" required />
+          </div>
+          <div class="form-group">
+            <label>作者邮箱</label>
+            <input type="email" id="edit-email" required />
+          </div>
+          <div class="form-group">
+            <label>作者网站</label>
+            <input type="url" id="edit-website" placeholder="选填" />
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" id="modal-cancel-btn">取消</button>
+        <button type="submit" form="edit-form" class="btn-primary" id="modal-save-btn">保存</button>
+      </div>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  import { adminApi } from '../../lib/api';
+  import type { Comment } from '../../types/api';
+
+  // ===== 状态管理 =====
+  let comments: Comment[] = [];
+  let currentPage = 1;
+  let totalPages = 1;
+  let currentStatus = '';
+  let editingComment: Comment | null = null;
+  const PAGE_SIZE = 20;
+
+  // ===== DOM 元素 =====
+  const pendingAlert = document.getElementById('pending-alert')!;
+  const pendingCount = document.getElementById('pending-count')!;
+  const loading = document.getElementById('loading')!;
+  const empty = document.getElementById('empty')!;
+  const tableContent = document.getElementById('table-content') as HTMLTableElement;
+  const commentsTbody = document.getElementById('comments-tbody')!;
+  const pagination = document.getElementById('pagination')!;
+  const filterTabs = document.querySelectorAll('.filter-tab');
+
+  const editModal = document.getElementById('edit-modal')!;
+  const editForm = document.getElementById('edit-form') as HTMLFormElement;
+  const editContent = document.getElementById('edit-content') as HTMLTextAreaElement;
+  const editName = document.getElementById('edit-name') as HTMLInputElement;
+  const editEmail = document.getElementById('edit-email') as HTMLInputElement;
+  const editWebsite = document.getElementById('edit-website') as HTMLInputElement;
+
+  // ===== 初始化 =====
+  async function init() {
+    await loadPendingCount();
+    await loadComments();
+    bindEvents();
+  }
+
+  // ===== 加载待审核数量 =====
+  async function loadPendingCount() {
+    try {
+      const pendingComments = await adminApi.comments.pending();
+      const count = pendingComments.length;
+      if (count > 0) {
+        pendingCount.textContent = String(count);
+        pendingAlert.style.display = 'flex';
+      }
+    } catch (err) {
+      console.error('加载待审核数量失败', err);
+    }
+  }
+
+  // ===== 加载评论列表 =====
+  async function loadComments() {
+    loading.style.display = 'flex';
+    empty.style.display = 'none';
+    tableContent.style.display = 'none';
+
+    try {
+      const params: any = { page: currentPage, page_size: PAGE_SIZE };
+      if (currentStatus) params.status = currentStatus;
+
+      const data = await adminApi.comments.list(params);
+      comments = data.items;
+      totalPages = data.total_pages;
+
+      if (comments.length === 0) {
+        loading.style.display = 'none';
+        empty.style.display = 'flex';
+      } else {
+        renderComments();
+        renderPagination();
+        loading.style.display = 'none';
+        tableContent.style.display = 'table';
+      }
+    } catch (err: any) {
+      loading.style.display = 'none';
+      alert(err.message || '加载评论失败');
+    }
+  }
+
+  // ===== 渲染评论列表 =====
+  function renderComments() {
+    commentsTbody.innerHTML = comments.map(comment => {
+      const statusClass = `status-${comment.status}`;
+      const statusText = getStatusText(comment.status);
+      const canApprove = comment.status === 'pending';
+      const canReject = comment.status === 'pending';
+
+      return `
+        <tr>
+          <td class="comment-content">${escapeHtml(comment.content)}</td>
+          <td>
+            <div class="author-info">
+              <div class="author-name">${escapeHtml(comment.guest_name)}</div>
+              <div class="author-email">${escapeHtml(comment.guest_email)}</div>
+            </div>
+          </td>
+          <td class="post-title">${escapeHtml(comment.post_title || '未知文章')}</td>
+          <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+          <td class="comment-date">${formatDate(comment.created_at)}</td>
+          <td class="actions">
+            ${canApprove ? `<button class="btn-approve" data-id="${comment.id}">通过</button>` : ''}
+            ${canReject ? `<button class="btn-reject" data-id="${comment.id}">拒绝</button>` : ''}
+            <button class="btn-edit" data-id="${comment.id}">编辑</button>
+            <button class="btn-delete" data-id="${comment.id}">删除</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    // 绑定操作按钮
+    bindActionButtons();
+  }
+
+  // ===== 渲染分页 =====
+  function renderPagination() {
+    if (totalPages <= 1) {
+      pagination.innerHTML = '';
+      return;
+    }
+
+    pagination.innerHTML = `
+      <button class="page-btn" id="prev-btn" ${currentPage <= 1 ? 'disabled' : ''}>上一页</button>
+      <span class="page-info">${currentPage} / ${totalPages}</span>
+      <button class="page-btn" id="next-btn" ${currentPage >= totalPages ? 'disabled' : ''}>下一页</button>
+    `;
+
+    document.getElementById('prev-btn')?.addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        loadComments();
+      }
+    });
+
+    document.getElementById('next-btn')?.addEventListener('click', () => {
+      if (currentPage < totalPages) {
+        currentPage++;
+        loadComments();
+      }
+    });
+  }
+
+  // ===== 绑定筛选事件 =====
+  function bindEvents() {
+    filterTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        filterTabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        currentStatus = (tab as HTMLElement).dataset.status || '';
+        currentPage = 1;
+        loadComments();
+      });
+    });
+
+    // 弹窗关闭
+    document.getElementById('modal-close-btn')?.addEventListener('click', closeModal);
+    document.getElementById('modal-cancel-btn')?.addEventListener('click', closeModal);
+    editModal.querySelector('.modal-backdrop')?.addEventListener('click', closeModal);
+
+    // 提交编辑
+    editForm.addEventListener('submit', handleEditSubmit);
+  }
+
+  // ===== 绑定操作按钮 =====
+  function bindActionButtons() {
+    // 通过
+    document.querySelectorAll('.btn-approve').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const id = Number((e.target as HTMLElement).dataset.id);
+        await handleApprove(id);
+      });
+    });
+
+    // 拒绝
+    document.querySelectorAll('.btn-reject').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const id = Number((e.target as HTMLElement).dataset.id);
+        await handleReject(id);
+      });
+    });
+
+    // 编辑
+    document.querySelectorAll('.btn-edit').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = Number((e.target as HTMLElement).dataset.id);
+        handleEdit(id);
+      });
+    });
+
+    // 删除
+    document.querySelectorAll('.btn-delete').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const id = Number((e.target as HTMLElement).dataset.id);
+        await handleDelete(id);
+      });
+    });
+  }
+
+  // ===== 操作：通过 =====
+  async function handleApprove(id: number) {
+    try {
+      await adminApi.comments.approve(id);
+      await loadComments();
+      await loadPendingCount();
+    } catch (err: any) {
+      alert(err.message || '操作失败');
+    }
+  }
+
+  // ===== 操作：拒绝 =====
+  async function handleReject(id: number) {
+    if (!confirm('确认拒绝此评论？')) return;
+    try {
+      await adminApi.comments.reject(id);
+      await loadComments();
+      await loadPendingCount();
+    } catch (err: any) {
+      alert(err.message || '操作失败');
+    }
+  }
+
+  // ===== 操作：编辑 =====
+  function handleEdit(id: number) {
+    const comment = comments.find(c => c.id === id);
+    if (!comment) return;
+
+    editingComment = comment;
+    editContent.value = comment.content;
+    editName.value = comment.guest_name;
+    editEmail.value = comment.guest_email;
+    editWebsite.value = comment.guest_website || '';
+
+    editModal.classList.add('active');
+  }
+
+  // ===== 操作：删除 =====
+  async function handleDelete(id: number) {
+    if (!confirm('确认删除此评论？此操作不可恢复')) return;
+    try {
+      await adminApi.comments.delete(id);
+      await loadComments();
+      await loadPendingCount();
+    } catch (err: any) {
+      alert(err.message || '操作失败');
+    }
+  }
+
+  // ===== 提交编辑 =====
+  async function handleEditSubmit(e: Event) {
+    e.preventDefault();
+    if (!editingComment) return;
+
+    const saveBtn = document.getElementById('modal-save-btn') as HTMLButtonElement;
+    saveBtn.disabled = true;
+    saveBtn.textContent = '保存中...';
+
+    try {
+      await adminApi.comments.update(editingComment.id, {
+        content: editContent.value,
+        guest_name: editName.value,
+        guest_email: editEmail.value,
+        guest_website: editWebsite.value || null,
+      });
+
+      closeModal();
+      await loadComments();
+    } catch (err: any) {
+      alert(err.message || '保存失败');
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = '保存';
+    }
+  }
+
+  // ===== 关闭弹窗 =====
+  function closeModal() {
+    editModal.classList.remove('active');
+    editingComment = null;
+    editForm.reset();
+  }
+
+  // ===== 工具函数 =====
+  function getStatusText(status: string): string {
+    const map: Record<string, string> = {
+      pending: '待审核',
+      approved: '已通过',
+      rejected: '已拒绝',
+    };
+    return map[status] || status;
+  }
+
+  function formatDate(dateStr: string): string {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
+
+  function escapeHtml(text: string): string {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  // 初始化
+  init();
+</script>
+
+<style lang="scss">
+  @use 'sass:color';
+
+  // 待审核提示
+  .pending-alert {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    padding: $spacing-md $spacing-lg;
+    background: linear-gradient(135deg, rgba($lian-pink, 0.08) 0%, rgba($lian-blue, 0.08) 100%);
+    border-left: 3px solid $lian-pink;
+    border-radius: $radius-sm;
+    margin-bottom: $spacing-lg;
+    font-size: $font-size-sm;
+    color: $lian-text;
+
+    .alert-icon {
+      font-size: $font-size-xl;
+    }
+  }
+
+  // 筛选区域
+  .filter-bar {
+    margin-bottom: $spacing-lg;
+  }
+
+  .filter-tabs {
+    display: flex;
+    gap: $spacing-xs;
+  }
+
+  .filter-tab {
+    padding: $spacing-xs $spacing-md;
+    font-size: $font-size-sm;
+    color: $lian-text-light;
+    background: $lian-white;
+    border: 1px solid $lian-border;
+    border-radius: $radius-sm;
+    cursor: pointer;
+    transition: all $transition-fast $ease-gentle;
+
+    &:hover {
+      border-color: $lian-blue;
+      color: $lian-blue;
+    }
+
+    &.active {
+      background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
+      color: white;
+      border-color: transparent;
+    }
+  }
+
+  // 表格容器
+  .comments-table {
+    background: $lian-white;
+    border-radius: $radius-md;
+    box-shadow: $shadow-sm;
+    overflow: hidden;
+  }
+
+  // 加载/空状态
+  .loading,
+  .empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: $spacing-xxl;
+    color: $lian-text-muted;
+
+    p {
+      margin: $spacing-sm 0 0;
+      font-size: $font-size-sm;
+    }
+  }
+
+  .spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid $lian-border;
+    border-top-color: $lian-blue;
+    border-radius: 50%;
+    animation: spin 600ms linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  // 表格
+  table {
+    width: 100%;
+    border-collapse: collapse;
+
+    thead {
+      background: $lian-bg;
+      border-bottom: 1px solid $lian-border;
+
+      th {
+        padding: $spacing-sm $spacing-md;
+        font-size: $font-size-xs;
+        font-weight: $font-weight-medium;
+        color: $lian-text-light;
+        text-align: left;
+      }
+    }
+
+    tbody {
+      tr {
+        border-bottom: 1px solid $lian-divider;
+        transition: background $transition-fast $ease-gentle;
+
+        &:hover {
+          background: rgba($lian-blue, 0.02);
+        }
+      }
+
+      td {
+        padding: $spacing-md;
+        font-size: $font-size-sm;
+        color: $lian-text;
+        vertical-align: top;
+      }
+    }
+  }
+
+  .comment-content {
+    max-width: 300px;
+    line-height: $line-height-base;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+  }
+
+  .author-info {
+    .author-name {
+      font-weight: $font-weight-medium;
+      margin-bottom: 2px;
+    }
+
+    .author-email {
+      font-size: $font-size-xs;
+      color: $lian-text-muted;
+      font-family: $font-family-code;
+    }
+  }
+
+  .post-title {
+    max-width: 200px;
+    color: $lian-text-light;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .comment-date {
+    font-size: $font-size-xs;
+    color: $lian-text-muted;
+    font-family: $font-family-code;
+    white-space: nowrap;
+  }
+
+  // 状态徽章
+  .status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: $font-size-xs;
+    border-radius: 12px;
+    font-weight: $font-weight-medium;
+
+    &.status-pending {
+      background: rgba($lian-warning, 0.15);
+      color: color.adjust($lian-warning, $lightness: -20%);
+    }
+
+    &.status-approved {
+      background: rgba($lian-success, 0.15);
+      color: color.adjust($lian-success, $lightness: -20%);
+    }
+
+    &.status-rejected {
+      background: rgba($lian-text-muted, 0.15);
+      color: $lian-text-muted;
+    }
+  }
+
+  // 操作按钮
+  .actions {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+
+    button {
+      padding: 4px 12px;
+      font-size: $font-size-xs;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all $transition-fast $ease-gentle;
+    }
+
+    .btn-approve {
+      background: rgba($lian-blue, 0.1);
+      color: $lian-blue;
+
+      &:hover {
+        background: $lian-blue;
+        color: white;
+      }
+    }
+
+    .btn-reject {
+      background: rgba($lian-text-muted, 0.1);
+      color: $lian-text-muted;
+
+      &:hover {
+        background: $lian-text-muted;
+        color: white;
+      }
+    }
+
+    .btn-edit {
+      background: rgba($lian-pink, 0.1);
+      color: $lian-pink;
+
+      &:hover {
+        background: $lian-pink;
+        color: white;
+      }
+    }
+
+    .btn-delete {
+      background: rgba($lian-error, 0.1);
+      color: $lian-error;
+
+      &:hover {
+        background: $lian-error;
+        color: white;
+      }
+    }
+  }
+
+  // 分页
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: $spacing-sm;
+    padding: $spacing-lg 0;
+
+    .page-btn {
+      padding: $spacing-xs $spacing-md;
+      font-size: $font-size-sm;
+      color: $lian-text-light;
+      background: $lian-white;
+      border: 1px solid $lian-border;
+      border-radius: $radius-sm;
+      cursor: pointer;
+      transition: all $transition-fast $ease-gentle;
+
+      &:hover:not(:disabled) {
+        border-color: $lian-blue;
+        color: $lian-blue;
+      }
+
+      &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+    }
+
+    .page-info {
+      font-size: $font-size-sm;
+      color: $lian-text-muted;
+      font-family: $font-family-code;
+    }
+  }
+
+  // 弹窗
+  .modal {
+    position: fixed;
+    inset: 0;
+    z-index: $z-modal;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity $transition-base $ease-gentle,
+                visibility $transition-base $ease-gentle;
+
+    &.active {
+      opacity: 1;
+      visibility: visible;
+
+      .modal-card {
+        transform: scale(1);
+      }
+    }
+  }
+
+  .modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(2px);
+  }
+
+  .modal-card {
+    position: relative;
+    width: 90%;
+    max-width: 500px;
+    background: $lian-white;
+    border-radius: $radius-md;
+    box-shadow: $shadow-lg;
+    transform: scale(0.95);
+    transition: transform $transition-base $ease-gentle;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: $spacing-lg;
+    border-bottom: 1px solid $lian-divider;
+
+    h3 {
+      margin: 0;
+      font-size: $font-size-lg;
+      font-weight: $font-weight-semibold;
+      color: $lian-text;
+    }
+
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: $font-size-2xl;
+      color: $lian-text-muted;
+      background: none;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all $transition-fast $ease-gentle;
+
+      &:hover {
+        background: $lian-bg;
+        color: $lian-text;
+      }
+    }
+  }
+
+  .modal-body {
+    padding: $spacing-lg;
+  }
+
+  .form-group {
+    margin-bottom: $spacing-md;
+
+    label {
+      display: block;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-medium;
+      color: $lian-text;
+      margin-bottom: $spacing-xs;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      padding: $spacing-sm $spacing-md;
+      font-size: $font-size-base;
+      color: $lian-text;
+      background: $lian-white;
+      border: 1px solid $lian-border;
+      border-radius: $radius-sm;
+      font-family: $font-family-base;
+      transition: all $transition-fast $ease-gentle;
+
+      &:focus {
+        outline: none;
+        border-color: $lian-blue;
+        box-shadow: 0 0 0 3px rgba($lian-blue, 0.1);
+      }
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+  }
+
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: $spacing-sm;
+    padding: $spacing-lg;
+    border-top: 1px solid $lian-divider;
+
+    button {
+      padding: $spacing-sm $spacing-lg;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-medium;
+      border: none;
+      border-radius: $radius-sm;
+      cursor: pointer;
+      transition: all $transition-fast $ease-gentle;
+    }
+
+    .btn-secondary {
+      color: $lian-text-light;
+      background: $lian-bg;
+
+      &:hover {
+        background: color.adjust($lian-bg, $lightness: -5%);
+      }
+    }
+
+    .btn-primary {
+      color: white;
+      background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
+
+      &:hover {
+        transform: translateY(-1px);
+        box-shadow: $shadow-blue;
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  @media (max-width: $container-sm) {
+    .comment-content {
+      max-width: 200px;
+      -webkit-line-clamp: 2;
+    }
+
+    .post-title {
+      max-width: 150px;
+    }
+
+    .actions {
+      flex-direction: column;
+
+      button {
+        width: 100%;
+      }
+    }
+  }
+</style>
