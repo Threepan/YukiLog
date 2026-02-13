@@ -691,7 +691,7 @@ fn highlight_keyword(text: &str, keyword: &str) -> String {
 // ================================
 
 /// 站点统计数据
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct SiteStats {
     /// 已发布文章总数
     pub total_posts: u64,
