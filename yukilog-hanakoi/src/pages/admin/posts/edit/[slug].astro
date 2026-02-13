@@ -1,0 +1,649 @@
+---
+// ================================
+// 编辑文章页
+// ================================
+
+export const prerender = false;
+
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="编辑文章" activeMenu="posts">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vditor@3.11.2/dist/index.css" />
+  <script is:inline src="https://cdn.jsdelivr.net/npm/vditor@3.11.2/dist/index.min.js"></script>
+
+  <div id="page-loading" class="page-loading">
+    <div class="spinner"></div>
+    <p>加载文章数据...</p>
+  </div>
+
+  <form id="post-form" class="post-form" style="display:none">
+    <!-- 基础信息 -->
+    <div class="form-section">
+      <h3 class="section-title">基础信息</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>文章标题 *</label>
+          <input type="text" id="title" required placeholder="例如：使用 Rust 构建博客后端" />
+        </div>
+        <div class="form-group">
+          <label>URL Slug *</label>
+          <input type="text" id="slug" required placeholder="建议编辑时不修改 slug" />
+          <span class="form-hint">URL 路径：/posts/<span id="slug-preview" class="slug-preview">...</span></span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>文章摘要</label>
+        <textarea id="summary" rows="3" placeholder="简短介绍文章内容（可选，若不填写将自动从正文提取）"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>封面图 URL</label>
+        <input type="url" id="cover_image" placeholder="https://example.com/cover.jpg" />
+      </div>
+    </div>
+
+    <!-- 分类与标签 -->
+    <div class="form-section">
+      <h3 class="section-title">分类与标签</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>主题分类</label>
+          <select id="theme_slug">
+            <option value="">无主题</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>标签</label>
+        <div id="tag-selector" class="tag-selector">
+          <div id="tag-checkboxes" class="tag-checkboxes"></div>
+        </div>
+        <span class="form-hint">已选择 <span id="selected-tag-count">0</span> 个标签</span>
+      </div>
+    </div>
+
+    <!-- 文章内容 -->
+    <div class="form-section">
+      <h3 class="section-title">文章内容 *</h3>
+      <div id="vditor-editor"></div>
+    </div>
+
+    <!-- 操作按钮 -->
+    <div class="form-actions">
+      <button type="button" id="cancel-btn" class="btn-secondary">取消</button>
+      <button type="button" id="save-draft" class="btn-draft">保存为草稿</button>
+      <button type="submit" id="publish-btn" class="btn-primary">更新文章</button>
+    </div>
+  </form>
+</AdminLayout>
+
+<script>
+  import { adminApi, themesApi, tagsApi } from '../../../../lib/api';
+  import { isValidSlug } from '../../../../lib/slugify';
+  import type { Theme, Tag, Post } from '../../../../types/api';
+
+  // ===== 状态管理 =====
+  let editor: any;
+  let themes: Theme[] = [];
+  let tags: Tag[] = [];
+  let selectedTagSlugs: Set<string> = new Set();
+  let originalPost: Post | null = null;
+
+  // ===== DOM 元素 =====
+  const pageLoading = document.getElementById('page-loading')!;
+  const form = document.getElementById('post-form') as HTMLFormElement;
+  const titleInput = document.getElementById('title') as HTMLInputElement;
+  const slugInput = document.getElementById('slug') as HTMLInputElement;
+  const slugPreview = document.getElementById('slug-preview')!;
+  const summaryInput = document.getElementById('summary') as HTMLTextAreaElement;
+  const coverImageInput = document.getElementById('cover_image') as HTMLInputElement;
+  const themeSelect = document.getElementById('theme_slug') as HTMLSelectElement;
+  const tagCheckboxesDiv = document.getElementById('tag-checkboxes')!;
+  const selectedTagCount = document.getElementById('selected-tag-count')!;
+  
+  const cancelBtn = document.getElementById('cancel-btn')!;
+  const saveDraftBtn = document.getElementById('save-draft')!;
+  const publishBtn = document.getElementById('publish-btn') as HTMLButtonElement;
+
+  // ===== 初始化 =====
+  async function init() {
+    try {
+      // 获取 slug 参数
+      const pathParts = window.location.pathname.split('/');
+      const slug = pathParts[pathParts.length - 1];
+
+      if (!slug) {
+        throw new Error('缺少文章 slug');
+      }
+
+      // 等待 Vditor 从 CDN 加载
+      await waitForVditor();
+
+      // 并行加载数据
+      try {
+        [originalPost, themes, tags] = await Promise.all([
+          adminApi.posts.getBySlug(slug),
+          themesApi.list(),
+          tagsApi.list()
+        ]);
+      } catch (apiErr) {
+        pageLoading.innerHTML = `
+          <p style="color: #e74c3c;">⚠️ 后端服务未启动</p>
+          <p style="color: #666; font-size: 14px; margin-top: 8px;">
+            编辑功能需要连接后端 API。请确保：<br/>
+            1. 后端服务已启动（Rust Axum 服务）<br/>
+            2. API 地址配置正确（检查 .env 中的 PUBLIC_API_BASE_URL）
+          </p>
+          <button onclick="location.href='/admin/posts'" style="margin-top: 16px; padding: 8px 16px; cursor: pointer;">返回列表</button>
+        `;
+        return;
+      }
+
+      // 渲染表单选项
+      renderThemeOptions();
+      renderTagCheckboxes();
+
+      // 初始化编辑器
+      initVditor();
+
+      // 预填数据
+      fillFormData();
+
+      // 绑定事件
+      bindEvents();
+
+      // 显示表单
+      pageLoading.style.display = 'none';
+      form.style.display = 'block';
+    } catch (err: any) {
+      pageLoading.innerHTML = `
+        <p style="color: #e74c3c;">加载失败：${err.message || '未知错误'}</p>
+        <button onclick="location.href='/admin/posts'" style="margin-top: 16px; padding: 8px 16px; cursor: pointer;">返回列表</button>
+      `;
+    }
+  }
+
+  // ===== 等待 Vditor 加载 =====
+  function waitForVditor(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (typeof (window as any).Vditor !== 'undefined') {
+        resolve();
+        return;
+      }
+      
+      let attempts = 0;
+      const maxAttempts = 50;
+      const interval = setInterval(() => {
+        attempts++;
+        if (typeof (window as any).Vditor !== 'undefined') {
+          clearInterval(interval);
+          resolve();
+        } else if (attempts >= maxAttempts) {
+          clearInterval(interval);
+          reject(new Error('Vditor 加载超时'));
+        }
+      }, 100);
+    });
+  }
+
+  // ===== 初始化 Vditor =====
+  function initVditor() {
+    const Vditor = (window as any).Vditor;
+    editor = new Vditor('vditor-editor', {
+      mode: 'ir',
+      height: 600,
+      placeholder: '开始写作吧...',
+      theme: 'classic',
+      counter: {
+        enable: true,
+        type: 'markdown'
+      },
+      cache: {
+        enable: false
+      },
+      toolbar: [
+        'headings', 'bold', 'italic', 'strike', '|',
+        'quote', 'code', 'line', '|',
+        'list', 'ordered-list', 'check', '|',
+        'link', 'table', '|',
+        'undo', 'redo', '|',
+        'preview', 'fullscreen'
+      ],
+      upload: {
+        handler: () => {
+          alert('请使用图床外链 URL（例如：![alt](https://example.com/image.jpg)）');
+          return null;
+        }
+      },
+      after: () => {
+        // 编辑器初始化完成后设置内容
+        if (originalPost) {
+          editor.setValue(originalPost.content);
+        }
+      }
+    });
+  }
+
+  // ===== 渲染主题选项 =====
+  function renderThemeOptions() {
+    const options = themes.map(theme => 
+      `<option value="${escapeHtml(theme.slug)}">${escapeHtml(theme.name)}</option>`
+    ).join('');
+    themeSelect.innerHTML = '<option value="">无主题</option>' + options;
+  }
+
+  // ===== 渲染标签复选框 =====
+  function renderTagCheckboxes() {
+    tagCheckboxesDiv.innerHTML = tags.map(tag => `
+      <label class="tag-checkbox-label">
+        <input type="checkbox" class="tag-checkbox" value="${escapeHtml(tag.slug)}" />
+        <span class="tag-name">#${escapeHtml(tag.name)}</span>
+      </label>
+    `).join('');
+
+    // 绑定复选框事件
+    document.querySelectorAll('.tag-checkbox').forEach(checkbox => {
+      checkbox.addEventListener('change', (e) => {
+        const slug = (e.target as HTMLInputElement).value;
+        if ((e.target as HTMLInputElement).checked) {
+          selectedTagSlugs.add(slug);
+        } else {
+          selectedTagSlugs.delete(slug);
+        }
+        updateSelectedTagCount();
+      });
+    });
+  }
+
+  // ===== 预填表单数据 =====
+  function fillFormData() {
+    if (!originalPost) return;
+
+    titleInput.value = originalPost.title;
+    slugInput.value = originalPost.slug;
+    summaryInput.value = originalPost.summary || '';
+    coverImageInput.value = originalPost.cover_image || '';
+    themeSelect.value = originalPost.theme?.slug || '';
+
+    // 预选标签
+    if (originalPost.tags) {
+      originalPost.tags.forEach(tag => {
+        selectedTagSlugs.add(tag.slug);
+        const checkbox = document.querySelector(`.tag-checkbox[value="${tag.slug}"]`) as HTMLInputElement;
+        if (checkbox) {
+          checkbox.checked = true;
+        }
+      });
+    }
+
+    updateSelectedTagCount();
+    updateSlugPreview();
+
+    // 更新按钮文本
+    if (originalPost.status === 'draft') {
+      publishBtn.textContent = '发布文章';
+    } else {
+      publishBtn.textContent = '更新文章';
+      saveDraftBtn.textContent = '撤回为草稿';
+    }
+  }
+
+  // ===== 更新选中标签计数 =====
+  function updateSelectedTagCount() {
+    selectedTagCount.textContent = String(selectedTagSlugs.size);
+  }
+
+  // ===== 绑定事件 =====
+  function bindEvents() {
+    // slug 更新预览
+    slugInput.addEventListener('input', updateSlugPreview);
+
+    // 取消按钮
+    cancelBtn.addEventListener('click', () => {
+      if (confirm('确认取消？未保存的修改将丢失。')) {
+        window.location.href = '/admin/posts';
+      }
+    });
+
+    // 保存草稿
+    saveDraftBtn.addEventListener('click', () => handleSubmit('draft'));
+
+    // 更新/发布文章
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      handleSubmit('published');
+    });
+  }
+
+  // ===== 更新 slug 预览 =====
+  function updateSlugPreview() {
+    slugPreview.textContent = slugInput.value || '...';
+  }
+
+  // ===== 提交表单（三态字段处理） =====
+  async function handleSubmit(status: 'draft' | 'published') {
+    if (!originalPost) return;
+
+    const btn = status === 'published' ? publishBtn : saveDraftBtn;
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = status === 'published' ? '更新中...' : '保存中...';
+
+    // 收集数据
+    const title = titleInput.value.trim();
+    const slug = slugInput.value.trim();
+    const content = editor.getValue();
+
+    // 校验
+    if (!title || !slug || !content.trim()) {
+      alert('标题、Slug 和内容不能为空');
+      btn.disabled = false;
+      btn.textContent = originalText;
+      return;
+    }
+
+    if (!isValidSlug(slug)) {
+      alert('Slug 格式不正确，仅支持小写字母、数字和连字符');
+      btn.disabled = false;
+      btn.textContent = originalText;
+      return;
+    }
+
+    // 构建更新数据（三态字段处理）
+    const data: any = {
+      title,
+      slug,
+      content,
+      status,
+      tag_slugs: Array.from(selectedTagSlugs)
+    };
+
+    // 三态字段：summary
+    const summaryValue = summaryInput.value.trim();
+    if (summaryValue) {
+      data.summary = summaryValue;
+    } else if (originalPost.summary && !summaryValue) {
+      data.summary = null;  // 清空
+    }
+    // 否则 undefined（不传，不修改）
+
+    // 三态字段：cover_image
+    const coverValue = coverImageInput.value.trim();
+    if (coverValue) {
+      data.cover_image = coverValue;
+    } else if (originalPost.cover_image && !coverValue) {
+      data.cover_image = null;
+    }
+
+    // 三态字段：theme_slug
+    const themeValue = themeSelect.value;
+    if (themeValue) {
+      data.theme_slug = themeValue;
+    } else if (originalPost.theme && !themeValue) {
+      data.theme_slug = null;
+    }
+
+    // 提交
+    try {
+      await adminApi.posts.update(originalPost.id, data);
+      alert(`文章「${title}」${status === 'published' ? '更新' : '保存为草稿'}成功！`);
+      window.location.href = '/admin/posts';
+    } catch (err: any) {
+      alert(err.message || '操作失败');
+      btn.disabled = false;
+      btn.textContent = originalText;
+    }
+  }
+
+  // ===== 工具函数 =====
+  function escapeHtml(text: string): string {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  init();
+</script>
+
+<style lang="scss">
+  @use 'sass:color';
+
+  // 页面加载动画
+  .page-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    color: $lian-text-muted;
+
+    p {
+      margin: $spacing-md 0 0;
+      font-size: $font-size-sm;
+    }
+  }
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid $lian-border;
+    border-top-color: $lian-blue;
+    border-radius: 50%;
+    animation: spin 600ms linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  // 表单样式（复用 new.astro）
+  .post-form {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .form-section {
+    background: $lian-white;
+    border-radius: $radius-md;
+    padding: $spacing-lg;
+    margin-bottom: $spacing-lg;
+    box-shadow: $shadow-sm;
+
+    .section-title {
+      margin: 0 0 $spacing-md;
+      font-size: $font-size-lg;
+      font-weight: $font-weight-semibold;
+      color: $lian-text;
+      padding-bottom: $spacing-sm;
+      border-bottom: 2px solid $lian-divider;
+    }
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: $spacing-md;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .form-group {
+    margin-bottom: $spacing-md;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    label {
+      display: block;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-medium;
+      color: $lian-text;
+      margin-bottom: $spacing-xs;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: $spacing-sm $spacing-md;
+      font-size: $font-size-base;
+      color: $lian-text;
+      background: $lian-white;
+      border: 1px solid $lian-border;
+      border-radius: $radius-sm;
+      font-family: $font-family-base;
+      transition: all $transition-fast $ease-gentle;
+
+      &:focus {
+        outline: none;
+        border-color: $lian-blue;
+        box-shadow: 0 0 0 3px rgba($lian-blue, 0.1);
+      }
+
+      &::placeholder {
+        color: $lian-text-muted;
+      }
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+      line-height: $line-height-base;
+    }
+
+    .form-hint {
+      display: block;
+      margin-top: 4px;
+      font-size: $font-size-xs;
+      color: $lian-text-muted;
+
+      .slug-preview {
+        color: $lian-blue;
+        font-family: $font-family-code;
+        font-weight: $font-weight-medium;
+      }
+    }
+  }
+
+  .tag-selector {
+    .tag-checkboxes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: $spacing-xs;
+      padding: $spacing-sm;
+      background: $lian-bg;
+      border: 1px solid $lian-border;
+      border-radius: $radius-sm;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .tag-checkbox-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      background: $lian-white;
+      border: 1px solid $lian-border;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all $transition-fast $ease-gentle;
+
+      &:hover {
+        border-color: $lian-blue;
+        background: rgba($lian-blue, 0.05);
+      }
+
+      input[type="checkbox"] {
+        width: auto;
+        margin: 0;
+        cursor: pointer;
+      }
+
+      .tag-name {
+        font-size: $font-size-xs;
+        color: $lian-text-light;
+        user-select: none;
+      }
+
+      &:has(input:checked) {
+        background: rgba($lian-pink, 0.1);
+        border-color: $lian-pink;
+
+        .tag-name {
+          color: $lian-pink;
+          font-weight: $font-weight-medium;
+        }
+      }
+    }
+  }
+
+  #vditor-editor {
+    border: 1px solid $lian-border;
+    border-radius: $radius-sm;
+    overflow: hidden;
+
+    :global(.vditor) {
+      border: none;
+    }
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: $spacing-sm;
+    padding: $spacing-lg;
+    background: $lian-white;
+    border-radius: $radius-md;
+    box-shadow: $shadow-sm;
+
+    button {
+      padding: $spacing-sm $spacing-xl;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-medium;
+      border: none;
+      border-radius: $radius-sm;
+      cursor: pointer;
+      transition: all $transition-fast $ease-gentle;
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+
+    .btn-secondary {
+      color: $lian-text-light;
+      background: $lian-bg;
+
+      &:hover:not(:disabled) {
+        background: color.adjust($lian-bg, $lightness: -5%);
+      }
+    }
+
+    .btn-draft {
+      color: color.adjust($lian-warning, $lightness: -10%);
+      background: rgba($lian-warning, 0.15);
+
+      &:hover:not(:disabled) {
+        background: rgba($lian-warning, 0.25);
+      }
+    }
+
+    .btn-primary {
+      color: white;
+      background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
+
+      &:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: $shadow-blue;
+      }
+    }
+  }
+</style>
