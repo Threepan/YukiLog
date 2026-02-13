@@ -14,7 +14,7 @@
 | --- | --- |
 | 通用 | [统一返回格式](#common) |
 | Auth | [管理员登录](#auth) |
-| Public | [前台接口](#public)<br>[Themes 主题](#public-themes) / [Tags 标签](#public-tags) / [Posts 文章](#public-posts) / [Comments 评论](#public-comments) / [Links 友链](#public-links) |
+| Public | [前台接口](#public)<br>[Themes 主题](#public-themes) / [Tags 标签](#public-tags) / [Posts 文章](#public-posts) / [Stats 统计](#public-stats) / [Comments 评论](#public-comments) / [Links 友链](#public-links) |
 | Admin | [管理接口（JWT 保护）](#admin)<br>[Themes 主题](#admin-themes) / [Tags 标签](#admin-tags) / [Posts 文章](#admin-posts) / [Comments 评论](#admin-comments) / [Links 友链](#admin-links) |
 
 <a id="common"></a>
@@ -450,6 +450,41 @@ POST /api/public/posts/:slug/view
 * theme_id：主题 ID（可为空）
 * view_count：浏览计数
 * created_at / updated_at：创建/更新时间
+
+---
+
+<a id="public-stats"></a>
+
+#### Stats 统计
+
+**说明：** 获取站点统计数据（文章总数、总浏览量、总字数）。
+
+```bash
+GET /api/public/stats
+```
+
+**请求**
+
+无需参数
+
+**响应**
+
+```json
+{
+    "success": true,
+    "data": {
+        "total_posts": 12,
+        "total_views": 4567,
+        "total_words": 123456
+    },
+    "message": null
+}
+```
+
+**字段说明：**
+* total_posts：已发布文章总数
+* total_views：所有已发布文章浏览量总和
+* total_words：所有已发布文章内容字符总长度
 
 ---
 

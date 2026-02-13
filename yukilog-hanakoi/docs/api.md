@@ -13,7 +13,7 @@
 | 模块 | 说明 |
 | --- | --- |
 | 基础 | [fetchApi 通用封装](#fetchapi) |
-| 公开 | [postsApi 文章](#postsapi) / [themesApi 主题](#themesapi) / [tagsApi 标签](#tagsapi) / [commentsApi 评论](#commentsapi) / [linksApi 友链](#linksapi) |
+| 公开 | [postsApi 文章](#postsapi) / [themesApi 主题](#themesapi) / [tagsApi 标签](#tagsapi) / [commentsApi 评论](#commentsapi) / [linksApi 友链](#linksapi) / [statsApi 统计](#statsapi) |
 | 认证 | [authApi 登录](#authapi) |
 | 管理 | [adminApi（JWT 保护）](#adminapi) |
 
@@ -174,6 +174,35 @@ interface CommentNode {
 | --- | --- | --- |
 | `list()` | 友链列表（仅 active） | `GET /api/public/links` |
 | `submit(data)` | 提交友链申请 | `POST /api/public/links/submit` |
+
+---
+
+<a id="statsapi"></a>
+
+## statsApi（统计）
+
+| 方法 | 说明 | 后端路由 |
+| --- | --- | --- |
+| `get()` | 获取站点统计数据 | `GET /api/public/stats` |
+
+**返回类型 SiteStats：**
+
+```typescript
+interface SiteStats {
+  total_posts: number;   // 已发布文章总数
+  total_views: number;   // 所有文章浏览量总和
+  total_words: number;   // 所有文章内容字符总长度
+}
+```
+
+**使用示例：**
+
+```typescript
+const stats = await statsApi.get();
+console.log(`文章总数: ${stats.total_posts}`);
+console.log(`总浏览量: ${stats.total_views.toLocaleString()}`);
+console.log(`总字数: ${(stats.total_words / 1000).toFixed(1)}k`);
+```
 
 ---
 

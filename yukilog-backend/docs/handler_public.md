@@ -241,6 +241,37 @@ pub struct SearchQuery {
 - 高亮：结果中的关键词用 `<mark>` 标签包裹
 - 摘要：`content` 字段截取为关键词附近 ~200 字符
 
+#### 站点统计接口
+
+```rust
+/// 获取站点统计数据（文章总数、总浏览量、总字数）
+pub async fn get_site_stats(
+    State(state): State<AppState>,
+) -> Result<Json<ApiResponse<service::posts::SiteStats>>, ServiceError>
+```
+
+```bash
+GET /api/public/stats
+```
+
+**返回示例**：
+
+```json
+{
+    "success": true,
+    "data": {
+        "total_posts": 12,
+        "total_views": 4567,
+        "total_words": 123456
+    }
+}
+```
+
+**字段说明**：
+- `total_posts`：已发布文章总数
+- `total_views`：所有已发布文章浏览量总和
+- `total_words`：所有已发布文章内容字符总长度
+
 ## Comments 评论 - 3个接口
 
 ```bash

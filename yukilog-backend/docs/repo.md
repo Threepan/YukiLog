@@ -84,6 +84,7 @@ Repo 会在 `Model -> Dto` 时执行 `TryFrom<&str>` 校验：
 
 * `count_posts(db, theme_ids, post_ids, status) -> RepoResult<u64>`: (按条件统计文章数量，SELECT COUNT(*))
 * `increment_view_count(db, id) -> RepoResult<()>`: (将指定文章的 view_count + 1)
+* `get_site_stats(db) -> RepoResult<(u64, i64, i64)>`: (获取站点统计数据：文章总数、总浏览量、总字数)
 * `list_posts_filtered(db, theme_ids, post_ids, status, sort_by, count, page) -> RepoResult<Vec<PostDto>>`: (按条件筛选文章列表，支持排序和分页)
 * `get_post_ids_with_all_tags(db, tag_ids, required_count) -> RepoResult<Vec<i64>>`: (获取同时拥有所有指定标签的文章 ID，AND 逻辑)
 

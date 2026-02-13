@@ -368,6 +368,11 @@ pub async fn count_posts(
     db: &DatabaseConnection,
     filter: PostFilter,
 ) -> ServiceResult<u64>
+
+/// 11. 获取站点统计数据
+pub async fn get_site_stats(
+    db: &DatabaseConnection,
+) -> ServiceResult<SiteStats>
 ```
 
 ###### DTO定义
@@ -431,6 +436,12 @@ pub struct PostWithRelations {
     pub theme: Option<Theme>,
     pub tags: Vec<Tag>,
 }
+
+pub struct SiteStats {
+    pub total_posts: u64,   // 已发布文章总数
+    pub total_views: i64,   // 所有文章浏览量总和
+    pub total_words: i64,   // 所有文章内容字符总长度
+}
 ```
 
 ###### 业务逻辑
@@ -447,6 +458,7 @@ pub struct PostWithRelations {
 | `increment_view_count` | 通过 repo::posts::increment_view_count 执行 |
 | `get_post_tags` | 通过 post_tags JOIN tags 查询标签列表 |
 | `count_posts` | 使用与 list_posts 相同的筛选条件 <br> 通过 repo::posts::count_posts 执行 SELECT COUNT(*) <br> 用于分页接口计算 total |
+| `get_site_stats` | 通过 repo::posts::get_site_stats 查询站点统计 <br> 返回已发布文章的总数、总浏览量、总字数 |
 
 ---
 
