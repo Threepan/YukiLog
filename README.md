@@ -110,6 +110,18 @@ sudo ./deploy.sh
 
 > 所有操作均为幂等设计：已存在的文件 / 服务 / 数据库不会被覆写，可安全重复执行。
 
+**部署后检查**
+
+```bash
+# 服务状态
+sudo systemctl status yukilog-backend
+sudo systemctl status yukilog-hanakoi
+
+# 查看日志（如有问题）
+journalctl -u yukilog-backend -n 50
+journalctl -u yukilog-hanakoi -n 50
+```
+
 ---
 
 ## �📄 License
