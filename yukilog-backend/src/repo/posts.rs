@@ -391,11 +391,11 @@ where
 
     let sql = r#"
         SELECT 
-            COUNT(*) as total_posts,
-            COALESCE(SUM(view_count), 0) as total_views,
-            COALESCE(SUM(LENGTH(content)), 0) as total_words
+            COUNT(*)::bigint as total_posts,
+            COALESCE(SUM(view_count), 0)::bigint as total_views,
+            COALESCE(SUM(LENGTH(content)), 0)::bigint as total_words
         FROM posts
-        WHERE status = 'published'
+        WHERE LOWER(status) = 'published'
     "#;
 
     let stmt = Statement::from_string(sea_orm::DatabaseBackend::Postgres, sql);
