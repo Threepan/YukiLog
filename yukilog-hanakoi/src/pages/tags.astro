@@ -86,7 +86,7 @@ const tagSlugsWithPosts = Object.keys(tagPosts).filter(
             data-color={colorNames[colorCycle[i % colorCycle.length]]}
             style={`--i: ${i}`}
           >
-            <span class="tag-name">{tag.name}</span>
+            <span class="tag-name"># {tag.name}</span>
             <span class="tag-count">{tag.post_count}</span>
           </button>
         ))}
@@ -186,7 +186,7 @@ const tagSlugsWithPosts = Object.keys(tagPosts).filter(
       bubbles.forEach((b) => b.classList.remove('active'));
       btn.classList.add('active');
 
-      postsTitle.textContent = `# ${name}`;
+      postsTitle.textContent = name;
       showTagGroup(slug);
       postsSection.classList.add('show');
 
@@ -216,6 +216,8 @@ const tagSlugsWithPosts = Object.keys(tagPosts).filter(
 </script>
 
 <style lang="scss">
+  @use "sass:color";
+
   .tags-page {
     max-width: 800px;
     margin: 0 auto;
@@ -255,11 +257,11 @@ const tagSlugsWithPosts = Object.keys(tagPosts).filter(
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 8px 18px;
+    padding: 7px 14px;
     border: 1.5px solid transparent;
     border-radius: 24px;
     background: var(--color-surface, #fff);
-    color: $lian-text;
+    color: var(--color-text-light);
     cursor: pointer;
     font-family: inherit;
     transition:
@@ -274,15 +276,16 @@ const tagSlugsWithPosts = Object.keys(tagPosts).filter(
     transform: translateY(12px);
     transition-delay: calc(var(--i) * 40ms);
 
-    &[data-size="1"] { font-size: $font-size-xs; padding: 6px 14px; }
-    &[data-size="2"] { font-size: $font-size-sm; }
-    &[data-size="3"] { font-size: $font-size-base; }
-    &[data-size="4"] { font-size: $font-size-lg; padding: 10px 22px; }
-    &[data-size="5"] { font-size: $font-size-xl; padding: 12px 26px; }
+    &[data-size="1"] { font-size: 11px; padding: 5px 10px; }
+    &[data-size="2"] { font-size: 12px; padding: 6px 12px; }
+    &[data-size="3"] { font-size: 13px; padding: 7px 14px; }
+    &[data-size="4"] { font-size: 14px; padding: 8px 16px; }
+    &[data-size="5"] { font-size: 15px; padding: 9px 18px; }
 
     &[data-color="pink"] {
       background: rgba($lian-pink, 0.12);
       border-color: rgba($lian-pink, 0.2);
+      .tag-name { color: color.adjust($lian-pink, $lightness: -18%); }
       .tag-count { background: rgba($lian-pink, 0.15); color: $lian-pink; }
       &:hover { background: rgba($lian-pink, 0.2); box-shadow: $shadow-pink; transform: translateY(-2px); }
     }
@@ -290,6 +293,7 @@ const tagSlugsWithPosts = Object.keys(tagPosts).filter(
     &[data-color="blue"] {
       background: rgba($lian-blue, 0.12);
       border-color: rgba($lian-blue, 0.2);
+      .tag-name { color: color.adjust($lian-blue, $lightness: -20%); }
       .tag-count { background: rgba($lian-blue, 0.15); color: $lian-blue; }
       &:hover { background: rgba($lian-blue, 0.2); box-shadow: $shadow-blue; transform: translateY(-2px); }
     }
@@ -297,6 +301,7 @@ const tagSlugsWithPosts = Object.keys(tagPosts).filter(
     &[data-color="white"] {
       background: var(--color-surface, #fff);
       border-color: $lian-border;
+      .tag-name { color: $lian-text; }
       .tag-count { background: rgba($lian-text-muted, 0.1); color: $lian-text-muted; }
       &:hover { background: $lian-white; box-shadow: $shadow-sm; transform: translateY(-2px); }
     }
@@ -311,7 +316,8 @@ const tagSlugsWithPosts = Object.keys(tagPosts).filter(
   }
 
   .tag-name {
-    font-weight: $font-weight-medium;
+    font-weight: $font-weight-semibold;
+    letter-spacing: 0.01em;
   }
 
   .tag-count {
