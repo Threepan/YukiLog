@@ -1,0 +1,845 @@
+---
+// ================================
+// 标签管理页
+// ================================
+
+export const prerender = false;
+
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="标签管理" activeMenu="tags">
+  <!-- 操作栏 -->
+  <div class="action-bar">
+    <button class="btn-merge" id="merge-btn">
+      🔗 合并标签
+    </button>
+    <button class="btn-create" id="create-btn">
+      <span>+</span> 新建标签
+    </button>
+  </div>
+
+  <!-- 标签列表 -->
+  <div class="tags-table">
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      <p>加载中...</p>
+    </div>
+
+    <div id="empty" class="empty" style="display:none">
+      <p>暂无标签，点击「新建标签」创建第一个标签吧</p>
+    </div>
+
+    <table id="table-content" style="display:none">
+      <thead>
+        <tr>
+          <th width="50">
+            <label class="checkbox-wrapper" title="全选">
+              <input type="checkbox" id="select-all" />
+            </label>
+          </th>
+          <th>名称</th>
+          <th>Slug</th>
+          <th width="100">文章数</th>
+          <th width="150">操作</th>
+        </tr>
+      </thead>
+      <tbody id="tags-tbody"></tbody>
+    </table>
+  </div>
+
+  <!-- 创建/编辑弹窗 -->
+  <div id="edit-modal" class="modal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-title">新建标签</h3>
+        <button class="modal-close" id="modal-close-btn">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="edit-form">
+          <div class="form-group">
+            <label>标签名称 *</label>
+            <input type="text" id="edit-name" required placeholder="例如：JavaScript" />
+          </div>
+          <div class="form-group">
+            <label>Slug *</label>
+            <input type="text" id="edit-slug" required placeholder="例如：javascript（自动生成）" />
+            <span class="form-hint">URL 友好标识符，仅支持小写字母、数字和连字符</span>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" id="modal-cancel-btn">取消</button>
+        <button type="submit" form="edit-form" class="btn-primary" id="modal-save-btn">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 合并弹窗 -->
+  <div id="merge-modal" class="modal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>合并标签</h3>
+        <button class="modal-close" id="merge-close-btn">×</button>
+      </div>
+      <div class="modal-body">
+        <p class="merge-hint">
+          将选中的标签合并到目标标签，所有文章关联将转移到目标标签，源标签将被删除。
+        </p>
+        <form id="merge-form">
+          <div class="form-group">
+            <label>选中的源标签（<span id="selected-count">0</span> 个）</label>
+            <div id="selected-tags" class="selected-tags"></div>
+          </div>
+          <div class="form-group">
+            <label>目标标签 *</label>
+            <select id="target-tag" required>
+              <option value="">请选择目标标签</option>
+            </select>
+            <span class="form-hint">源标签的所有文章将转移到此标签</span>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" id="merge-cancel-btn">取消</button>
+        <button type="submit" form="merge-form" class="btn-primary" id="merge-save-btn">确认合并</button>
+      </div>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  import { tagsApi, adminApi } from '../../lib/api';
+  import type { Tag } from '../../types/api';
+
+  // ===== 状态管理 =====
+  let tags: Tag[] = [];
+  let editingTag: Tag | null = null;
+  let selectedTagIds: Set<number> = new Set();
+
+  // ===== DOM 元素 =====
+  const loading = document.getElementById('loading')!;
+  const empty = document.getElementById('empty')!;
+  const tableContent = document.getElementById('table-content') as HTMLTableElement;
+  const tagsTbody = document.getElementById('tags-tbody')!;
+  const createBtn = document.getElementById('create-btn')!;
+  const mergeBtn = document.getElementById('merge-btn')!;
+  const selectAllCheckbox = document.getElementById('select-all') as HTMLInputElement;
+
+  const editModal = document.getElementById('edit-modal')!;
+  const modalTitle = document.getElementById('modal-title')!;
+  const editForm = document.getElementById('edit-form') as HTMLFormElement;
+  const editName = document.getElementById('edit-name') as HTMLInputElement;
+  const editSlug = document.getElementById('edit-slug') as HTMLInputElement;
+
+  const mergeModal = document.getElementById('merge-modal')!;
+  const mergeForm = document.getElementById('merge-form') as HTMLFormElement;
+  const selectedCount = document.getElementById('selected-count')!;
+  const selectedTagsDiv = document.getElementById('selected-tags')!;
+  const targetTagSelect = document.getElementById('target-tag') as HTMLSelectElement;
+
+  // ===== 初始化 =====
+  async function init() {
+    await loadTags();
+    bindEvents();
+  }
+
+  // ===== 加载标签列表 =====
+  async function loadTags() {
+    loading.style.display = 'flex';
+    empty.style.display = 'none';
+    tableContent.style.display = 'none';
+
+    try {
+      tags = await tagsApi.list();
+
+      if (tags.length === 0) {
+        loading.style.display = 'none';
+        empty.style.display = 'flex';
+      } else {
+        renderTags();
+        loading.style.display = 'none';
+        tableContent.style.display = 'table';
+      }
+    } catch (err: any) {
+      loading.style.display = 'none';
+      alert(err.message || '加载标签失败');
+    }
+  }
+
+  // ===== 渲染标签列表 =====
+  function renderTags() {
+    tagsTbody.innerHTML = tags.map(tag => `
+      <tr>
+        <td>
+          <label class="checkbox-wrapper">
+            <input type="checkbox" class="tag-checkbox" data-id="${tag.id}" ${selectedTagIds.has(tag.id) ? 'checked' : ''} />
+          </label>
+        </td>
+        <td class="tag-name">
+          <span class="tag-badge">#${escapeHtml(tag.name)}</span>
+        </td>
+        <td class="tag-slug">${escapeHtml(tag.slug)}</td>
+        <td class="text-center">${tag.post_count || 0}</td>
+        <td class="actions">
+          <button class="btn-edit" data-id="${tag.id}">编辑</button>
+          <button class="btn-delete" data-id="${tag.id}" data-post-count="${tag.post_count || 0}">删除</button>
+        </td>
+      </tr>
+    `).join('');
+
+    bindActionButtons();
+    bindCheckboxes();
+  }
+
+  // ===== 绑定事件 =====
+  function bindEvents() {
+    createBtn.addEventListener('click', openCreateModal);
+    mergeBtn.addEventListener('click', openMergeModal);
+
+    selectAllCheckbox.addEventListener('change', handleSelectAll);
+
+    // 编辑弹窗
+    document.getElementById('modal-close-btn')?.addEventListener('click', closeEditModal);
+    document.getElementById('modal-cancel-btn')?.addEventListener('click', closeEditModal);
+    editModal.querySelector('.modal-backdrop')?.addEventListener('click', closeEditModal);
+    editForm.addEventListener('submit', handleSubmit);
+
+    // 合并弹窗
+    document.getElementById('merge-close-btn')?.addEventListener('click', closeMergeModal);
+    document.getElementById('merge-cancel-btn')?.addEventListener('click', closeMergeModal);
+    mergeModal.querySelector('.modal-backdrop')?.addEventListener('click', closeMergeModal);
+    mergeForm.addEventListener('submit', handleMerge);
+
+    // 名称自动生成 slug
+    editName.addEventListener('input', () => {
+      if (!editingTag) {
+        editSlug.value = generateSlug(editName.value);
+      }
+    });
+  }
+
+  // ===== 绑定复选框 =====
+  function bindCheckboxes() {
+    document.querySelectorAll('.tag-checkbox').forEach(checkbox => {
+      checkbox.addEventListener('change', (e) => {
+        const id = Number((e.target as HTMLInputElement).dataset.id);
+        if ((e.target as HTMLInputElement).checked) {
+          selectedTagIds.add(id);
+        } else {
+          selectedTagIds.delete(id);
+        }
+        updateSelectAllState();
+      });
+    });
+  }
+
+  // ===== 全选/取消全选 =====
+  function handleSelectAll() {
+    const checked = selectAllCheckbox.checked;
+    document.querySelectorAll('.tag-checkbox').forEach(checkbox => {
+      (checkbox as HTMLInputElement).checked = checked;
+      const id = Number((checkbox as HTMLInputElement).dataset.id);
+      if (checked) {
+        selectedTagIds.add(id);
+      } else {
+        selectedTagIds.delete(id);
+      }
+    });
+  }
+
+  // ===== 更新全选状态 =====
+  function updateSelectAllState() {
+    const allCheckboxes = document.querySelectorAll('.tag-checkbox');
+    const checkedCount = selectedTagIds.size;
+    selectAllCheckbox.checked = checkedCount > 0 && checkedCount === allCheckboxes.length;
+    selectAllCheckbox.indeterminate = checkedCount > 0 && checkedCount < allCheckboxes.length;
+  }
+
+  // ===== 绑定操作按钮 =====
+  function bindActionButtons() {
+    document.querySelectorAll('.btn-edit').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = Number((e.target as HTMLElement).dataset.id);
+        handleEdit(id);
+      });
+    });
+
+    document.querySelectorAll('.btn-delete').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+        const id = Number(target.dataset.id);
+        const postCount = Number(target.dataset.postCount);
+        handleDelete(id, postCount);
+      });
+    });
+  }
+
+  // ===== 打开创建弹窗 =====
+  function openCreateModal() {
+    editingTag = null;
+    modalTitle.textContent = '新建标签';
+    editForm.reset();
+    editModal.classList.add('active');
+  }
+
+  // ===== 打开编辑弹窗 =====
+  function handleEdit(id: number) {
+    const tag = tags.find(t => t.id === id);
+    if (!tag) return;
+
+    editingTag = tag;
+    modalTitle.textContent = '编辑标签';
+    editName.value = tag.name;
+    editSlug.value = tag.slug;
+
+    editModal.classList.add('active');
+  }
+
+  // ===== 删除标签 =====
+  async function handleDelete(id: number, postCount: number) {
+    const tag = tags.find(t => t.id === id);
+    if (!tag) return;
+
+    let confirmMsg = `确认删除标签《${tag.name}》？`;
+    if (postCount > 0) {
+      confirmMsg += `\n\n关联的 ${postCount} 篇文章将移除此标签。`;
+    }
+
+    if (!confirm(confirmMsg)) return;
+
+    try {
+      await adminApi.tags.delete(id);
+      await loadTags();
+    } catch (err: any) {
+      alert(err.message || '删除失败');
+    }
+  }
+
+  // ===== 提交表单 =====
+  async function handleSubmit(e: Event) {
+    e.preventDefault();
+
+    const saveBtn = document.getElementById('modal-save-btn') as HTMLButtonElement;
+    saveBtn.disabled = true;
+    saveBtn.textContent = editingTag ? '保存中...' : '创建中...';
+
+    const data = {
+      name: editName.value.trim(),
+      slug: editSlug.value.trim(),
+    };
+
+    // 验证 slug 格式
+    if (!/^[a-z0-9-]+$/.test(data.slug)) {
+      alert('Slug 仅支持小写字母、数字和连字符');
+      saveBtn.disabled = false;
+      saveBtn.textContent = '保存';
+      return;
+    }
+
+    try {
+      if (editingTag) {
+        await adminApi.tags.update(editingTag.id, data);
+      } else {
+        await adminApi.tags.create(data);
+      }
+
+      closeEditModal();
+      await loadTags();
+    } catch (err: any) {
+      alert(err.message || '操作失败');
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = '保存';
+    }
+  }
+
+  // ===== 打开合并弹窗 =====
+  function openMergeModal() {
+    if (selectedTagIds.size === 0) {
+      alert('请先选择要合并的标签');
+      return;
+    }
+
+    selectedCount.textContent = String(selectedTagIds.size);
+    
+    // 显示选中的标签
+    const selectedTags = tags.filter(t => selectedTagIds.has(t.id));
+    selectedTagsDiv.innerHTML = selectedTags.map(tag => 
+      `<span class="selected-tag-badge">#${escapeHtml(tag.name)}</span>`
+    ).join('');
+
+    // 填充目标标签下拉（排除选中的标签）
+    const availableTags = tags.filter(t => !selectedTagIds.has(t.id));
+    targetTagSelect.innerHTML = '<option value="">请选择目标标签</option>' +
+      availableTags.map(tag => 
+        `<option value="${tag.id}">${escapeHtml(tag.name)} (${tag.post_count || 0} 篇文章)</option>`
+      ).join('');
+
+    mergeModal.classList.add('active');
+  }
+
+  // ===== 执行合并 =====
+  async function handleMerge(e: Event) {
+    e.preventDefault();
+
+    const targetId = Number(targetTagSelect.value);
+    if (!targetId) {
+      alert('请选择目标标签');
+      return;
+    }
+
+    if (selectedTagIds.has(targetId)) {
+      alert('目标标签不能是被合并的标签之一');
+      return;
+    }
+
+    const saveBtn = document.getElementById('merge-save-btn') as HTMLButtonElement;
+    saveBtn.disabled = true;
+    saveBtn.textContent = '合并中...';
+
+    try {
+      // 逐个合并
+      for (const sourceId of Array.from(selectedTagIds)) {
+        await adminApi.tags.merge({ source_id: sourceId, target_id: targetId });
+      }
+
+      closeMergeModal();
+      selectedTagIds.clear();
+      await loadTags();
+    } catch (err: any) {
+      alert(err.message || '合并失败');
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = '确认合并';
+    }
+  }
+
+  // ===== 关闭弹窗 =====
+  function closeEditModal() {
+    editModal.classList.remove('active');
+    editingTag = null;
+    editForm.reset();
+  }
+
+  function closeMergeModal() {
+    mergeModal.classList.remove('active');
+    mergeForm.reset();
+  }
+
+  // ===== 工具函数 =====
+  function generateSlug(name: string): string {
+    return name
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9-]/g, '')
+      .replace(/-+/g, '-');
+  }
+
+  function escapeHtml(text: string): string {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  init();
+</script>
+
+<style lang="scss">
+  @use 'sass:color';
+
+  // 操作栏
+  .action-bar {
+    display: flex;
+    justify-content: flex-end;
+    gap: $spacing-sm;
+    margin-bottom: $spacing-lg;
+  }
+
+  .btn-merge {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: $spacing-sm $spacing-lg;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    color: $lian-pink;
+    background: rgba($lian-pink, 0.1);
+    border: 1px solid rgba($lian-pink, 0.3);
+    border-radius: $radius-sm;
+    cursor: pointer;
+    transition: all $transition-base $ease-gentle;
+
+    &:hover {
+      background: rgba($lian-pink, 0.2);
+      border-color: $lian-pink;
+    }
+  }
+
+  .btn-create {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: $spacing-sm $spacing-lg;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    color: white;
+    background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
+    border: none;
+    border-radius: $radius-sm;
+    cursor: pointer;
+    transition: all $transition-base $ease-gentle;
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: $shadow-blue;
+    }
+
+    span {
+      font-size: $font-size-xl;
+    }
+  }
+
+  // 表格容器
+  .tags-table {
+    background: $lian-white;
+    border-radius: $radius-md;
+    box-shadow: $shadow-sm;
+    overflow: hidden;
+  }
+
+  // 加载/空状态
+  .loading,
+  .empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: $spacing-xxl;
+    color: $lian-text-muted;
+
+    p {
+      margin: $spacing-sm 0 0;
+      font-size: $font-size-sm;
+      text-align: center;
+    }
+  }
+
+  .spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid $lian-border;
+    border-top-color: $lian-blue;
+    border-radius: 50%;
+    animation: spin 600ms linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  // 复选框
+  .checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+
+    input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+  }
+
+  // 表格
+  table {
+    width: 100%;
+    border-collapse: collapse;
+
+    thead {
+      background: $lian-bg;
+      border-bottom: 1px solid $lian-border;
+
+      th {
+        padding: $spacing-sm $spacing-md;
+        font-size: $font-size-xs;
+        font-weight: $font-weight-medium;
+        color: $lian-text-light;
+        text-align: left;
+      }
+    }
+
+    tbody {
+      tr {
+        border-bottom: 1px solid $lian-divider;
+        transition: background $transition-fast $ease-gentle;
+
+        &:hover {
+          background: rgba($lian-blue, 0.02);
+        }
+      }
+
+      td {
+        padding: $spacing-md;
+        font-size: $font-size-sm;
+        color: $lian-text;
+      }
+    }
+  }
+
+  .tag-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    color: $lian-pink;
+    background: rgba($lian-pink, 0.08);
+    border-radius: 12px;
+  }
+
+  .tag-slug {
+    font-family: $font-family-code;
+    color: $lian-text-light;
+    font-size: $font-size-xs;
+  }
+
+  .text-center {
+    text-align: center;
+    font-family: $font-family-code;
+  }
+
+  // 操作按钮
+  .actions {
+    display: flex;
+    gap: 4px;
+
+    button {
+      padding: 4px 12px;
+      font-size: $font-size-xs;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all $transition-fast $ease-gentle;
+    }
+
+    .btn-edit {
+      background: rgba($lian-pink, 0.1);
+      color: $lian-pink;
+
+      &:hover {
+        background: $lian-pink;
+        color: white;
+      }
+    }
+
+    .btn-delete {
+      background: rgba($lian-error, 0.1);
+      color: $lian-error;
+
+      &:hover {
+        background: $lian-error;
+        color: white;
+      }
+    }
+  }
+
+  // 合并相关
+  .merge-hint {
+    padding: $spacing-sm $spacing-md;
+    background: rgba($lian-info, 0.08);
+    border-left: 3px solid $lian-info;
+    border-radius: $radius-sm;
+    font-size: $font-size-sm;
+    color: $lian-text-light;
+    line-height: $line-height-base;
+    margin-bottom: $spacing-lg;
+  }
+
+  .selected-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-xs;
+    padding: $spacing-sm 0;
+  }
+
+  .selected-tag-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    font-size: $font-size-sm;
+    color: $lian-blue;
+    background: rgba($lian-blue, 0.08);
+    border-radius: 12px;
+  }
+
+  // 弹窗样式复用评论管理页的
+  .modal {
+    position: fixed;
+    inset: 0;
+    z-index: $z-modal;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity $transition-base $ease-gentle,
+                visibility $transition-base $ease-gentle;
+
+    &.active {
+      opacity: 1;
+      visibility: visible;
+
+      .modal-card {
+        transform: scale(1);
+      }
+    }
+  }
+
+  .modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(2px);
+  }
+
+  .modal-card {
+    position: relative;
+    width: 90%;
+    max-width: 500px;
+    background: $lian-white;
+    border-radius: $radius-md;
+    box-shadow: $shadow-lg;
+    transform: scale(0.95);
+    transition: transform $transition-base $ease-gentle;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: $spacing-lg;
+    border-bottom: 1px solid $lian-divider;
+
+    h3 {
+      margin: 0;
+      font-size: $font-size-lg;
+      font-weight: $font-weight-semibold;
+      color: $lian-text;
+    }
+
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: $font-size-2xl;
+      color: $lian-text-muted;
+      background: none;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all $transition-fast $ease-gentle;
+
+      &:hover {
+        background: $lian-bg;
+        color: $lian-text;
+      }
+    }
+  }
+
+  .modal-body {
+    padding: $spacing-lg;
+  }
+
+  .form-group {
+    margin-bottom: $spacing-md;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    label {
+      display: block;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-medium;
+      color: $lian-text;
+      margin-bottom: $spacing-xs;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: $spacing-sm $spacing-md;
+      font-size: $font-size-base;
+      color: $lian-text;
+      background: $lian-white;
+      border: 1px solid $lian-border;
+      border-radius: $radius-sm;
+      font-family: $font-family-base;
+      transition: all $transition-fast $ease-gentle;
+
+      &:focus {
+        outline: none;
+        border-color: $lian-blue;
+        box-shadow: 0 0 0 3px rgba($lian-blue, 0.1);
+      }
+
+      &::placeholder {
+        color: $lian-text-muted;
+      }
+    }
+
+    .form-hint {
+      display: block;
+      margin-top: 4px;
+      font-size: $font-size-xs;
+      color: $lian-text-muted;
+    }
+  }
+
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: $spacing-sm;
+    padding: $spacing-lg;
+    border-top: 1px solid $lian-divider;
+
+    button {
+      padding: $spacing-sm $spacing-lg;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-medium;
+      border: none;
+      border-radius: $radius-sm;
+      cursor: pointer;
+      transition: all $transition-fast $ease-gentle;
+    }
+
+    .btn-secondary {
+      color: $lian-text-light;
+      background: $lian-bg;
+
+      &:hover {
+        background: color.adjust($lian-bg, $lightness: -5%);
+      }
+    }
+
+    .btn-primary {
+      color: white;
+      background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
+
+      &:hover {
+        transform: translateY(-1px);
+        box-shadow: $shadow-blue;
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+  }
+</style>
