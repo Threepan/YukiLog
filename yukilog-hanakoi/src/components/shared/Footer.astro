@@ -32,8 +32,8 @@ const uptime = getSiteUptime(siteConfig.startDate);
 @use "sass:color";
 
 .footer {
-  background: $lian-white;
-  border-top: 1px solid $lian-border;
+  background: var(--color-white);
+  border-top: 1px solid var(--color-border);
   padding: $spacing-xs 0;
   margin-top: $spacing-md;
 }
@@ -54,12 +54,12 @@ const uptime = getSiteUptime(siteConfig.startDate);
   p {
     margin: 0;
     font-size: $font-size-xs;
-    color: $lian-text-light;
+    color: var(--color-text-light);
     line-height: 1.6;
   }
   
   a {
-    color: $lian-blue;
+    color: var(--color-blue);
     text-decoration: none;
     transition: color $transition-fast $ease-out;
     
