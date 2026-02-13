@@ -13,6 +13,12 @@ import { isAuthenticated, isTokenExpiring, clearToken } from './auth';
 export function guardAdminRoute(): void {
   if (typeof window === 'undefined') return;
 
+  // 🔧 开发模式：跳过认证检查
+  if (import.meta.env.PUBLIC_DEV_SKIP_AUTH === 'true') {
+    console.log('🔓 [Dev Mode] 已跳过认证检查');
+    return;
+  }
+
   // 未登录，跳转到登录页
   if (!isAuthenticated()) {
     const loginUrl = '/admin/login';
