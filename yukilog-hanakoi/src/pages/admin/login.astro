@@ -43,22 +43,13 @@ import { siteConfig } from '../../lib/config';
           登录
         </button>
       </form>
-
-      <!-- 开发模式后门 -->
-      <div class="dev-mode">
-        <hr class="divider" />
-        <button type="button" id="dev-login-btn" class="dev-btn">
-          🔓 开发模式：跳过登录
-        </button>
-        <p class="dev-hint">仅用于开发阶段，生产环境需删除此按钮</p>
-      </div>
     </div>
   </div>
 </BaseLayout>
 
 <script>
   import { authApi } from '../../lib/api';
-  import { setToken, setDevToken, isAuthenticated } from '../../lib/auth';
+  import { setToken, isAuthenticated } from '../../lib/auth';
 
   // 已登录自动跳转
   if (isAuthenticated()) {
@@ -70,7 +61,6 @@ import { siteConfig } from '../../lib/config';
   const passwordInput = document.getElementById('password') as HTMLInputElement;
   const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
   const errorMsg = document.getElementById('error-message')!;
-  const devLoginBtn = document.getElementById('dev-login-btn') as HTMLButtonElement;
 
   // 正常登录
   form.addEventListener('submit', async (e) => {
@@ -100,12 +90,6 @@ import { siteConfig } from '../../lib/config';
       submitBtn.disabled = false;
       submitBtn.textContent = '登录';
     }
-  });
-
-  // 开发模式快捷登录
-  devLoginBtn.addEventListener('click', () => {
-    setDevToken();
-    window.location.href = '/admin';
   });
 
   function showError(msg: string) {
@@ -206,42 +190,6 @@ import { siteConfig } from '../../lib/config';
       opacity: 0.6;
       cursor: not-allowed;
     }
-  }
-
-  // 开发模式区域
-  .dev-mode {
-    margin-top: $spacing-xl;
-  }
-
-  .divider {
-    border: none;
-    border-top: 1px solid $lian-divider;
-    margin: 0 0 $spacing-md;
-  }
-
-  .dev-btn {
-    width: 100%;
-    padding: $spacing-sm $spacing-md;
-    font-size: $font-size-sm;
-    font-weight: $font-weight-medium;
-    color: $lian-warning;
-    background: rgba($lian-warning, 0.08);
-    border: 1px dashed $lian-warning;
-    border-radius: $radius-sm;
-    cursor: pointer;
-    transition: all $transition-fast $ease-gentle;
-
-    &:hover {
-      background: rgba($lian-warning, 0.15);
-      transform: translateY(-1px);
-    }
-  }
-
-  .dev-hint {
-    font-size: $font-size-xs;
-    color: $lian-text-muted;
-    text-align: center;
-    margin: $spacing-xs 0 0;
   }
 
   @media (max-width: $container-sm) {

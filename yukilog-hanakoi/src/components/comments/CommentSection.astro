@@ -197,20 +197,46 @@ const totalCount = countTotalComments(comments);
           submitLoading.style.display = 'inline';
           submitBtn.disabled = true;
           
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          
-          form.reset();
-          charCount.textContent = '0';
-          localStorage.removeItem(storageKey);
-          
-          submitText.style.display = 'inline';
-          submitLoading.style.display = 'none';
-          submitBtn.disabled = false;
-          
-          alert('回复已提交，等待审核中... 🎉\n（这是 mock 模式，实际会调用 API）');
-          
-          container.innerHTML = '';
-          btn.textContent = '回复';
+          try {
+            const formData = new FormData(form);
+            const postSlug = window.location.pathname.split('/').pop() || '';
+            
+            const data = {
+              nickname: formData.get('nickname') as string,
+              email: formData.get('email') as string,
+              website: (formData.get('website') as string) || undefined,
+              content: formData.get('content') as string,
+              parent_id: parseInt(commentId),
+            };
+            
+            const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
+            const response = await fetch(`${apiUrl}/api/public/comments/${postSlug}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(data),
+            });
+            
+            if (!response.ok) {
+              const error = await response.json();
+              throw new Error(error.message || '提交失败');
+            }
+            
+            form.reset();
+            charCount.textContent = '0';
+            localStorage.removeItem(storageKey);
+            
+            alert('✅ 回复已提交！\n\n审核通过后将显示在评论区。感谢你的参与！');
+            
+            container.innerHTML = '';
+            btn.textContent = '回复';
+          } catch (error: any) {
+            console.error('提交回复失败：', error);
+            alert(`❌ 提交失败\n\n${error.message || '网络错误，请稍后重试'}`);
+          } finally {
+            submitText.style.display = 'inline';
+            submitLoading.style.display = 'none';
+            submitBtn.disabled = false;
+          }
         });
         
         // 取消回复

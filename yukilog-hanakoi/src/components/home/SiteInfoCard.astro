@@ -215,11 +215,4 @@ const infoConfig = contentConfig.components.siteInfoCard;
   
   updateUptime();
   setInterval(updateUptime, 1000);
-  
-  // TODO: 总浏览量从后端 API 获取
-  // const viewsEl = document.getElementById('siteinfo-views');
-  // fetch(`${API_BASE_URL}/api/stats/views`)
-  //   .then(res => res.json())
-  //   .then(data => { if (viewsEl) viewsEl.textContent = data.total.toLocaleString(); })
-  //   .catch(() => { if (viewsEl) viewsEl.textContent = '暂无数据'; });
 </script>

@@ -119,7 +119,6 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
           tagsApi.list()
         ]);
       } catch (apiErr) {
-        console.warn('⚠️ API 调用失败（后端未启动），使用空数据：', apiErr);
         themes = [];
         tags = [];
       }
@@ -136,10 +135,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       publishBtn.disabled = false;
       publishBtn.textContent = '发布文章';
 
-      // 如果没有后端数据，提示用户
-      if (themes.length === 0 && tags.length === 0) {
-        console.info('💡 提示：后端服务未启动，无法加载主题和标签。可以先测试编辑器功能。');
-      }
+
     } catch (err: any) {
       alert('初始化失败：' + (err.message || '未知错误'));
       publishBtn.textContent = '初始化失败';
