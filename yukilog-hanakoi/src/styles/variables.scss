@@ -1,33 +1,35 @@
 // ================================
-// 恋的配色方案（引用 CSS Variables 支持主题切换）
+// 恋的配色方案
+// 注意：这些是 SCSS 变量，用于 SCSS 函数处理（如 color.adjust）
+// 实际输出会被 CSS Variables 替代以支持主题切换
 // ================================
 
-// 主题色
-$lian-blue: var(--color-blue);        // 代码与理性
-$lian-pink: var(--color-pink);        // 情绪与温柔
-$lian-white: var(--color-white);      // 纸张
-$lian-bg: var(--color-bg);            // 页面背景
+// 主题色（SCSS 编译时使用的默认值）
+$lian-blue: #7EB6D9;        // 代码与理性
+$lian-pink: #E8A4B4;        // 情绪与温柔
+$lian-white: #FAFAFA;       // 纸张
+$lian-bg: #F6F7F9;          // 页面背景
 
 // 文字颜色
-$lian-text: var(--color-text);        // 主文本
-$lian-text-light: var(--color-text-light); // 次要文本
-$lian-text-muted: var(--color-text-muted); // 禁用文本
+$lian-text: #2C3E50;        // 主文本
+$lian-text-light: #7F8EA3; // 次要文本
+$lian-text-muted: #A8B3C1; // 禁用文本
 
 // 边框与分隔
-$lian-border: var(--color-border);
-$lian-divider: var(--color-divider);
+$lian-border: #E1E8ED;
+$lian-divider: #F0F3F7;
 
 // 衍生色（渐变终止色等）
-$lian-blue-light: var(--color-blue-light);     // 蓝色渐变终止
-$lian-pink-light: var(--color-pink-light);     // 粉色渐变终止
-$lian-paper-warm: #FFF8F0;     // 暖色信纸（暗色模式暂不支持）
-$lian-paper-warm-light: #FFFBF7; // 暖色信纸浅（暗色模式暂不支持）
+$lian-blue-light: #93c2e0;     // 蓝色渐变终止
+$lian-pink-light: #f0b8c4;     // 粉色渐变终止
+$lian-paper-warm: #FFF8F0;     // 暖色信纸
+$lian-paper-warm-light: #FFFBF7; // 暖色信纸浅
 
 // 功能色（低饱和度）
-$lian-success: var(--color-success);
-$lian-warning: var(--color-warning);
-$lian-error: var(--color-error);
-$lian-info: var(--color-info);
+$lian-success: #A8D5BA;
+$lian-warning: #F5D0A9;
+$lian-error: #E8A4A4;
+$lian-info: #A4C8E8;
 
 // ================================
 // 圆角
@@ -38,22 +40,22 @@ $radius-lg: 24px;
 $radius-xl: 28px;
 
 // ================================
-// 阴影（引用 CSS Variables 支持主题切换）
+// 阴影（轻微、柔和）
 // ================================
-$shadow-sm: var(--shadow-sm);
-$shadow-md: var(--shadow-md);
-$shadow-lg: var(--shadow-lg);
-$shadow-hover: var(--shadow-hover);
+$shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+$shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+$shadow-lg: 0 6px 16px rgba(0, 0, 0, 0.10);
+$shadow-hover: 0 8px 20px rgba(0, 0, 0, 0.12);
 
 // 通用遮罩色
-$overlay-bg: var(--overlay-bg);
-$overlay-light: var(--overlay-light);
+$overlay-bg: rgba(0, 0, 0, 0.35);
+$overlay-light: rgba(0, 0, 0, 0.2);
 
 // 彩色阴影（左下偏移，描边质感）
-$shadow-pink: -2px 2px 8px var(--pink-alpha-25);
-$shadow-pink-hover: -3px 3px 12px var(--pink-alpha-40);
-$shadow-blue: -2px 2px 8px var(--blue-alpha-25);
-$shadow-blue-hover: -3px 3px 12px var(--blue-alpha-40);
+$shadow-pink: -2px 2px 8px rgba(#E8A4B4, 0.25);
+$shadow-pink-hover: -3px 3px 12px rgba(#E8A4B4, 0.4);
+$shadow-blue: -2px 2px 8px rgba(#7EB6D9, 0.25);
+$shadow-blue-hover: -3px 3px 12px rgba(#7EB6D9, 0.4);
 
 // ================================
 // 动画时长（温柔节奏）
