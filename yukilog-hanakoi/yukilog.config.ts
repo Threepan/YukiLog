@@ -148,6 +148,7 @@ export const contentConfig = {
       labels: {
         totalViews: "总浏览量",
         uptime: "已运行",
+        calculating: "计算中...",
       },
     },
     applyLinkModal: {
@@ -157,9 +158,80 @@ export const contentConfig = {
       subtitle: "留下你的站点信息，我会认真查看每一份申请",
       submitText: "寄出",
       submitLoadingText: "寄送中...",
+      successEmoji: "✨",
+    },
+    comments: {
+      sectionTitle: "💬 评论区",
+      sectionSubtitle: "留下你的足迹，分享你的想法",
+      emptyText: "这里还没有评论，来做第一个进来的人吧~ ~",
+      emptyIcon: "💬",
+      countSuffix: "条评论",
+      replyIcon: "↩️",
+      replyLabel: "💬 回复",
+      replyModalTitle: "💬 回复",
+      submitText: "✉️ 提交",
+      submitLoadingText: "提交中…",
+      cancelText: "取消",
+      form: {
+        placeholder: "💭 写点什么…",
+        nickLabel: "昵称 *",
+        nickPlaceholder: "你的昵称",
+        emailLabel: "邮箱 *",
+        emailPlaceholder: "your@email.com",
+        websiteLabel: "个人网站",
+        websitePlaceholder: "https://your-site.com （可选）",
+        hint: "支持 Markdown 基础语法 · 提交后需等待审核",
+      },
+      item: {
+        emailIcon: "✉️",
+        websiteIcon: "🔗",
+      },
+    },
+    tableOfContents: {
+      title: "目录",
+    },
+    hitokotoCard: {
+      title: "一言",
+    },
+    scrollProgress: {
+      backToTop: "回到顶部",
+    },
+    search: {
+      placeholder: "搜索文章标题、摘要、内容…",
+      hint: "输入关键词开始搜索",
+      loading: "搜索中…",
+      noResult: "没有找到相关文章",
+      prevPage: "上一页",
+      nextPage: "下一页",
+      keyboard: {
+        navigate: "导航",
+        open: "打开",
+        close: "关闭",
+      },
     },
   },
   pages: {
+    error404: {
+      icon: "🌙",
+      title: "页面走失了",
+      description: "你要找的页面好像不在这里...\n也许它从未存在，也许它已经离开。",
+      primaryButton: "返回首页",
+      secondaryButton: "返回上一页",
+    },
+    error500: {
+      icon: "⚠️",
+      title: "服务器开小差了",
+      description: "后端服务暂时无法响应。\n这可能是因为：",
+      reasons: [
+        "后端服务未启动（Rust Axum 服务）",
+        "数据库连接失败（PostgreSQL）",
+        "Redis 缓存服务不可用",
+        "API 地址配置错误（检查 .env 文件）",
+      ],
+      primaryButton: "返回首页",
+      secondaryButton: "刷新页面",
+      hint: "如果问题持续，请检查后端服务是否正常运行。",
+    },
     links: {
       greeting: "能走到这里的人，大概都是温柔的吧。",
       friendsTitle: "朋友们",
@@ -169,14 +241,24 @@ export const contentConfig = {
         avatar: "https://www.mduo.cloud/elaina_q.jpg",
         url: "https://www.mduo.cloud/",
         message: "愿你的梦中常有我相伴",
+        friendSince: "2026.02.06",
+        greeting: "致最好的你，",
+        sinceLabel: "认识于",
+        visitText: "去看看她的世界",
       },
 
     },
     about: {
       opening: "你好，我是",
+      nameHighlight: " 恋",
+      socialTitle: "找到我",
+      dialogueLeftTitle: "代码与理性",
+      dialogueRightTitle: "情绪与挣扎",
     },
     themes: {
       heroSubtitle: "按类别浏览文章",
+      postCountSuffix: "篇文章",
+      backToAll: "← 返回全部主题",
     },
     archive: {
       heroSubtitlePrefix: "共",
@@ -191,6 +273,15 @@ export const contentConfig = {
     home: {
       articleList: {
         loadMoreText: "—— 暂时只有这些了 ——",
+      },
+    },
+    admin: {
+      dashboardCards: {
+        posts: "📝",
+        comments: "💬",
+        themes: "🎨",
+        tags: "🏷️",
+        links: "🔗",
       },
     },
   },
