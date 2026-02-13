@@ -33,8 +33,12 @@ import type {
   LoginResponse,
 } from '../types';
 
-// API 基础地址（从环境变量读取，默认本地）
-const API_BASE = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
+// API 基础地址（区分 SSR 和浏览器环境）
+// SSR: 内网地址 http://localhost:3639（前端服务器 → 后端服务器）
+// 浏览器: 公网域名 https://blog.yeastar.xin（用户浏览器 → nginx → 后端）
+const API_BASE = import.meta.env.SSR
+  ? (import.meta.env.PUBLIC_API_URL || 'http://localhost:3639')
+  : (import.meta.env.PUBLIC_SITE_URL || 'https://blog.yeastar.xin');
 
 /**
  * 通用 fetch 封装
