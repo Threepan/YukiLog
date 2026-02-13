@@ -1,0 +1,200 @@
+---
+// ================================
+// 500 Server Error 页面
+// ================================
+
+export const prerender = false;
+
+import BlogLayout from "../layouts/BlogLayout.astro";
+---
+
+<BlogLayout title="500 - 服务器错误 | YukiLog" stickyNav>
+  <div class="error-page">
+    <div class="error-content">
+      <div class="error-icon">⚠️</div>
+      <h1 class="error-code">500</h1>
+      <p class="error-title">服务器开小差了</p>
+      <p class="error-desc">
+        后端服务暂时无法响应。<br />
+        这可能是因为：
+      </p>
+      <ul class="error-reasons">
+        <li>后端服务未启动（Rust Axum 服务）</li>
+        <li>数据库连接失败（PostgreSQL）</li>
+        <li>Redis 缓存服务不可用</li>
+        <li>API 地址配置错误（检查 .env 文件）</li>
+      </ul>
+      <div class="error-actions">
+        <a href="/" class="btn-primary">返回首页</a>
+        <button onclick="location.reload()" class="btn-secondary">刷新页面</button>
+      </div>
+      <div class="error-hint">
+        如果问题持续，请检查后端服务是否正常运行。
+      </div>
+    </div>
+  </div>
+</BlogLayout>
+
+<style lang="scss">
+  .error-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: $spacing-xl $spacing-lg;
+    background: linear-gradient(180deg, $lian-bg 0%, rgba($lian-pink, 0.05) 100%);
+  }
+
+  .error-content {
+    text-align: center;
+    max-width: 600px;
+    animation: fade-in 600ms $ease-gentle;
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .error-icon {
+    font-size: 80px;
+    margin-bottom: $spacing-md;
+  }
+
+  .error-code {
+    font-size: 96px;
+    font-weight: $font-weight-bold;
+    background: linear-gradient(135deg, $lian-pink, #f0b8c4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0;
+    line-height: 1;
+  }
+
+  .error-title {
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-semibold;
+    color: $lian-text;
+    margin: $spacing-md 0 $spacing-sm;
+  }
+
+  .error-desc {
+    font-size: $font-size-base;
+    color: $lian-text-light;
+    line-height: $line-height-relaxed;
+    margin: 0 0 $spacing-md;
+  }
+
+  .error-reasons {
+    list-style: none;
+    padding: $spacing-md $spacing-lg;
+    background: white;
+    border-radius: $radius-md;
+    border-left: 3px solid $lian-pink;
+    margin: 0 0 $spacing-xl;
+    text-align: left;
+
+    li {
+      font-size: $font-size-sm;
+      color: $lian-text-light;
+      line-height: $line-height-relaxed;
+      padding: 4px 0;
+
+      &::before {
+        content: "• ";
+        color: $lian-pink;
+        font-weight: $font-weight-bold;
+        margin-right: 8px;
+      }
+    }
+  }
+
+  .error-actions {
+    display: flex;
+    gap: $spacing-md;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: $spacing-md;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 28px;
+    border-radius: $radius-md;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    transition:
+      background $transition-fast $ease-gentle,
+      box-shadow $transition-fast $ease-gentle,
+      transform $transition-fast $ease-gentle;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, $lian-blue, #93c2e0);
+    color: white;
+    box-shadow: 0 2px 8px rgba($lian-blue, 0.3);
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba($lian-blue, 0.4);
+      transform: translateY(-2px);
+    }
+  }
+
+  .btn-secondary {
+    background: white;
+    color: $lian-text;
+    border: 1px solid $lian-border;
+    box-shadow: 0 1px 3px rgba($lian-text, 0.08);
+
+    &:hover {
+      background: $lian-white;
+      box-shadow: 0 2px 6px rgba($lian-text, 0.12);
+      transform: translateY(-2px);
+    }
+  }
+
+  .error-hint {
+    font-size: $font-size-xs;
+    color: $lian-text-muted;
+    font-style: italic;
+    margin-top: $spacing-md;
+  }
+
+  @media (max-width: $container-sm) {
+    .error-code {
+      font-size: 72px;
+    }
+
+    .error-title {
+      font-size: $font-size-xl;
+    }
+
+    .error-reasons {
+      padding: $spacing-sm $spacing-md;
+    }
+
+    .error-actions {
+      flex-direction: column;
+      width: 100%;
+
+      .btn-primary,
+      .btn-secondary {
+        width: 100%;
+      }
+    }
+  }
+</style>
