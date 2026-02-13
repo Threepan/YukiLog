@@ -423,6 +423,15 @@ export const adminApi = {
       const headers = createAuthHeaders();
       return fetchApi<Link[]>('/api/admin/links', { headers });
     },
+
+    async create(data: SubmitLinkRequest): Promise<Link> {
+      const headers = createAuthHeaders();
+      return fetchApi<Link>('/api/admin/links', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(data),
+      });
+    },
     
     async pending(): Promise<Link[]> {
       const headers = createAuthHeaders();
