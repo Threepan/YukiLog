@@ -535,6 +535,156 @@ journalctl -u yukilog-backend -n 50 | grep -i "database\|postgres"
 cat yukilog-backend/.env | grep DATABASE_URL
 ```
 
+### 问题 7：PostgreSQL APT 源失效
+
+**现象**：
+```
+E: The repository 'https://mirrors.tuna.tsinghua.edu.cn/postgresql/repos/apt noble-pgdg Release' no longer has a Release file.
+```
+
+**原因**：系统中存在旧的 PostgreSQL APT 源配置文件（通常来自之前的安装）。
+
+**解决方案**：
+```bash
+# 删除旧的 PostgreSQL APT 源配置
+sudo rm -f /etc/apt/sources.list.d/pgdg.list
+
+# 清理 APT 缓存
+sudo apt clean
+sudo apt update
+
+# 重新执行部署脚本
+sudo ./deploy.sh
+```
+
+**预防措施**：脚本已在步骤 3 自动处理此问题（第 139 行）。
+
+### 问题 8：密码哈希显示 FAILED_TO_GENERATE_PLEASE_REGENERATE_MANUALLY
+
+**现象**：
+```bash
+cat yukilog-backend/.env | grep ADMIN_PASSWORD_HASH
+# 输出：ADMIN_PASSWORD_HASH=FAILED_TO_GENERATE_PLEASE_REGENERATE_MANUALLY
+```
+
+**原因**：在 `sudo` 环境下执行 `cargo` 命令时，即使执行了 `source ~/.cargo/env`，`cargo` 仍然不在 PATH 中。
+
+**解决方案 1（自动修复）**：重新运行部署脚本
+```bash
+# 删除 .env 文件
+rm yukilog-backend/.env
+
+# 重新运行（脚本已使用绝对路径 /root/.cargo/bin/cargo）
+sudo ./deploy.sh
+# 遇到"是否重新构建项目？"时选 n
+```
+
+**解决方案 2（手动生成）**：
+```bash
+# 方式 1：使用绝对路径
+cd yukilog-backend
+NEW_HASH=$(/root/.cargo/bin/cargo run --bin hash_password --release -- <密码> 2>&1 | grep '^\$argon2' | tail -1)
+sed -i "s|FAILED_TO_GENERATE_PLEASE_REGENERATE_MANUALLY|${NEW_HASH}|" .env
+
+# 方式 2：以普通用户身份生成（推荐）
+cd yukilog-backend
+NEW_HASH=$(cargo run --bin hash_password --release -- <密码> 2>&1 | grep '^\$argon2' | tail -1)
+echo "生成的哈希: $NEW_HASH"
+# 手动复制哈希到 .env 文件的 ADMIN_PASSWORD_HASH 字段
+
+# 重启后端服务
+sudo systemctl restart yukilog-backend
+```
+
+**验证**：
+```bash
+# 检查哈希格式（应以 $argon2id$v=19$ 开头）
+cat yukilog-backend/.env | grep ADMIN_PASSWORD_HASH
+```
+
+### 问题 9：前端调用 API 返回 401 Unauthorized
+
+**现象**：
+- 访问网站显示 500 错误或跳转到 `/500`
+- 前端日志中显示 `API Error: 401 Unauthorized`
+- 但直接访问 `https://your-domain.com/api/public/posts` 返回正常
+
+**原因**：前端 `.env` 中的 `PUBLIC_API_URL` 配置为外部域名（如 `https://blog.yeastar.xin/api`），导致 Astro SSR（服务端渲染）在内部调用 API 时触发 CORS 限制或认证失败。
+
+**解决方案**：
+```bash
+# 1. 修改前端 .env，使用内网地址
+vim yukilog-hanakoi/.env
+# 将 PUBLIC_API_URL=https://blog.yeastar.xin/api
+# 改为 PUBLIC_API_URL=http://localhost:3639
+
+# 2. 删除旧构建产物（重要！）
+cd yukilog-hanakoi
+rm -rf dist/
+
+# 3. 重新构建前端（环境变量会被烘焙到构建产物中）
+pnpm build
+
+# 4. 重启前端服务
+sudo systemctl restart yukilog-hanakoi
+
+# 5. 验证
+curl -I https://your-domain.com
+# 应返回 HTTP/2 200
+```
+
+**关键点**：
+- ✅ **正确配置**：`PUBLIC_API_URL=http://localhost:<后端端口>`（用于 SSR 内部调用）
+- ❌ **错误配置**：`PUBLIC_API_URL=https://<域名>/api`（会触发跨域或认证问题）
+- ⚠️ **必须 rebuild**：Astro 会在构建时将环境变量编译到 JavaScript 代码中，仅修改 `.env` 不会生效
+
+### 问题 10：修改 .env 后服务仍然报错
+
+**现象**：
+- 修改了 `yukilog-hanakoi/.env` 中的配置（如 `PUBLIC_API_URL`）
+- 执行 `sudo systemctl restart yukilog-hanakoi` 后问题依旧
+
+**原因**：Astro 等现代前端框架会在**构建时**将环境变量烘焙到静态文件中，运行时读取的是 `dist/` 目录下的编译产物，而非 `.env` 文件。
+
+**解决方案**：
+```bash
+# 1. 删除旧的构建产物
+cd yukilog-hanakoi
+rm -rf dist/ .astro/
+
+# 2. 确认 .env 配置正确
+cat .env
+# 检查 PUBLIC_API_URL、PUBLIC_SITE_URL 等关键变量
+
+# 3. 重新构建
+pnpm build
+# 构建过程中会读取 .env 并编译到代码中
+
+# 4. 重启服务
+sudo systemctl restart yukilog-hanakoi
+
+# 5. 清除浏览器缓存或使用无痕模式访问
+```
+
+**影响范围**：
+- ✅ **需要 rebuild**：所有 `PUBLIC_*` 前缀的环境变量（前端代码可访问）
+- ❌ **不需要 rebuild**：服务端专属变量（如 `SECRET_KEY`，虽然 Astro SSR 也可能需要）
+
+**最佳实践**：
+```bash
+# 修改前端配置的完整流程
+vim yukilog-hanakoi/.env       # 1. 编辑配置
+rm -rf yukilog-hanakoi/dist/    # 2. 清理构建
+cd yukilog-hanakoi && pnpm build # 3. 重新构建
+sudo systemctl restart yukilog-hanakoi # 4. 重启服务
+```
+
+**后端配置**：后端 `yukilog-backend/.env` 无此问题，修改后直接重启服务即可：
+```bash
+vim yukilog-backend/.env
+sudo systemctl restart yukilog-backend
+```
+
 ---
 
 ## 📝 手动部署指南
