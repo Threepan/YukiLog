@@ -4,10 +4,13 @@
 // 温柔的信封风格弹窗
 // ================================
 
-import { API_BASE_URL, contentConfig } from '../../lib/config';
+import { contentConfig } from '../../lib/config';
 import { svgIcons } from '../../lib/svg-icons';
 
 const applyConfig = contentConfig.components.applyLinkModal;
+
+// 客户端 API 地址（浏览器使用公网地址）
+const CLIENT_API_URL = import.meta.env.PUBLIC_SITE_URL || 'https://blog.yeastar.xin';
 ---
 
 <!-- 触发按钮 -->
@@ -308,7 +311,7 @@ const applyConfig = contentConfig.components.applyLinkModal;
   }
 </style>
 
-<script define:vars={{ API_BASE_URL }}>
+<script define:vars={{ CLIENT_API_URL }}>
   (function () {
     const openBtn = document.getElementById('apply-link-btn');
     const modal = document.getElementById('apply-modal');
@@ -364,7 +367,7 @@ const applyConfig = contentConfig.components.applyLinkModal;
         if (textEl) textEl.style.display = 'none';
         if (loadingEl) loadingEl.style.display = 'inline';
 
-        const res = await fetch(`${API_BASE_URL}/api/public/links/submit`, {
+        const res = await fetch(`${CLIENT_API_URL}/api/public/links/submit`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data),
