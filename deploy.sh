@@ -129,6 +129,65 @@ if ! confirm "确认以上信息开始部署?"; then
     exit 0
 fi
 
+# ── 清理可能存在的问题源 + 自动换源 ───────────────────────
+step "准备环境"
+
+# 移除可能失效的 PostgreSQL APT 源
+if [[ -f /etc/apt/sources.list.d/pgdg.list ]]; then
+    warn "检测到可能失效的 PostgreSQL APT 源，正在清理..."
+    sudo rm -f /etc/apt/sources.list.d/pgdg.list
+    info "已清理旧的 PostgreSQL 源配置"
+fi
+
+# 自动切换国内镜像源（中科大 USTC / 阿里云）
+SOURCES_LIST="/etc/apt/sources.list"
+SOURCES_BACKUP="/etc/apt/sources.list.backup-$(date +%Y%m%d-%H%M%S)"
+
+if [[ -f "$SOURCES_LIST" ]] && ! grep -q "mirrors.ustc.edu.cn\|mirrors.aliyun.com" "$SOURCES_LIST"; then
+    warn "检测到官方源，正在切换为国内镜像..."
+    
+    # 获取 Ubuntu 版本代号
+    UBUNTU_CODENAME=$(lsb_release -sc 2>/dev/null || grep VERSION_CODENAME /etc/os-release | cut -d= -f2)
+    
+    if [[ -z "$UBUNTU_CODENAME" ]]; then
+        warn "无法检测 Ubuntu 版本，跳过换源"
+    else
+        # 测试镜像源可达性（超时 2 秒）
+        MIRROR=""
+        if curl -m 2 -s http://mirrors.ustc.edu.cn/ > /dev/null 2>&1; then
+            MIRROR="mirrors.ustc.edu.cn"
+            info "选择中科大镜像源 (USTC)"
+        elif curl -m 2 -s http://mirrors.aliyun.com/ > /dev/null 2>&1; then
+            MIRROR="mirrors.aliyun.com"
+            info "选择阿里云镜像源 (Aliyun)"
+        fi
+        
+        if [[ -n "$MIRROR" ]]; then
+            # 备份原文件
+            sudo cp "$SOURCES_LIST" "$SOURCES_BACKUP"
+            info "已备份原文件到 $SOURCES_BACKUP"
+            
+            # 生成新的 sources.list
+            sudo tee "$SOURCES_LIST" > /dev/null <<SOURCEEOF
+# YukiLog 部署脚本自动生成 - 国内镜像源 (${MIRROR})
+deb http://${MIRROR}/ubuntu/ ${UBUNTU_CODENAME} main restricted universe multiverse
+deb http://${MIRROR}/ubuntu/ ${UBUNTU_CODENAME}-updates main restricted universe multiverse
+deb http://${MIRROR}/ubuntu/ ${UBUNTU_CODENAME}-backports main restricted universe multiverse
+deb http://${MIRROR}/ubuntu/ ${UBUNTU_CODENAME}-security main restricted universe multiverse
+SOURCEEOF
+            info "已切换为 ${MIRROR} 镜像源"
+            
+            # 更新索引
+            sudo apt-get update -qq
+            info "镜像源索引更新完成"
+        else
+            warn "国内镜像源不可达，保持原有配置"
+        fi
+    fi
+elif grep -q "mirrors.ustc.edu.cn\|mirrors.aliyun.com" "$SOURCES_LIST"; then
+    info "已使用国内镜像源，跳过换源"
+fi
+
 # ============================================================
 #  第 2 步：安装系统依赖 (幂等)
 # ============================================================
