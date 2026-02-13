@@ -395,7 +395,7 @@ where
             COALESCE(SUM(view_count), 0) as total_views,
             COALESCE(SUM(LENGTH(content)), 0) as total_words
         FROM posts
-        WHERE status = 'Published'
+        WHERE status = 'published'
     "#;
 
     let stmt = Statement::from_string(sea_orm::DatabaseBackend::Postgres, sql);
