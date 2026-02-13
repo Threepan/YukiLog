@@ -38,6 +38,9 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden; // 防止横向滚动
+  
+  // 主题切换平滑过渡（只应用于body）
+  transition: color 0.3s ease, background-color 0.3s ease;
 }
 
 // ================================
