@@ -17,6 +17,12 @@ $lian-text-muted: #A8B3C1; // 禁用文本
 $lian-border: #E1E8ED;
 $lian-divider: #F0F3F7;
 
+// 衍生色（渐变终止色等）
+$lian-blue-light: #93c2e0;     // 蓝色渐变终止
+$lian-pink-light: #f0b8c4;     // 粉色渐变终止
+$lian-paper-warm: #FFF8F0;     // 暖色信纸
+$lian-paper-warm-light: #FFFBF7; // 暖色信纸浅
+
 // 功能色（低饱和度）
 $lian-success: #A8D5BA;
 $lian-warning: #F5D0A9;
@@ -38,6 +44,10 @@ $shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
 $shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
 $shadow-lg: 0 6px 16px rgba(0, 0, 0, 0.10);
 $shadow-hover: 0 8px 20px rgba(0, 0, 0, 0.12);
+
+// 通用遮罩色
+$overlay-bg: rgba(0, 0, 0, 0.35);
+$overlay-light: rgba(0, 0, 0, 0.2);
 
 // 彩色阴影（左下偏移，描边质感）
 $shadow-pink: -2px 2px 8px rgba(#E8A4B4, 0.25);
