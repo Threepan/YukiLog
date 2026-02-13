@@ -718,10 +718,34 @@ const { html: markdownHtml, headings } = await renderMarkdown(post.content);
       grid-template-columns: minmax(0, 1fr);
       max-width: 780px;
       padding: 0 $spacing-sm;
+      transform: none;
     }
 
     .post-toc {
-      display: none;
+      display: block;
+      position: static;
+      top: auto;
+      max-height: none;
+      padding-right: 0;
+      margin-bottom: $spacing-md;
+      order: -1;
+    }
+
+    .toc-container {
+      border: 1px solid var(--color-border);
+      border-radius: $radius-md;
+      padding: $spacing-sm;
+      background: var(--color-white);
+    }
+
+    .toc-title {
+      margin-bottom: $spacing-xs;
+      padding-left: 8px;
+    }
+
+    .toc-scroll-area {
+      max-height: 220px;
+      padding: 0;
     }
   }
 

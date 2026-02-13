@@ -156,7 +156,7 @@ const randomBackground =
   .fixed-sidebar {
     position: fixed;
     top: 70px;
-    width: 280px;
+    width: clamp(240px, 24vw, 280px);
     display: flex;
     flex-direction: column;
     gap: $spacing-lg;
@@ -170,17 +170,42 @@ const randomBackground =
   }
   
   .fixed-sidebar-left {
-    left: $spacing-xl * 2;
+    left: clamp($spacing-md, 4vw, $spacing-xl * 2);
   }
   
   .fixed-sidebar-right {
-    right: $spacing-xl * 2;
+    right: clamp($spacing-md, 4vw, $spacing-xl * 2);
   }
   
-  // 响应式：小屏隐藏固定侧栏
+  // 响应式：中屏转为流式布局，不再隐藏
   @media (max-width: $container-lg) {
     .fixed-sidebar {
-      display: none;
+      position: static;
+      top: auto;
+      left: auto;
+      right: auto;
+      width: min(100%, 800px);
+      margin: 0 auto;
+      padding: 0 $spacing-md;
+      z-index: auto;
+      pointer-events: auto;
+    }
+
+    .fixed-sidebar-left {
+      margin-top: $spacing-lg;
+      margin-bottom: $spacing-lg;
+    }
+
+    .fixed-sidebar-right {
+      margin-top: 0;
+      margin-bottom: $spacing-xl;
+    }
+
+    :global(#profile-card),
+    :global(#hitokoto-card),
+    :global(#siteinfo-card) {
+      opacity: 1 !important;
+      transform: translateX(0) !important;
     }
   }
 </style>
@@ -200,6 +225,8 @@ const randomBackground =
   const getThreshold = () => window.innerHeight;
 
   function updateSidebars() {
+    const compactLayout = window.innerWidth <= 1200;
+
     const threshold = getThreshold();
     const shouldShow = window.scrollY >= threshold - 50;
 
@@ -209,7 +236,7 @@ const randomBackground =
     const hitokotoCard = document.getElementById('hitokoto-card');
     const siteinfoCard = document.getElementById('siteinfo-card');
 
-    if (shouldShow) {
+    if (compactLayout || shouldShow) {
       profileCard?.classList.add('visible');
       hitokotoCard?.classList.add('visible');
       // 站点信息延迟 400ms
@@ -224,6 +251,7 @@ const randomBackground =
   }
 
   window.addEventListener('scroll', updateSidebars);
+  window.addEventListener('resize', updateSidebars);
   // 初始检查
   updateSidebars();
 </script>

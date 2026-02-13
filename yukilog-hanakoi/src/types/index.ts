@@ -34,6 +34,7 @@ export type {
   MergeTagsRequest,
   LoginRequest,
   LoginResponse,
+  SiteStats,
 } from './api';
 
 // 博客类型

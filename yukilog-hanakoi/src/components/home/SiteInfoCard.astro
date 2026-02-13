@@ -8,11 +8,12 @@
 import { contentConfig, siteConfig } from '../../lib/config.ts';
 import { svgIcons } from '../../lib/svg-icons';
 import { statsApi } from '../../lib/api';
+import type { SiteStats } from '../../types';
 
 const infoConfig = contentConfig.components.siteInfoCard;
 
 // 获取站点统计数据
-const stats = await statsApi.get().catch(() => ({
+const stats: SiteStats = await statsApi.get().catch((): SiteStats => ({
   total_posts: 0,
   total_views: 0,
   total_words: 0,
@@ -35,7 +36,7 @@ const formattedWords = stats.total_words >= 1000
     <!-- 文章总数 -->
     <div class="siteinfo-item">
       <div class="siteinfo-icon">
-        <span set:html={svgIcons.document}></span>
+        <span set:html={svgIcons.folderOpen}></span>
       </div>
       <div class="siteinfo-detail">
         <span class="siteinfo-name">文章总数</span>
@@ -46,7 +47,7 @@ const formattedWords = stats.total_words >= 1000
     <!-- 总字数 -->
     <div class="siteinfo-item">
       <div class="siteinfo-icon">
-        <span set:html={svgIcons.book}></span>
+        <span set:html={svgIcons.wordCount}></span>
       </div>
       <div class="siteinfo-detail">
         <span class="siteinfo-name">总字数</span>

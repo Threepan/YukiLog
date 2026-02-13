@@ -15,6 +15,7 @@ import search from "../assets/icon/ui/search.svg?raw";
 import openingQuotationMark from "../assets/icon/ui/opening-quotation-mark.svg?raw";
 import closingQuotationMark from "../assets/icon/ui/closing-quotation-mark.svg?raw";
 import cake from "../assets/icon/ui/cake.svg?raw";
+import wordCount from "../assets/icon/ui/word-count.svg?raw";
 
 import navHome from "../assets/icon/nav/home.svg?raw";
 import navTheme from "../assets/icon/nav/theme.svg?raw";
@@ -48,6 +49,7 @@ export const uiIcons = {
   openingQuotationMark,
   closingQuotationMark,
   cake,
+  wordCount,
 } as const;
 
 export const navIcons = {

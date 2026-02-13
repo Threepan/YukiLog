@@ -36,6 +36,9 @@ body {
   line-height: $line-height-base;
   color: var(--color-text);
   background-color: var(--color-bg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden; // 防止横向滚动

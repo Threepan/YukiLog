@@ -266,6 +266,37 @@ const searchIconFixed = deduplicateSvgIds(searchIcon, '_fixed');
   .navbar-fixed-elements {
     padding: 0 $spacing-md;
   }
+
+  .navbar-items {
+    gap: 2px;
+    max-width: calc(100vw - 180px);
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .navbar-inner-logo {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: $container-sm) {
+  .navbar-logo,
+  .navbar-inner-logo {
+    display: none;
+  }
+
+  .navbar-container {
+    justify-content: center;
+    gap: $spacing-xs;
+  }
+
+  .navbar-items {
+    max-width: calc(100vw - 96px);
+  }
 }
 </style>
 
