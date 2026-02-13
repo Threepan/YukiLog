@@ -293,41 +293,79 @@ const searchIconFixed = deduplicateSvgIds(searchIcon, '_fixed');
 </style>
 
 <script>
-  // 导航栏显隐逻辑
-  const navbar = document.getElementById('navbar');
-  const navbarFixed = document.getElementById('navbar-fixed');
-  if (!navbar || !navbarFixed) throw new Error('Navbar not found');
+  // 导航栏显隐逻辑（兼容 Astro ClientRouter）
+  declare global {
+    interface Window {
+      __yukilogNavbarCleanup?: () => void;
+    }
+  }
 
-  const stickyOnly = navbar.dataset.stickyOnly === 'true';
+  function initNavbar() {
+    // 清理上一页绑定的监听，避免重复绑定
+    window.__yukilogNavbarCleanup?.();
 
-  if (stickyOnly) {
-    // 非首页：直接以岛屿模式展示，隐藏固定元素
-    navbar.classList.add('sticky');
-    navbarFixed.classList.add('hidden');
-  } else {
+    const navbar = document.getElementById('navbar');
+    const navbarFixed = document.getElementById('navbar-fixed');
+    if (!navbar || !navbarFixed) {
+      window.__yukilogNavbarCleanup = undefined;
+      return;
+    }
+
+    const stickyOnly = navbar.dataset.stickyOnly === 'true';
+
     const getThreshold = () => window.innerHeight;
 
-    // 监听滚动
-    window.addEventListener('scroll', () => {
+    const onScroll = () => {
       const threshold = getThreshold();
       if (window.scrollY >= threshold - 50) {
         navbar.classList.add('sticky');
         navbarFixed.classList.add('hidden');
+        navbar.classList.remove('active');
       } else {
         navbar.classList.remove('sticky');
         navbarFixed.classList.remove('hidden');
       }
-    });
+    };
 
-    // 鼠标靠近顶部时显示
-    document.addEventListener('mousemove', (e) => {
+    const onMouseMove = (e: MouseEvent) => {
       const threshold = getThreshold();
       if (e.clientY < 80 && window.scrollY < threshold) {
         navbar.classList.add('active');
       } else if (window.scrollY < threshold) {
         navbar.classList.remove('active');
       }
-    });
+    };
+
+    if (stickyOnly) {
+      // 非首页：直接以岛屿模式展示，隐藏固定元素
+      navbar.classList.add('sticky');
+      navbar.classList.remove('active');
+      navbarFixed.classList.add('hidden');
+
+      window.__yukilogNavbarCleanup = () => {
+        // stickyOnly 模式无全局监听，无需解绑
+      };
+      return;
+    }
+
+    // 首页：绑定滚动和鼠标监听
+    window.addEventListener('scroll', onScroll, { passive: true });
+    document.addEventListener('mousemove', onMouseMove);
+
+    // 初始状态同步
+    onScroll();
+
+    window.__yukilogNavbarCleanup = () => {
+      window.removeEventListener('scroll', onScroll);
+      document.removeEventListener('mousemove', onMouseMove);
+    };
+  }
+
+  document.addEventListener('astro:page-load', initNavbar);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initNavbar, { once: true });
+  } else {
+    initNavbar();
   }
 </script>
 
