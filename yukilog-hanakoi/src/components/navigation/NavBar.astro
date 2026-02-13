@@ -23,9 +23,7 @@ function deduplicateSvgIds(svg: string, suffix: string): string {
 }
 const brandText = contentConfig.components.navbar.brand;
 
-const lightIcon = svgIcons.light;
 const searchIcon = svgIcons.search;
-const lightIconFixed = deduplicateSvgIds(lightIcon, '_fixed');
 const searchIconFixed = deduplicateSvgIds(searchIcon, '_fixed');
 ---
 
@@ -40,9 +38,6 @@ const searchIconFixed = deduplicateSvgIds(searchIcon, '_fixed');
     </div>
     
     <div class="navbar-inner-actions">
-      <button class="navbar-action-btn theme-toggle-btn" aria-label="切换主题">
-        <span set:html={lightIcon}></span>
-      </button>
       <button class="navbar-action-btn" aria-label="搜索">
         <span set:html={searchIcon}></span>
       </button>
@@ -54,9 +49,6 @@ const searchIconFixed = deduplicateSvgIds(searchIcon, '_fixed');
   <a href="/" class="navbar-logo">{brandText}</a>
   
   <div class="navbar-actions">
-    <button class="navbar-action-btn theme-toggle-btn" aria-label="切换主题">
-      <span set:html={lightIconFixed}></span>
-    </button>
     <button class="navbar-action-btn" id="search-toggle" aria-label="搜索">
       <span set:html={searchIconFixed}></span>
     </button>
@@ -337,52 +329,5 @@ const searchIconFixed = deduplicateSvgIds(searchIcon, '_fixed');
       }
     });
   }
-</script>
-
-<script>
-  // 主题切换功能
-  import { toggleTheme, getTheme } from '../../lib/theme';
-  
-  const themeToggleButtons = document.querySelectorAll('.theme-toggle-btn');
-  if (themeToggleButtons.length === 0) throw new Error('Theme toggle buttons not found');
-  
-  // 更新所有按钮图标
-  function updateThemeIcon() {
-    const currentTheme = getTheme();
-    
-    themeToggleButtons.forEach(button => {
-      const icon = button.querySelector('span');
-      if (!icon) return;
-      
-      if (currentTheme === 'dark') {
-        // 暗色模式显示太阳图标
-        icon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="12" cy="12" r="4" fill="currentColor"/>
-          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>`;
-      } else {
-        // 亮色模式显示月亮图标
-        icon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor"/>
-        </svg>`;
-      }
-    });
-  }
-  
-  // 初始化图标
-  updateThemeIcon();
-  
-  // 为所有主题切换按钮绑定事件
-  themeToggleButtons.forEach(button => {
-    button.addEventListener('click', () => {
-      toggleTheme();
-      updateThemeIcon();
-    });
-  });
-  
-  // 监听主题变化（用于从其他地方切换主题时同步更新图标）
-  window.addEventListener('theme-change', () => {
-    updateThemeIcon();
-  });
 </script>
 
