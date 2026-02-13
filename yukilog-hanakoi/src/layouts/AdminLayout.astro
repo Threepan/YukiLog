@@ -99,7 +99,7 @@ const menuItems = [
 
   .sidebar-header {
     padding: $spacing-xl $spacing-lg;
-    background: linear-gradient(135deg, rgba($lian-blue, 0.05) 0%, rgba($lian-pink, 0.05) 100%);
+    background: var(--gradient-blue-pink);
   }
 
   .sidebar-logo {
@@ -157,13 +157,13 @@ const menuItems = [
     }
 
     &:hover {
-      background: linear-gradient(135deg, rgba($lian-blue, 0.08) 0%, rgba($lian-pink, 0.08) 100%);
+      background: var(--gradient-blue-pink-8);
       color: $lian-blue;
       transform: translateX(4px);
     }
 
     &.active {
-      background: linear-gradient(135deg, rgba($lian-blue, 0.12) 0%, rgba($lian-pink, 0.12) 100%);
+      background: var(--gradient-blue-pink-12);
       color: $lian-blue;
       font-weight: $font-weight-medium;
       box-shadow: $shadow-sm;
@@ -209,7 +209,7 @@ const menuItems = [
     transition: all $transition-fast $ease-gentle;
 
     &:hover {
-      background: linear-gradient(135deg, rgba($lian-blue, 0.08) 0%, rgba($lian-pink, 0.08) 100%);
+      background: var(--gradient-blue-pink-8);
       color: $lian-blue;
       transform: translateX(-4px);
     }
@@ -256,23 +256,23 @@ const menuItems = [
     font-size: $font-size-sm;
     color: $lian-text-light;
     padding: $spacing-xs $spacing-md;
-    background: linear-gradient(135deg, rgba($lian-blue, 0.05) 0%, rgba($lian-pink, 0.05) 100%);
+    background: var(--gradient-blue-pink);
     border-radius: $radius-sm;
   }
 
   .logout-btn {
     padding: $spacing-xs $spacing-md;
     font-size: $font-size-sm;
-    color: white;
+    color: var(--color-on-primary);
     background: linear-gradient(135deg, rgba($lian-error, 0.8) 0%, rgba($lian-error, 0.6) 100%);
     border: none;
     border-radius: $radius-sm;
     cursor: pointer;
     transition: all $transition-base $ease-gentle;
-    box-shadow: 0 2px 8px rgba($lian-error, 0.2);
+    box-shadow: var(--shadow-error-md);
 
     &:hover {
-      box-shadow: 0 4px 12px rgba($lian-error, 0.3);
+      box-shadow: var(--shadow-error-lg);
       transform: translateY(-2px);
     }
 
