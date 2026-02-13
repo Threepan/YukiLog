@@ -68,14 +68,14 @@ const randomBackground =
     </button>
   </div>
   
-  <div class="home-second-screen" id="second-screen">
-    <ArticleList posts={recentPosts} />
-  </div>
-  
   <!-- 固定侧栏卡片（与导航栏同步显隐） -->
   <aside class="fixed-sidebar fixed-sidebar-left" id="fixed-sidebar-left">
     <ProfileCard />
   </aside>
+
+  <div class="home-second-screen" id="second-screen">
+    <ArticleList posts={recentPosts} />
+  </div>
   
   <aside class="fixed-sidebar fixed-sidebar-right" id="fixed-sidebar-right">
     <HitokotoCard />
@@ -177,8 +177,8 @@ const randomBackground =
     right: clamp($spacing-md, 4vw, $spacing-xl * 2);
   }
   
-  // 响应式：中屏转为流式布局，不再隐藏
-  @media (max-width: $container-lg) {
+  // 响应式：移动端转为流式布局（断点 968px）
+  @media (max-width: 968px) {
     .fixed-sidebar {
       position: static;
       top: auto;
@@ -199,6 +199,10 @@ const randomBackground =
     .fixed-sidebar-right {
       margin-top: 0;
       margin-bottom: $spacing-xl;
+    }
+
+    .fixed-sidebar-right :global(#hitokoto-card) {
+      display: none;
     }
 
     :global(#profile-card),
@@ -225,7 +229,7 @@ const randomBackground =
   const getThreshold = () => window.innerHeight;
 
   function updateSidebars() {
-    const compactLayout = window.innerWidth <= 1200;
+    const mobileLayout = window.innerWidth <= 968;
 
     const threshold = getThreshold();
     const shouldShow = window.scrollY >= threshold - 50;
@@ -236,9 +240,13 @@ const randomBackground =
     const hitokotoCard = document.getElementById('hitokoto-card');
     const siteinfoCard = document.getElementById('siteinfo-card');
 
-    if (compactLayout || shouldShow) {
+    if (mobileLayout || shouldShow) {
       profileCard?.classList.add('visible');
-      hitokotoCard?.classList.add('visible');
+      if (!mobileLayout) {
+        hitokotoCard?.classList.add('visible');
+      } else {
+        hitokotoCard?.classList.remove('visible');
+      }
       // 站点信息延迟 400ms
       if (siteinfoCard && !siteinfoCard.classList.contains('visible')) {
         setTimeout(() => siteinfoCard.classList.add('visible'), 400);
