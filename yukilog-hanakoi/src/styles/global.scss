@@ -267,7 +267,7 @@ textarea.input {
   @include color-transition(background-color, color);
   
   &:hover {
-    background: color.adjust($lian-bg, $lightness: -5%);
+    background: var(--text-alpha-08);
   }
   
   &.tag-blue {
@@ -335,15 +335,15 @@ textarea.input {
 }
 
 ::-webkit-scrollbar-track {
-  background: $lian-bg;
+  background: var(--color-bg);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: color.adjust($lian-text-muted, $lightness: 10%);
+  background: var(--color-text-muted);
   border-radius: $radius-sm;
   
   &:hover {
-    background: $lian-text-muted;
+    background: var(--color-text-light);
   }
 }
 
@@ -352,5 +352,5 @@ textarea.input {
 // ================================
 ::selection {
   background: var(--pink-alpha-30);
-  color: $lian-text;
+  color: var(--color-text);
 }
