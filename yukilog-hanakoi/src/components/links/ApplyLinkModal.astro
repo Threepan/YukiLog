@@ -167,7 +167,7 @@ const CLIENT_API_URL = import.meta.env.PUBLIC_SITE_URL || 'https://blog.yeastar.
     overflow-y: auto;
     background: $lian-white;
     border-radius: $radius-xl;
-    box-shadow: $shadow-pink, 0 20px 60px rgba(0, 0, 0, 0.1);
+    box-shadow: $shadow-pink, 0 20px 60px rgba($lian-text, 0.1);
     padding: $spacing-xl $spacing-xl $spacing-lg;
     transform: translateY(20px) scale(0.97);
     opacity: 0;
@@ -244,7 +244,7 @@ const CLIENT_API_URL = import.meta.env.PUBLIC_SITE_URL || 'https://blog.yeastar.
       font-size: $font-size-sm;
       font-family: $font-family-base;
       color: $lian-text;
-      background: white;
+      background: $lian-white;
       transition:
         border-color $transition-fast $ease-gentle,
         box-shadow $transition-fast $ease-gentle;
@@ -273,7 +273,7 @@ const CLIENT_API_URL = import.meta.env.PUBLIC_SITE_URL || 'https://blog.yeastar.
     border: none;
     border-radius: $radius-sm;
     background: linear-gradient(135deg, $lian-pink, color.adjust($lian-pink, $lightness: 8%));
-    color: white;
+    color: $lian-white;
     font-size: $font-size-base;
     font-weight: $font-weight-semibold;
     cursor: pointer;

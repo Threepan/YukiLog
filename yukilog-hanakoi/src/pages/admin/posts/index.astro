@@ -313,8 +313,8 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       }
 
       &.active {
-        color: white;
-        background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
+        color: var(--color-on-primary);
+        background: var(--gradient-primary);
       }
     }
   }
@@ -326,8 +326,8 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     padding: $spacing-sm $spacing-lg;
     font-size: $font-size-sm;
     font-weight: $font-weight-medium;
-    color: white;
-    background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
+    color: var(--color-on-primary);
+    background: var(--gradient-primary);
     border: none;
     border-radius: $radius-sm;
     cursor: pointer;
@@ -388,8 +388,8 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     border-collapse: collapse;
 
     thead {
-      background: linear-gradient(135deg, rgba($lian-blue, 0.05) 0%, rgba($lian-pink, 0.05) 100%);
-      border-bottom: 2px solid rgba($lian-blue, 0.1);
+      background: var(--gradient-primary-light);
+      border-bottom: 2px solid var(--color-primary-alpha-10);
 
       th {
         padding: $spacing-md $spacing-lg;
@@ -406,7 +406,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
         transition: all $transition-base $ease-gentle;
 
         &:hover {
-          background: linear-gradient(135deg, rgba($lian-blue, 0.03) 0%, rgba($lian-pink, 0.03) 100%);
+          background: var(--gradient-primary-subtle);
           transform: scale(1.01);
         }
       }
@@ -437,13 +437,13 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     font-size: $font-size-xs;
     font-weight: $font-weight-semibold;
     color: $lian-blue;
-    background: linear-gradient(135deg, rgba($lian-blue, 0.08) 0%, rgba($lian-blue, 0.12) 100%);
+    background: var(--bg-primary-soft);
     border-radius: 12px;
-    border: 1px solid rgba($lian-blue, 0.2);
+    border: 1px solid var(--color-primary-alpha-20);
     transition: all $transition-fast $ease-gentle;
 
     &:hover {
-      background: linear-gradient(135deg, rgba($lian-blue, 0.15) 0%, rgba($lian-blue, 0.2) 100%);
+      background: var(--bg-primary-soft-hover);
       transform: scale(1.05);
     }
   }
@@ -492,24 +492,24 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     }
 
     .btn-edit {
-      background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
-      color: white;
-      box-shadow: 0 2px 8px rgba($lian-blue, 0.2);
+      background: var(--gradient-primary);
+      color: var(--color-on-primary);
+      box-shadow: 0 2px 8px var(--color-primary-alpha-20);
 
       &:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba($lian-blue, 0.3);
+        box-shadow: 0 4px 12px var(--color-primary-alpha-30);
       }
     }
 
     .btn-delete {
-      background: linear-gradient(135deg, rgba($lian-error, 0.8) 0%, rgba($lian-error, 0.6) 100%);
-      color: white;
-      box-shadow: 0 2px 8px rgba($lian-error, 0.2);
+      background: var(--gradient-error);
+      color: var(--color-on-primary);
+      box-shadow: 0 2px 8px var(--color-error-alpha-20);
 
       &:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba($lian-error, 0.3);
+        box-shadow: 0 4px 12px var(--color-error-alpha-30);
       }
     }
   }

@@ -94,7 +94,7 @@ const e500 = contentConfig.pages.error500;
   .error-reasons {
     list-style: none;
     padding: $spacing-md $spacing-lg;
-    background: white;
+    background: var(--color-surface, #fff);
     border-radius: $radius-md;
     border-left: 3px solid $lian-pink;
     margin: 0 0 $spacing-xl;
@@ -144,7 +144,7 @@ const e500 = contentConfig.pages.error500;
 
   .btn-primary {
     background: linear-gradient(135deg, $lian-blue, $lian-blue-light);
-    color: white;
+    color: var(--color-on-primary, #fff);
     box-shadow: 0 2px 8px rgba($lian-blue, 0.3);
 
     &:hover {
@@ -154,7 +154,7 @@ const e500 = contentConfig.pages.error500;
   }
 
   .btn-secondary {
-    background: white;
+    background: var(--color-surface, #fff);
     color: $lian-text;
     border: 1px solid $lian-border;
     box-shadow: 0 1px 3px rgba($lian-text, 0.08);

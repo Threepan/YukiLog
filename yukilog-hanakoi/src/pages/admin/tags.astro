@@ -466,7 +466,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     font-size: $font-size-sm;
     font-weight: $font-weight-medium;
     color: $lian-pink;
-    background: white;
+    background: var(--color-bg-primary);
     border: 2px solid rgba($lian-pink, 0.3);
     border-radius: $radius-sm;
     cursor: pointer;
@@ -488,7 +488,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     padding: $spacing-sm $spacing-lg;
     font-size: $font-size-sm;
     font-weight: $font-weight-medium;
-    color: white;
+    color: var(--color-text-inverse);
     background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
     border: none;
     border-radius: $radius-sm;
@@ -512,7 +512,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 
   // 表格容器
   .tags-table {
-    background: white;
+    background: var(--color-bg-primary);
     border-radius: $radius-lg;
     box-shadow: $shadow-md;
     overflow: hidden;
@@ -654,7 +654,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 
       &:hover {
         background: linear-gradient(135deg, $lian-pink 0%, $lian-pink-light 100%);
-        color: white;
+        color: var(--color-text-inverse);
         box-shadow: $shadow-pink;
         transform: translateY(-2px);
       }
@@ -667,7 +667,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 
       &:hover {
         background: $lian-error;
-        color: white;
+        color: var(--color-text-inverse);
         box-shadow: 0 4px 12px rgba($lian-error, 0.3);
         transform: translateY(-2px);
       }
@@ -730,7 +730,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
   .modal-backdrop {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: var(--color-overlay-dark);
     backdrop-filter: blur(8px);
     animation: fadeIn $transition-base $ease-gentle;
   }
@@ -744,9 +744,9 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     position: relative;
     width: 90%;
     max-width: 520px;
-    background: white;
+    background: var(--color-bg-primary);
     border-radius: $radius-lg;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 20px 60px var(--color-shadow-dark);
     transform: scale(0.9) translateY(20px);
     transition: all $transition-base $ease-gentle;
     border: 1px solid rgba($lian-blue, 0.1);
@@ -819,7 +819,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
       padding: $spacing-sm $spacing-md;
       font-size: $font-size-base;
       color: $lian-text;
-      background: white;
+      background: var(--color-bg-primary);
       border: 2px solid $lian-border;
       border-radius: $radius-sm;
       font-family: $font-family-base;
@@ -880,7 +880,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     }
 
     .btn-primary {
-      color: white;
+      color: var(--color-text-inverse);
       background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
       box-shadow: $shadow-blue;
 

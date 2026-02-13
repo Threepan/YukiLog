@@ -94,7 +94,7 @@ const randomBackground =
   .home-bg {
     position: absolute;
     inset: 0;
-    background-color: #0a0a0a;
+    background-color: var(--color-surface-dark, #0a0a0a);
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -123,7 +123,7 @@ const randomBackground =
     border: none;
     cursor: pointer;
     padding: 0;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--color-on-primary-alpha-70, rgba(255, 255, 255, 0.7));
     animation: arrow-float 2.5s ease-in-out infinite;
     transition: transform 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
     
@@ -134,7 +134,7 @@ const randomBackground =
     }
     
     &:hover {
-      color: rgba(255, 255, 255, 0.95);
+      color: var(--color-on-primary-alpha-95, rgba(255, 255, 255, 0.95));
       animation: arrow-float 2.5s ease-in-out infinite;
       transform: translateX(-50%) scale(1.25);
     }

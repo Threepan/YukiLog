@@ -503,7 +503,7 @@ import AdminLayout from '../../../../layouts/AdminLayout.astro';
       &:focus {
         outline: none;
         border-color: $lian-blue;
-        box-shadow: 0 0 0 3px rgba($lian-blue, 0.1);
+        box-shadow: 0 0 0 3px var(--color-primary-alpha-10);
       }
 
       &::placeholder {
@@ -557,7 +557,7 @@ import AdminLayout from '../../../../layouts/AdminLayout.astro';
 
       &:hover {
         border-color: $lian-blue;
-        background: rgba($lian-blue, 0.05);
+        background: var(--bg-primary-subtle);
       }
 
       input[type="checkbox"] {
@@ -573,7 +573,7 @@ import AdminLayout from '../../../../layouts/AdminLayout.astro';
       }
 
       &:has(input:checked) {
-        background: rgba($lian-pink, 0.1);
+        background: var(--bg-secondary-subtle);
         border-color: $lian-pink;
 
         .tag-name {
@@ -629,16 +629,16 @@ import AdminLayout from '../../../../layouts/AdminLayout.astro';
 
     .btn-draft {
       color: color.adjust($lian-warning, $lightness: -10%);
-      background: rgba($lian-warning, 0.15);
+      background: var(--bg-warning-subtle);
 
       &:hover:not(:disabled) {
-        background: rgba($lian-warning, 0.25);
+        background: var(--bg-warning-soft);
       }
     }
 
     .btn-primary {
-      color: white;
-      background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
+      color: var(--color-on-primary);
+      background: var(--gradient-primary);
 
       &:hover:not(:disabled) {
         transform: translateY(-1px);

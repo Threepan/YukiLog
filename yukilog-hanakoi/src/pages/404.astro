@@ -115,7 +115,7 @@ const e404 = contentConfig.pages.error404;
 
   .btn-primary {
     background: linear-gradient(135deg, $lian-blue, $lian-blue-light);
-    color: white;
+    color: var(--color-on-primary, #fff);
     box-shadow: 0 2px 8px rgba($lian-blue, 0.3);
 
     &:hover {
@@ -125,7 +125,7 @@ const e404 = contentConfig.pages.error404;
   }
 
   .btn-secondary {
-    background: white;
+    background: var(--color-surface, #fff);
     color: $lian-text;
     border: 1px solid $lian-border;
     box-shadow: 0 1px 3px rgba($lian-text, 0.08);

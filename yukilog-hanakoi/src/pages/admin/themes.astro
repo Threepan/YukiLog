@@ -325,7 +325,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     padding: $spacing-sm $spacing-lg;
     font-size: $font-size-sm;
     font-weight: $font-weight-medium;
-    color: white;
+    color: var(--color-on-primary);
     background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
     border: none;
     border-radius: $radius-sm;
@@ -466,7 +466,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 
     .btn-edit {
       background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
-      color: white;
+      color: var(--color-on-primary);
       box-shadow: 0 2px 8px rgba($lian-blue, 0.2);
 
       &:hover {
@@ -477,7 +477,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 
     .btn-delete {
       background: linear-gradient(135deg, rgba($lian-error, 0.8) 0%, rgba($lian-error, 0.6) 100%);
-      color: white;
+      color: var(--color-on-primary);
       box-shadow: 0 2px 8px rgba($lian-error, 0.2);
 
       &:hover {
@@ -513,7 +513,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
   .modal-backdrop {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: var(--overlay-bg);
     backdrop-filter: blur(8px);
     animation: fadeIn $transition-base $ease-gentle;
   }
@@ -527,9 +527,9 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     position: relative;
     width: 90%;
     max-width: 520px;
-    background: white;
+    background: var(--color-white);
     border-radius: $radius-lg;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-2xl);
     transform: scale(0.9) translateY(20px);
     transition: all $transition-base $ease-gentle;
     border: 1px solid rgba($lian-blue, 0.1);
@@ -601,7 +601,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
       padding: $spacing-sm $spacing-md;
       font-size: $font-size-base;
       color: $lian-text;
-      background: white;
+      background: var(--color-white);
       border: 2px solid $lian-border;
       border-radius: $radius-sm;
       font-family: $font-family-base;
@@ -666,7 +666,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     }
 
     .btn-primary {
-      color: white;
+      color: var(--color-on-primary);
       background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
       box-shadow: $shadow-blue;
 

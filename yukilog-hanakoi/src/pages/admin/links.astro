@@ -476,7 +476,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     gap: $spacing-md;
     padding: $spacing-md $spacing-lg;
     margin-bottom: $spacing-lg;
-    background: linear-gradient(135deg, rgba($lian-blue, 0.08) 0%, rgba($lian-pink, 0.08) 100%);
+    background: var(--gradient-subtle);
     border-left: 3px solid $lian-pink;
     border-radius: $radius-sm;
     
@@ -533,12 +533,12 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 
       &:hover {
         color: $lian-text;
-        background: rgba($lian-blue, 0.05);
+        background: color-mix(in srgb, var(--color-primary) 5%, transparent);
       }
 
       &.active {
-        color: white;
-        background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
+        color: var(--color-on-primary);
+        background: var(--gradient-primary);
       }
     }
   }
@@ -550,8 +550,8 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     padding: $spacing-sm $spacing-lg;
     font-size: $font-size-sm;
     font-weight: $font-weight-medium;
-    color: white;
-    background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
+    color: var(--color-on-primary);
+    background: var(--gradient-primary);
     border: none;
     border-radius: $radius-sm;
     cursor: pointer;
@@ -595,7 +595,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
   .spinner {
     width: 32px;
     height: 32px;
-    border: 3px solid rgba($lian-border, 0.3);
+    border: 3px solid color-mix(in srgb, var(--color-border) 30%, transparent);
     border-top-color: $lian-blue;
     border-right-color: $lian-pink;
     border-radius: 50%;
@@ -612,8 +612,8 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     border-collapse: collapse;
 
     thead {
-      background: linear-gradient(135deg, rgba($lian-blue, 0.05) 0%, rgba($lian-pink, 0.05) 100%);
-      border-bottom: 2px solid rgba($lian-blue, 0.1);
+      background: var(--gradient-subtle);
+      border-bottom: 2px solid color-mix(in srgb, var(--color-primary) 10%, transparent);
 
       th {
         padding: $spacing-md $spacing-lg;
@@ -630,7 +630,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
         transition: all $transition-base $ease-gentle;
 
         &:hover {
-          background: linear-gradient(135deg, rgba($lian-blue, 0.03) 0%, rgba($lian-pink, 0.03) 100%);
+          background: var(--gradient-subtle-hover);
           transform: scale(1.005);
         }
       }
@@ -692,17 +692,17 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     border-radius: 10px;
 
     &.status-pending {
-      background: rgba($lian-warning, 0.15);
+      background: color-mix(in srgb, var(--color-warning) 15%, transparent);
       color: color.adjust($lian-warning, $lightness: -10%);
     }
 
     &.status-active {
-      background: rgba($lian-success, 0.15);
+      background: color-mix(in srgb, var(--color-success) 15%, transparent);
       color: color.adjust($lian-success, $lightness: -10%);
     }
 
     &.status-broken {
-      background: rgba($lian-text-muted, 0.15);
+      background: color-mix(in srgb, var(--color-text-muted) 15%, transparent);
       color: $lian-text-muted;
     }
   }
@@ -723,46 +723,46 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     }
 
     .btn-approve {
-      background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
-      color: white;
-      box-shadow: 0 2px 6px rgba($lian-blue, 0.2);
+      background: var(--gradient-primary);
+      color: var(--color-on-primary);
+      box-shadow: var(--shadow-sm);
 
       &:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 10px rgba($lian-blue, 0.3);
+        box-shadow: var(--shadow-md);
       }
     }
 
     .btn-broken {
-      background: rgba($lian-text-muted, 0.2);
+      background: color-mix(in srgb, var(--color-text-muted) 20%, transparent);
       color: $lian-text;
 
       &:hover {
         background: $lian-text-muted;
-        color: white;
+        color: var(--color-on-primary);
         transform: translateY(-2px);
       }
     }
 
     .btn-edit {
-      background: linear-gradient(135deg, rgba($lian-pink, 0.8) 0%, rgba($lian-pink, 0.6) 100%);
-      color: white;
-      box-shadow: 0 2px 6px rgba($lian-pink, 0.2);
+      background: var(--gradient-accent);
+      color: var(--color-on-primary);
+      box-shadow: var(--shadow-accent-sm);
 
       &:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 10px rgba($lian-pink, 0.3);
+        box-shadow: var(--shadow-accent-md);
       }
     }
 
     .btn-delete {
-      background: linear-gradient(135deg, rgba($lian-error, 0.8) 0%, rgba($lian-error, 0.6) 100%);
-      color: white;
-      box-shadow: 0 2px 6px rgba($lian-error, 0.2);
+      background: var(--gradient-danger);
+      color: var(--color-on-primary);
+      box-shadow: var(--shadow-error-sm);
 
       &:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 10px rgba($lian-error, 0.3);
+        box-shadow: var(--shadow-error-md);
       }
     }
   }
@@ -829,7 +829,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
   .modal-backdrop {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: var(--overlay-dark);
     backdrop-filter: blur(8px);
     animation: fadeIn $transition-base $ease-gentle;
   }
@@ -843,12 +843,12 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     position: relative;
     width: 90%;
     max-width: 520px;
-    background: white;
+    background: var(--color-surface);
     border-radius: $radius-lg;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-xl);
     transform: scale(0.9) translateY(20px);
     transition: all $transition-base $ease-gentle;
-    border: 1px solid rgba($lian-blue, 0.1);
+    border: 1px solid color-mix(in srgb, var(--color-primary) 10%, transparent);
   }
 
   .modal-header {
@@ -856,7 +856,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     justify-content: space-between;
     align-items: center;
     padding: $spacing-xl $spacing-xl $spacing-lg;
-    background: linear-gradient(135deg, rgba($lian-blue, 0.03) 0%, rgba($lian-pink, 0.03) 100%);
+    background: var(--gradient-subtle-hover);
     border-bottom: 1px solid $lian-divider;
     border-radius: $radius-lg $radius-lg 0 0;
 
@@ -864,7 +864,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
       margin: 0;
       font-size: $font-size-xl;
       font-weight: $font-weight-bold;
-      background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
+      background: var(--gradient-primary);
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -885,7 +885,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
       transition: all $transition-base $ease-gentle;
 
       &:hover {
-        background: linear-gradient(135deg, rgba($lian-blue, 0.1) 0%, rgba($lian-pink, 0.1) 100%);
+        background: var(--gradient-hover);
         color: $lian-text;
         transform: rotate(90deg);
       }
@@ -917,7 +917,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
       padding: $spacing-sm $spacing-md;
       font-size: $font-size-base;
       color: $lian-text;
-      background: white;
+      background: var(--color-surface);
       border: 2px solid $lian-border;
       border-radius: $radius-sm;
       font-family: $font-family-base;
@@ -926,12 +926,12 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
       &:focus {
         outline: none;
         border-color: $lian-blue;
-        box-shadow: 0 0 0 4px rgba($lian-blue, 0.1);
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-primary) 10%, transparent);
         transform: translateY(-2px);
       }
 
       &:hover {
-        border-color: rgba($lian-blue, 0.5);
+        border-color: color-mix(in srgb, var(--color-primary) 50%, transparent);
       }
 
       &::placeholder {
@@ -968,15 +968,15 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
       border: 2px solid $lian-border;
 
       &:hover {
-        background: rgba($lian-blue, 0.05);
+        background: color-mix(in srgb, var(--color-primary) 5%, transparent);
         border-color: $lian-blue;
         transform: translateY(-2px);
       }
     }
 
     .btn-primary {
-      color: white;
-      background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
+      color: var(--color-on-primary);
+      background: var(--gradient-primary);
       box-shadow: $shadow-blue;
 
       &:hover {

@@ -104,7 +104,7 @@ import { siteConfig } from '../../lib/config';
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, rgba($lian-blue, 0.08) 0%, rgba($lian-pink, 0.08) 100%);
+    background: var(--gradient-primary-light);
     padding: $spacing-lg;
   }
 
@@ -153,7 +153,7 @@ import { siteConfig } from '../../lib/config';
       &:focus {
         outline: none;
         border-color: $lian-blue;
-        box-shadow: 0 0 0 3px rgba($lian-blue, 0.1);
+        box-shadow: 0 0 0 3px var(--color-primary-alpha-10);
       }
     }
   }
@@ -164,7 +164,7 @@ import { siteConfig } from '../../lib/config';
     margin-bottom: $spacing-md;
     font-size: $font-size-sm;
     color: $lian-error;
-    background: rgba($lian-error, 0.08);
+    background: var(--bg-error-subtle);
     border-radius: $radius-sm;
     text-align: center;
   }
@@ -174,8 +174,8 @@ import { siteConfig } from '../../lib/config';
     padding: $spacing-sm $spacing-md;
     font-size: $font-size-base;
     font-weight: $font-weight-semibold;
-    color: white;
-    background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
+    color: var(--color-on-primary);
+    background: var(--gradient-primary);
     border: none;
     border-radius: $radius-sm;
     cursor: pointer;

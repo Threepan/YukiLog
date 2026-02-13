@@ -258,7 +258,7 @@ const tagSlugsWithPosts = Object.keys(tagPosts).filter(
     padding: 8px 18px;
     border: 1.5px solid transparent;
     border-radius: 24px;
-    background: white;
+    background: var(--color-surface, #fff);
     color: $lian-text;
     cursor: pointer;
     font-family: inherit;
@@ -295,7 +295,7 @@ const tagSlugsWithPosts = Object.keys(tagPosts).filter(
     }
 
     &[data-color="white"] {
-      background: white;
+      background: var(--color-surface, #fff);
       border-color: $lian-border;
       .tag-count { background: rgba($lian-text-muted, 0.1); color: $lian-text-muted; }
       &:hover { background: $lian-white; box-shadow: $shadow-sm; transform: translateY(-2px); }
@@ -303,10 +303,10 @@ const tagSlugsWithPosts = Object.keys(tagPosts).filter(
 
     &.active {
       background: $lian-blue;
-      color: white;
+      color: var(--color-on-primary, #fff);
       border-color: $lian-blue;
       box-shadow: $shadow-blue-hover;
-      .tag-count { background: rgba(white, 0.25); color: white; }
+      .tag-count { background: rgba(255, 255, 255, 0.25); color: var(--color-on-primary, #fff); }
     }
   }
 
