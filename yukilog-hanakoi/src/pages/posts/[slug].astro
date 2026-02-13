@@ -1,29 +1,53 @@
 ---
+export const prerender = false;
+
 import BlogLayout from "../../layouts/BlogLayout.astro";
 import ProfileCard from "../../components/home/ProfileCard.astro";
 import TableOfContents from "../../components/posts/TableOfContents.astro";
 import CommentSection from "../../components/comments/CommentSection.astro";
-import { contentConfig, siteConfig, allPosts } from "../../lib/config";
+import { contentConfig, siteConfig } from "../../lib/config";
 import { renderMarkdown } from "../../lib/markdown";
-import { mockComments } from "../../lib/mock-comments";
-import markdownSource from "../../../TODOTEST.md?raw";
-
-export function getStaticPaths() {
-  return allPosts.map((post) => ({
-    params: { slug: post.slug },
-  }));
-}
+import { postsApi, commentsApi } from "../../lib/api";
 
 const { slug } = Astro.params;
-const currentPost = allPosts.find((post) => post.slug === slug);
 
-if (!currentPost) {
-  throw new Error(`Post not found: ${slug}`);
+if (!slug) {
+  return Astro.redirect("/404");
+}
+
+// 从后端 API 获取文章详情
+let currentPost;
+let apiError = null;
+try {
+  currentPost = await postsApi.getBySlug(slug);
+} catch (error) {
+  console.error("获取文章详情失败：", error);
+  apiError = error;
+}
+
+// 如果文章不存在或 API 失败，返回 404
+if (apiError || !currentPost) {
+  return Astro.redirect("/404");
+}
+
+// 增加浏览数（后台异步，不阻塞渲染）
+postsApi.incrementView(slug).catch((err) => {
+  console.error("增加浏览数失败：", err);
+});
+
+// 获取评论列表
+let comments = [];
+try {
+  comments = await commentsApi.getPostComments(slug);
+} catch (error) {
+  console.error("获取评论失败：", error);
+  // 评论获取失败不影响文章显示，继续渲染
 }
 
 const hp = contentConfig.markdown.headingPrefixes;
 
-const { html: markdownHtml, headings } = await renderMarkdown(markdownSource);
+// 渲染 Markdown 内容
+const { html: markdownHtml, headings } = await renderMarkdown(currentPost.content);
 ---
 
 <BlogLayout
@@ -67,7 +91,7 @@ const { html: markdownHtml, headings } = await renderMarkdown(markdownSource);
         <div class="markdown-body" set:html={markdownHtml} />
 
         <!-- 评论区 -->
-        <CommentSection comments={mockComments} postSlug={slug} />
+        <CommentSection comments={comments} postSlug={slug} />
       </article>
 
       <script>
