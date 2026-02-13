@@ -57,11 +57,18 @@ import { siteConfig } from '../../lib/config';
 
   .welcome {
     margin-bottom: $spacing-xxl;
+    padding: $spacing-xl;
+    background: white;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-md;
 
     h2 {
       font-size: $font-size-2xl;
       font-weight: $font-weight-bold;
-      color: $lian-text;
+      background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
       margin: 0 0 $spacing-sm;
     }
 
@@ -75,26 +82,51 @@ import { siteConfig } from '../../lib/config';
   .quick-links {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: $spacing-md;
+    gap: $spacing-lg;
   }
 
   .quick-link-card {
-    padding: $spacing-lg;
-    background: $lian-white;
-    border-radius: $radius-md;
-    box-shadow: $shadow-sm;
+    padding: $spacing-xl;
+    background: white;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-blue;
     text-decoration: none;
-    transition: all $transition-base $ease-gentle;
     display: block;
+    position: relative;
+    overflow: hidden;
+    transition: all $transition-base $ease-gentle;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, $lian-blue 0%, $lian-pink 100%);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform $transition-base $ease-gentle;
+    }
 
     &:hover {
-      box-shadow: $shadow-blue;
-      transform: translateY(-2px);
+      box-shadow: $shadow-blue-hover;
+      transform: translateY(-8px);
+
+      &::before {
+        transform: scaleX(1);
+      }
+
+      .card-icon {
+        transform: scale(1.1) rotate(5deg);
+      }
     }
 
     .card-icon {
-      font-size: 2rem;
-      margin-bottom: $spacing-sm;
+      font-size: 2.5rem;
+      margin-bottom: $spacing-md;
+      transition: transform $transition-base $ease-gentle;
+      display: inline-block;
     }
 
     h3 {
@@ -102,13 +134,21 @@ import { siteConfig } from '../../lib/config';
       font-weight: $font-weight-semibold;
       color: $lian-blue;
       margin: 0 0 $spacing-xs;
+      transition: color $transition-fast $ease-gentle;
     }
 
     p {
       font-size: $font-size-sm;
       color: $lian-text-light;
       margin: 0;
-      line-height: $line-height-base;
+      line-height: 1.6;
+    }
+
+    &:hover h3 {
+      background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
   }
 
