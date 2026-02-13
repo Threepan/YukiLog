@@ -685,3 +685,31 @@ fn highlight_keyword(text: &str, keyword: &str) -> String {
     result.push_str(&text[last_end..]);
     result
 }
+
+// ================================
+// 站点统计
+// ================================
+
+/// 站点统计数据
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SiteStats {
+    /// 已发布文章总数
+    pub total_posts: u64,
+    /// 所有文章浏览量总和
+    pub total_views: i64,
+    /// 所有文章内容字符总长度
+    pub total_words: i64,
+}
+
+/// 获取站点统计数据
+///
+/// 返回已发布文章的总数、总浏览量、总字数
+pub async fn get_site_stats(db: &DatabaseConnection) -> ServiceResult<SiteStats> {
+    let (total_posts, total_views, total_words) = repo::posts::get_site_stats(db).await?;
+    
+    Ok(SiteStats {
+        total_posts,
+        total_views,
+        total_words,
+    })
+}
