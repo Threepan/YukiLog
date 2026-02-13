@@ -84,6 +84,10 @@
 
 [YukiLog 后续功能规划](./yukilog-hanakoi/docs/roadmap.md)
 
+#### | 部署与运维
+
+[YukiLog 部署指南](./docs/deploy.md) — 一键部署脚本详解、运维命令、故障排查
+
 ---
 
 ## � 部署 (Deploy)
@@ -96,30 +100,43 @@ chmod +x deploy.sh
 sudo ./deploy.sh
 ```
 
-脚本会自动完成以下流程：
+### 功能特性
 
-1. **交互式收集** — 域名、数据库配置、管理员账号密码
-2. **端口自动检测** — 从默认端口开始递增扫描，避免占用已有服务
-3. **依赖安装** — PostgreSQL / Redis / Nginx / Certbot / Rust / Node.js / pnpm（已安装则跳过）
-4. **数据库初始化** — 创建用户、数据库、导入表结构（已存在则跳过）
-5. **生成 `.env`** — 后端 + 前端环境变量文件（已存在则跳过）
-6. **构建** — `cargo build --release`（后端）+ `pnpm build`（前端）
-7. **Systemd 服务** — 注册 `yukilog-backend` / `yukilog-hanakoi` 服务并启动
-8. **Nginx 反向代理** — 自动生成配置、创建软链、重载
-9. **SSL 证书** — Let's Encrypt (certbot) 自动申请，HTTPS 一键启用
+✅ **全自动化** — 一条命令完成从零到上线  
+✅ **智能换源** — 自动切换国内镜像（中科大 / 阿里云）  
+✅ **端口避让** — 自动检测可用端口，避免冲突  
+✅ **幂等设计** — 可安全重复执行，不覆盖已有配置  
+✅ **更新友好** — 支持代码更新后重新构建  
+✅ **零配置 SSL** — Let's Encrypt 自动申请 HTTPS 证书
 
-> 所有操作均为幂等设计：已存在的文件 / 服务 / 数据库不会被覆写，可安全重复执行。
+### 部署模式
 
-**部署后检查**
+| 模式 | 触发条件 | 行为 |
+|------|---------|------|
+| **首次部署** | 无构建产物 | 完整安装 + 编译构建 + 服务注册 |
+| **更新模式** | 检测到已有构建 | 询问是否重新构建 → 重启服务 |
+| **配置变更** | 手动编辑 `.env` | 无需脚本，直接 `systemctl restart` |
+
+### 详细文档
+
+📖 **[完整部署指南](./docs/deploy.md)** — 包含：
+- 脚本工作原理（9 步详解）
+- 运行模式说明（首次 / 更新 / 配置变更）
+- 日常维护命令（服务管理、日志查看、数据库备份）
+- 故障排查指南（6 大常见问题）
+- 手动部署步骤
+
+**快速运维命令**：
 
 ```bash
-# 服务状态
-sudo systemctl status yukilog-backend
-sudo systemctl status yukilog-hanakoi
+# 查看服务状态
+sudo systemctl status yukilog-backend yukilog-hanakoi
 
-# 查看日志（如有问题）
-journalctl -u yukilog-backend -n 50
-journalctl -u yukilog-hanakoi -n 50
+# 实时查看日志
+journalctl -u yukilog-backend -f
+
+# 重启服务（配置变更后）
+sudo systemctl restart yukilog-backend yukilog-hanakoi
 ```
 
 ---
