@@ -174,7 +174,7 @@ const socialLinks = siteConfig.social;
     position: absolute;
     inset: -5px;
     border-radius: 50%;
-    background: linear-gradient(135deg, $lian-pink, $lian-blue);
+    background: linear-gradient(135deg, var(--color-pink), var(--color-blue));
     opacity: 0.35;
     filter: blur(10px);
     animation: glow-breathe 4s ease-in-out infinite;
@@ -191,20 +191,20 @@ const socialLinks = siteConfig.social;
     height: 128px;
     border-radius: 50%;
     object-fit: cover;
-    border: 3px solid $lian-white;
+    border: 3px solid var(--color-white);
     box-shadow: $shadow-pink;
   }
 
   .greeting {
     font-size: $font-size-2xl;
     font-weight: $font-weight-bold;
-    color: $lian-text;
+    color: var(--color-text);
     margin: 0;
     text-align: center;
   }
 
   .name-highlight {
-    color: $lian-pink;
+    color: var(--color-pink);
   }
 
   // ====== 正文 ======
@@ -228,13 +228,13 @@ const socialLinks = siteConfig.social;
   }
 
   .quote-open {
-    color: $lian-blue;
+    color: var(--color-blue);
     opacity: 0.25;
     margin-bottom: $spacing-sm;
   }
 
   .quote-close {
-    color: $lian-pink;
+    color: var(--color-pink);
     opacity: 0.25;
     margin-top: $spacing-sm;
     text-align: right;
@@ -251,7 +251,7 @@ const socialLinks = siteConfig.social;
 
   .about-paragraph {
     font-size: $font-size-base;
-    color: $lian-text;
+    color: var(--color-text);
     line-height: $line-height-relaxed;
     margin: 0 0 $spacing-xl;
     
@@ -303,11 +303,11 @@ const socialLinks = siteConfig.social;
     animation: paragraph-enter 600ms $ease-gentle 500ms forwards;
 
     &.blue-label {
-      color: $lian-blue;
+      color: var(--color-blue);
     }
 
     &.pink-label {
-      color: $lian-pink;
+      color: var(--color-pink);
     }
   }
 
@@ -323,8 +323,8 @@ const socialLinks = siteConfig.social;
     height: 100%;
     background: linear-gradient(
       180deg,
-      $lian-blue 0%,
-      $lian-pink 100%
+      var(--color-blue) 0%,
+      var(--color-pink) 100%
     );
     opacity: 0.3;
   }
@@ -345,7 +345,7 @@ const socialLinks = siteConfig.social;
     li {
       position: relative;
       padding-left: $spacing-md;
-      color: $lian-text-light;
+      color: var(--color-text-light);
       font-size: $font-size-sm;
 
       &::before {
@@ -361,7 +361,7 @@ const socialLinks = siteConfig.social;
     }
 
     &.blue-dots li::before {
-      background: $lian-blue;
+      background: var(--color-blue);
     }
 
     &.pink-dots li {
@@ -371,7 +371,7 @@ const socialLinks = siteConfig.social;
       &::before {
         left: auto;
         right: 4px;
-        background: $lian-pink;
+        background: var(--color-pink);
       }
     }
   }
@@ -385,7 +385,7 @@ const socialLinks = siteConfig.social;
   .about-divider {
     width: 48px;
     height: 2px;
-    background: linear-gradient(90deg, $lian-pink, $lian-blue);
+    background: linear-gradient(90deg, var(--color-pink), var(--color-blue));
     border-radius: 1px;
   }
 
@@ -395,7 +395,7 @@ const socialLinks = siteConfig.social;
     text-align: center;
     font-size: $font-size-lg;
     font-style: italic;
-    color: $lian-pink;
+    color: var(--color-pink);
     line-height: $line-height-relaxed;
 
     p {
@@ -419,7 +419,7 @@ const socialLinks = siteConfig.social;
 
   .footer-hint {
     font-size: $font-size-sm;
-    color: $lian-text-muted;
+    color: var(--color-text-muted);
     margin: 0;
     letter-spacing: 0.1em;
   }
@@ -433,20 +433,20 @@ const socialLinks = siteConfig.social;
 
   .social-link {
     font-size: $font-size-sm;
-    color: $lian-text-light;
+    color: var(--color-text-light);
     text-decoration: none;
     padding: 6px 14px;
     border-radius: $radius-sm;
-    border: 1px solid $lian-border;
+    border: 1px solid var(--color-border);
     transition:
       color $transition-fast $ease-gentle,
       border-color $transition-fast $ease-gentle,
       background $transition-fast $ease-gentle;
 
     &:hover {
-      color: var(--brand-color, $lian-blue);
-      border-color: var(--brand-color, $lian-blue);
-      background: rgba(0, 0, 0, 0.02);
+      color: var(--brand-color, var(--color-blue));
+      border-color: var(--brand-color, var(--color-blue));
+      background: var(--text-alpha-04);
     }
   }
 
