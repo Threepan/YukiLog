@@ -33,8 +33,8 @@ body {
   font-family: $font-family-base;
   font-size: $font-size-base;
   line-height: $line-height-base;
-  color: $lian-text;
-  background-color: $lian-bg;
+  color: var(--color-text);
+  background-color: var(--color-bg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden; // 防止横向滚动
@@ -111,7 +111,7 @@ button {
 // 通用卡片样式（恋的柔和卡片）
 // ================================
 .card {
-  background: $lian-white;
+  background: var(--color-white);
   border-radius: $radius-md;
   box-shadow: $shadow-sm;
   padding: $spacing-lg;
@@ -129,7 +129,7 @@ button {
   
   &.card-flat {
     box-shadow: none;
-    border: 1px solid $lian-border;
+    border: 1px solid var(--color-border);
   }
 }
 
@@ -157,7 +157,7 @@ button {
 }
 
 .btn-primary {
-  background: $lian-blue;
+  background: var(--color-blue);
   color: var(--color-on-primary);
   
   &:hover {
@@ -166,7 +166,7 @@ button {
 }
 
 .btn-secondary {
-  background: $lian-pink;
+  background: var(--color-pink);
   color: var(--color-on-primary);
   
   &:hover {
@@ -176,21 +176,21 @@ button {
 
 .btn-outline {
   background: transparent;
-  border: 2px solid $lian-blue;
-  color: $lian-blue;
+  border: 2px solid var(--color-blue);
+  color: var(--color-blue);
   
   &:hover {
-    background: $lian-blue;
+    background: var(--color-blue);
     color: var(--color-on-primary);
   }
 }
 
 .btn-ghost {
   background: transparent;
-  color: $lian-text;
+  color: var(--color-text);
   
   &:hover {
-    background: $lian-bg;
+    background: var(--color-bg);
   }
 }
 
@@ -211,29 +211,29 @@ button {
 .input {
   width: 100%;
   padding: $spacing-sm $spacing-md;
-  background: $lian-white;
-  border: 2px solid $lian-border;
+  background: var(--color-white);
+  border: 2px solid var(--color-border);
   border-radius: $radius-md;
   font-size: $font-size-base;
-  color: $lian-text;
+  color: var(--color-text);
   @include color-transition(border-color, box-shadow);
   
   &::placeholder {
-    color: $lian-text-muted;
+    color: var(--color-text-muted);
   }
   
   &:focus {
-    border-color: $lian-blue;
+    border-color: var(--color-blue);
     box-shadow: var(--focus-ring-blue);
   }
   
   &:disabled {
-    background: $lian-bg;
+    background: var(--color-bg);
     cursor: not-allowed;
   }
   
   &.input-error {
-    border-color: $lian-error;
+    border-color: var(--color-error);
     
     &:focus {
       box-shadow: var(--focus-ring-error);
@@ -255,8 +255,8 @@ textarea.input {
   align-items: center;
   gap: $spacing-xs;
   padding: 0.25rem 0.75rem;
-  background: $lian-bg;
-  color: $lian-text;
+  background: var(--color-bg);
+  color: var(--color-text);
   border-radius: $radius-lg;
   font-size: $font-size-sm;
   font-weight: $font-weight-medium;
