@@ -10,7 +10,7 @@ import BlogLayout from "../layouts/BlogLayout.astro";
 import FriendSpotlight from "../components/links/FriendSpotlight.astro";
 import FriendCard from "../components/links/FriendCard.astro";
 import ApplyLinkModal from "../components/links/ApplyLinkModal.astro";
-import { contentConfig } from "../lib/config";
+import { contentConfig, siteConfig } from "../lib/config";
 import { linksApi } from "../lib/api";
 
 const linksPageConfig = contentConfig.pages.links;
@@ -42,7 +42,7 @@ const friends = apiLinks.map((link) => ({
 }));
 ---
 
-<BlogLayout title="友链 - YukiLog" stickyNav>
+<BlogLayout title={`友链 - ${siteConfig.name}`} stickyNav>
   <div class="links-page">
     <!-- 页头独白 -->
     <header class="links-header">

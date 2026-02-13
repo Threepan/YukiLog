@@ -8,6 +8,9 @@ import { marked } from 'marked';
 import type { CommentNode } from '../../types/api';
 import { getRelativeTime } from '../../lib/date';
 import { getCommentAvatar } from '../../lib/avatar';
+import { contentConfig } from '../../lib/config';
+
+const cc = contentConfig.components.comments;
 
 interface Props {
   node: CommentNode;
@@ -58,13 +61,13 @@ const isMaxDepth = depth >= maxDepth;
       <div class="comment-user-info">
         {comment.guest_email && (
           <a href={`mailto:${comment.guest_email}`} class="user-email" title="发送邮件">
-            ✉️ {comment.guest_email}
+            {cc.item.emailIcon} {comment.guest_email}
           </a>
         )}
         
         {comment.guest_website && (
           <a href={comment.guest_website} target="_blank" rel="noopener" class="user-website" title="访问网站">
-            🔗 {comment.guest_website}
+            {cc.item.websiteIcon} {comment.guest_website}
           </a>
         )}
         
@@ -86,7 +89,7 @@ const isMaxDepth = depth >= maxDepth;
     <!-- 回复按钮（右下角） -->
     {!isMaxDepth && (
       <button class="btn-reply" data-comment-id={comment.id} data-comment-nick={comment.guest_nick}>
-        💬
+        {cc.replyLabel.split(' ')[0]}
       </button>
     )}
   </div>

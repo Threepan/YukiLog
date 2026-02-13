@@ -4,22 +4,21 @@
 // ================================
 
 import BlogLayout from "../layouts/BlogLayout.astro";
-import { siteConfig } from "../lib/config";
+import { siteConfig, contentConfig } from "../lib/config";
+
+const e404 = contentConfig.pages.error404;
 ---
 
-<BlogLayout title="404 - 页面未找到 | YukiLog" stickyNav>
+<BlogLayout title={`404 - 页面未找到 | ${siteConfig.name}`} stickyNav>
   <div class="error-page">
     <div class="error-content">
-      <div class="error-icon">🌙</div>
+      <div class="error-icon">{e404.icon}</div>
       <h1 class="error-code">404</h1>
-      <p class="error-title">页面走失了</p>
-      <p class="error-desc">
-        你要找的页面好像不在这里...<br />
-        也许它从未存在，也许它已经离开。
-      </p>
+      <p class="error-title">{e404.title}</p>
+      <p class="error-desc" set:html={e404.description.replace('\n', '<br />')} />
       <div class="error-actions">
-        <a href="/" class="btn-primary">返回首页</a>
-        <button onclick="history.back()" class="btn-secondary">返回上一页</button>
+        <a href="/" class="btn-primary">{e404.primaryButton}</a>
+        <button onclick="history.back()" class="btn-secondary">{e404.secondaryButton}</button>
       </div>
     </div>
   </div>
@@ -115,7 +114,7 @@ import { siteConfig } from "../lib/config";
   }
 
   .btn-primary {
-    background: linear-gradient(135deg, $lian-blue, #93c2e0);
+    background: linear-gradient(135deg, $lian-blue, $lian-blue-light);
     color: white;
     box-shadow: 0 2px 8px rgba($lian-blue, 0.3);
 

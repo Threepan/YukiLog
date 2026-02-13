@@ -7,6 +7,9 @@
 import CommentForm from './CommentForm.astro';
 import CommentList from './CommentList.astro';
 import type { CommentNode } from '../../types/api';
+import { contentConfig } from '../../lib/config';
+
+const commentsConfig = contentConfig.components.comments;
 
 interface Props {
   comments: CommentNode[];
@@ -30,8 +33,8 @@ const totalCount = countTotalComments(comments);
 
 <section class="comment-section" id="comments">
   <div class="section-header">
-    <h2 class="section-title">💬 评论区</h2>
-    <p class="section-subtitle">留下你的足迹，分享你的想法</p>
+    <h2 class="section-title">{commentsConfig.sectionTitle}</h2>
+    <p class="section-subtitle">{commentsConfig.sectionSubtitle}</p>
   </div>
   
   <!-- 评论表单 -->

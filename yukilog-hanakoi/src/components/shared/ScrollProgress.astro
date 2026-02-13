@@ -6,13 +6,16 @@
 // ================================
 
 import { svgIcons } from "../../lib/svg-icons";
+import { contentConfig } from "../../lib/config";
+
+const scrollConfig = contentConfig.components.scrollProgress;
 ---
 
 <!-- 顶部进度条 -->
 <div class="scroll-progress-bar" id="scroll-progress-bar" aria-hidden="true"></div>
 
 <!-- 回到顶部按钮 -->
-<button class="back-to-top" id="back-to-top" aria-label="回到顶部" title="回到顶部">
+<button class="back-to-top" id="back-to-top" aria-label={scrollConfig.backToTop} title={scrollConfig.backToTop}>
   <span class="btt-icon" set:html={svgIcons.arrowUp}></span>
   <span class="btt-percent" id="btt-percent">0%</span>
 </button>

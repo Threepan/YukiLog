@@ -6,12 +6,13 @@
 export const prerender = false;
 
 import AdminLayout from '../../layouts/AdminLayout.astro';
+import { siteConfig } from '../../lib/config';
 ---
 
 <AdminLayout title="管理后台" activeMenu="posts">
   <div class="dashboard">
     <div class="welcome">
-      <h2>欢迎使用 YukiLog 管理后台</h2>
+      <h2>欢迎使用 {siteConfig.name} 管理后台</h2>
       <p>请从左侧菜单选择功能模块，开始管理你的博客内容</p>
     </div>
     

@@ -6,12 +6,13 @@
 export const prerender = false;
 
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { siteConfig } from '../../lib/config';
 ---
 
-<BaseLayout title="管理员登录 - YukiLog">
+<BaseLayout title={`管理员登录 - ${siteConfig.name}`}>
   <div class="login-container">
     <div class="login-card">
-      <h1>YukiLog 管理后台</h1>
+      <h1>{siteConfig.name} 管理后台</h1>
       
       <form id="login-form">
         <div class="form-group">

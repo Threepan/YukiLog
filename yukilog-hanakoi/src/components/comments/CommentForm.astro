@@ -12,12 +12,15 @@ interface Props {
 
 const { parentId, parentNick, isReply = false } = Astro.props;
 const formId = isReply ? `reply-form-${parentId}` : 'main-comment-form';
+
+import { contentConfig } from '../../lib/config';
+const cc = contentConfig.components.comments;
 ---
 
 <div class={`comment-form ${isReply ? 'reply-form' : 'main-form'}`}>
   {isReply && parentNick && (
     <div class="reply-target">
-      <span class="reply-icon">↩️</span>
+      <span class="reply-icon">{cc.replyIcon}</span>
       回复 <strong>@{parentNick}</strong>
     </div>
   )}
@@ -30,7 +33,7 @@ const formId = isReply ? `reply-form-${parentId}` : 'main-comment-form';
       <textarea
         id={`${formId}-content`}
         name="content"
-        placeholder="💭 写点什么..."
+        placeholder={cc.form.placeholder}
         required
         rows={isReply ? 4 : 4}
         maxlength="500"
@@ -45,53 +48,53 @@ const formId = isReply ? `reply-form-${parentId}` : 'main-comment-form';
     <div class="expandable-fields" data-expandable>
       <div class="form-row">
         <div class="form-field">
-          <label for={`${formId}-nick`}>昵称 *</label>
+          <label for={`${formId}-nick`}>{cc.form.nickLabel}</label>
           <input
             type="text"
             id={`${formId}-nick`}
             name="nickname"
-            placeholder="你的昵称"
+            placeholder={cc.form.nickPlaceholder}
             required
             maxlength="20"
           />
         </div>
         
         <div class="form-field">
-          <label for={`${formId}-email`}>邮箱 *</label>
+          <label for={`${formId}-email`}>{cc.form.emailLabel}</label>
           <input
             type="email"
             id={`${formId}-email`}
             name="email"
-            placeholder="your@email.com"
+            placeholder={cc.form.emailPlaceholder}
             required
           />
         </div>
       </div>
       
       <div class="form-field">
-        <label for={`${formId}-website`}>个人网站</label>
+        <label for={`${formId}-website`}>{cc.form.websiteLabel}</label>
         <input
           type="url"
           id={`${formId}-website`}
           name="website"
-          placeholder="https://your-site.com （可选）"
+          placeholder={cc.form.websitePlaceholder}
         />
       </div>
       
       <div class="form-actions">
         {isReply && (
           <button type="button" class="btn-cancel" data-cancel-reply>
-            取消
+            {cc.cancelText}
           </button>
         )}
         <button type="submit" class="btn-submit">
-          <span class="submit-text">{isReply ? '💬' : '✉️ 提交'}</span>
-          <span class="submit-loading" style="display: none;">提交中...</span>
+          <span class="submit-text">{isReply ? cc.replyLabel : cc.submitText}</span>
+          <span class="submit-loading" style="display: none;">{cc.submitLoadingText}</span>
         </button>
       </div>
       
       <div class="form-hint">
-        支持 Markdown 基础语法 · 提交后需等待审核
+        {cc.form.hint}
       </div>
     </div>
   </form>

@@ -8,7 +8,7 @@ export const prerender = false;
 
 import BlogLayout from "../layouts/BlogLayout.astro";
 import PageHero from "../components/shared/PageHero.astro";
-import { contentConfig } from "../lib/config";
+import { contentConfig, siteConfig } from "../lib/config";
 import { navIcons } from "../lib/svg-icons";
 import { themesApi } from "../lib/api";
 
@@ -37,7 +37,7 @@ const rotations = [1.2, -1.8, 2.1, -0.9, 1.6, -2.3, 0.7, -1.4];
 const offsets = [0, 24, -16, 32, -8, 20, -28, 12];
 ---
 
-<BlogLayout title="主题 - YukiLog" stickyNav>
+<BlogLayout title={`主题 - ${siteConfig.name}`} stickyNav>
   <PageHero title="主题" subtitle={themesPageConfig.heroSubtitle} icon={themeIcon} />
 
   <div class="themes-page">
@@ -54,7 +54,7 @@ const offsets = [0, 24, -16, 32, -8, 20, -28, 12];
               <p class="theme-desc">{theme.description}</p>
             )}
             <div class="theme-meta">
-              <span class="theme-count">{theme.post_count} 篇文章</span>
+              <span class="theme-count">{theme.post_count} {themesPageConfig.postCountSuffix}</span>
               <span class="theme-arrow">→</span>
             </div>
           </div>

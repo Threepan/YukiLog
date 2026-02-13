@@ -11,7 +11,7 @@ export const prerender = false;
 import BlogLayout from "../layouts/BlogLayout.astro";
 import PageHero from "../components/shared/PageHero.astro";
 import PostListCard from "../components/shared/PostListCard.astro";
-import { contentConfig } from "../lib/config";
+import { contentConfig, siteConfig } from "../lib/config";
 import { navIcons } from "../lib/svg-icons";
 import { tagsApi, postsApi } from "../lib/api";
 
@@ -66,7 +66,7 @@ const tagSlugsWithPosts = Object.keys(tagPosts).filter(
 );
 ---
 
-<BlogLayout title="标签 - YukiLog" stickyNav>
+<BlogLayout title={`标签 - ${siteConfig.name}`} stickyNav>
   <PageHero title="标签" subtitle={`共 ${tagCloud.length} 个标签`} icon={tagIcon} />
 
   <div class="tags-page">

@@ -6,12 +6,13 @@
 // ================================
 
 import { svgIcons } from '../../lib/svg-icons';
+import { contentConfig } from '../../lib/config';
 ---
 
 <div class="hitokoto-card" id="hitokoto-card">
   <!-- 标题 -->
   <div class="hitokoto-header">
-    <span class="hitokoto-label">一言</span>
+    <span class="hitokoto-label">{contentConfig.components.hitokotoCard.title}</span>
     <button class="hitokoto-refresh" id="hitokoto-refresh" aria-label="换一条" title="换一条">
       <span class="hitokoto-refresh-icon" set:html={svgIcons.refreshCcw}></span>
     </button>

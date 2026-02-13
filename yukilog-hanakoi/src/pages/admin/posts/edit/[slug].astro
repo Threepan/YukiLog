@@ -131,8 +131,8 @@ import AdminLayout from '../../../../layouts/AdminLayout.astro';
         ]);
       } catch (apiErr) {
         pageLoading.innerHTML = `
-          <p style="color: #e74c3c;">⚠️ 后端服务未启动</p>
-          <p style="color: #666; font-size: 14px; margin-top: 8px;">
+          <p class="inline-error">⚠️ 后端服务未启动</p>
+          <p class="inline-hint">
             编辑功能需要连接后端 API。请确保：<br/>
             1. 后端服务已启动（Rust Axum 服务）<br/>
             2. API 地址配置正确（检查 .env 中的 PUBLIC_API_BASE_URL）
@@ -160,7 +160,7 @@ import AdminLayout from '../../../../layouts/AdminLayout.astro';
       form.style.display = 'block';
     } catch (err: any) {
       pageLoading.innerHTML = `
-        <p style="color: #e74c3c;">加载失败：${err.message || '未知错误'}</p>
+        <p class="inline-error">加载失败：${err.message || '未知错误'}</p>
         <button onclick="location.href='/admin/posts'" style="margin-top: 16px; padding: 8px 16px; cursor: pointer;">返回列表</button>
       `;
     }
@@ -646,4 +646,8 @@ import AdminLayout from '../../../../layouts/AdminLayout.astro';
       }
     }
   }
+
+  // 暴露给 JS 动态内容使用的错误/说明样式
+  :global(.inline-error) { color: $lian-error; }
+  :global(.inline-hint) { color: $lian-text-light; font-size: $font-size-sm; margin-top: $spacing-xs; }
 </style>

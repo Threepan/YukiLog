@@ -10,6 +10,7 @@ import BlogLayout from "../../layouts/BlogLayout.astro";
 import PageHero from "../../components/shared/PageHero.astro";
 import PostListCard from "../../components/shared/PostListCard.astro";
 import { navIcons } from "../../lib/svg-icons";
+import { siteConfig, contentConfig } from "../../lib/config";
 import { themesApi, postsApi } from "../../lib/api";
 import type { PostWithRelations } from "../../types/api";
 
@@ -47,7 +48,7 @@ if (apiError || !theme) {
 }
 ---
 
-<BlogLayout title={`${theme.name} - YukiLog`} stickyNav>
+<BlogLayout title={`${theme.name} - ${siteConfig.name}`} stickyNav>
   <PageHero
     title={theme.name}
     subtitle={theme.description || `共 ${theme.post_count} 篇文章`}
@@ -55,7 +56,7 @@ if (apiError || !theme) {
   />
 
   <div class="theme-detail-page">
-    <a href="/themes" class="back-link">← 返回全部主题</a>
+    <a href="/themes" class="back-link">{contentConfig.pages.themes.backToAll}</a>
 
     <div class="post-list-container">
       {posts.map((item, i) => (

@@ -14,7 +14,7 @@ import { svgIcons } from "../lib/svg-icons";
 const socialLinks = siteConfig.social;
 ---
 
-<BlogLayout title="关于 - YukiLog" stickyNav>
+<BlogLayout title={`关于 - ${siteConfig.name}`} stickyNav>
   <article class="about-page">
     <!-- 页头 -->
     <header class="about-header">
@@ -28,7 +28,7 @@ const socialLinks = siteConfig.social;
           class="avatar"
         />
       </div>
-      <h1 class="greeting">{contentConfig.pages.about.opening}<span class="name-highlight"> 恋</span></h1>
+      <h1 class="greeting">{contentConfig.pages.about.opening}<span class="name-highlight">{contentConfig.pages.about.nameHighlight}</span></h1>
     </header>
 
     <!-- 正文：左右双栏对话 -->
@@ -45,7 +45,7 @@ const socialLinks = siteConfig.social;
       <div class="about-dialogue">
         <!-- 左：技术 / 蓝 -->
         <div class="dialogue-left">
-          <div class="dialogue-label blue-label">代码与理性</div>
+          <div class="dialogue-label blue-label">{contentConfig.pages.about.dialogueLeftTitle}</div>
 
           <p class="about-paragraph align-left" style="--delay: 1">
             我正在学习全栈开发。<br />
@@ -76,7 +76,7 @@ const socialLinks = siteConfig.social;
 
         <!-- 右：情感 / 粉 -->
         <div class="dialogue-right">
-          <div class="dialogue-label pink-label">情绪与挣扎</div>
+          <div class="dialogue-label pink-label">{contentConfig.pages.about.dialogueRightTitle}</div>
 
           <p class="about-paragraph align-right" style="--delay: 1.5">
             我常觉得自己是多余的，<br />
@@ -118,7 +118,7 @@ const socialLinks = siteConfig.social;
 
     <!-- 社交链接 -->
     <footer class="about-footer" style="--delay: 6">
-      <p class="footer-hint">找到我</p>
+      <p class="footer-hint">{contentConfig.pages.about.socialTitle}</p>
       <div class="social-links">
         {socialLinks.map((link) => (
           <a

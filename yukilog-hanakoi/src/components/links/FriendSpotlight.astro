@@ -10,14 +10,15 @@ interface Props {
   avatar: string;
   url: string;
   message: string; // 寄语
+  friendSince: string;
+  greeting: string;
+  sinceLabel: string;
+  visitText: string;
 }
 
 import { svgIcons } from '../../lib/svg-icons';
 
-const { name, description, avatar, url, message } = Astro.props;
-
-// 计算认识多久
-const friendSince = "2026.02.06";
+const { name, description, avatar, url, message, friendSince, greeting, sinceLabel, visitText } = Astro.props;
 ---
 
 <section class="friend-letter-section" id="friend-spotlight">
@@ -40,7 +41,7 @@ const friendSince = "2026.02.06";
 
       <!-- 信纸内容 -->
       <div class="letter-content">
-        <p class="letter-greeting">致最好的你，</p>
+        <p class="letter-greeting">{greeting}</p>
         <h2 class="letter-name">{name}</h2>
         <p class="letter-desc">{description}</p>
         
@@ -51,14 +52,14 @@ const friendSince = "2026.02.06";
         </blockquote>
 
         <div class="letter-meta">
-          <span class="letter-date">认识于 {friendSince}</span>
+          <span class="letter-date">{sinceLabel} {friendSince}</span>
         </div>
       </div>
 
       <!-- 访问按钮 -->
       <div class="letter-action">
         <span class="action-text">
-          去看看她的世界
+          {visitText}
           <span class="action-icon" set:html={svgIcons.arrowRightLine}></span>
         </span>
       </div>
@@ -169,8 +170,8 @@ const friendSince = "2026.02.06";
         rgba($lian-text-muted, 0.08) 32px
       ),
       linear-gradient(to bottom,
-        #FFF8F0 0%,
-        #FFFBF7 100%
+        $lian-paper-warm 0%,
+        $lian-paper-warm-light 100%
       );
     border-radius: $radius-lg;
     box-shadow: 

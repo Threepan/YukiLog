@@ -6,9 +6,18 @@
 // ================================
 
 import { svgIcons } from '../../lib/svg-icons';
+import { contentConfig } from '../../lib/config';
+
+const sc = contentConfig.components.search;
 ---
 
-<div class="search-overlay" id="search-overlay">
+<div class="search-overlay" id="search-overlay"
+  data-hint={sc.hint}
+  data-loading={sc.loading}
+  data-no-result={sc.noResult}
+  data-prev={sc.prevPage}
+  data-next={sc.nextPage}
+>
   <div class="search-backdrop" id="search-backdrop"></div>
   
   <div class="search-panel">
@@ -20,7 +29,7 @@ import { svgIcons } from '../../lib/svg-icons';
           type="text"
           id="search-input"
           class="search-input"
-          placeholder="搜索文章标题、摘要、内容…"
+          placeholder={sc.placeholder}
           autocomplete="off"
           spellcheck="false"
         />
@@ -32,23 +41,23 @@ import { svgIcons } from '../../lib/svg-icons';
     <div class="search-body" id="search-body">
       <!-- 初始提示 -->
       <div class="search-hint" id="search-hint">
-        <p>输入关键词开始搜索</p>
+        <p>{sc.hint}</p>
         <div class="search-hint-shortcuts">
-          <span><kbd>↑</kbd><kbd>↓</kbd> 导航</span>
-          <span><kbd>Enter</kbd> 打开</span>
-          <span><kbd>ESC</kbd> 关闭</span>
+          <span><kbd>↑</kbd><kbd>↓</kbd> {sc.keyboard.navigate}</span>
+          <span><kbd>Enter</kbd> {sc.keyboard.open}</span>
+          <span><kbd>ESC</kbd> {sc.keyboard.close}</span>
         </div>
       </div>
 
       <!-- 加载中 -->
       <div class="search-loading" id="search-loading" style="display:none">
         <div class="search-spinner"></div>
-        <p>搜索中…</p>
+        <p>{sc.loading}</p>
       </div>
 
       <!-- 无结果 -->
       <div class="search-empty" id="search-empty" style="display:none">
-        <p>没有找到相关文章</p>
+        <p>{sc.noResult}</p>
       </div>
 
       <!-- 结果列表 -->
@@ -89,7 +98,7 @@ import { svgIcons } from '../../lib/svg-icons';
   .search-backdrop {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.35);
+    background: $overlay-bg;
     backdrop-filter: blur(4px);
   }
 
@@ -487,10 +496,14 @@ import { svgIcons } from '../../lib/svg-icons';
       return;
     }
 
+    const overlay = document.getElementById('search-overlay')!;
+    const prevText = overlay.dataset.prev || '上一页';
+    const nextText = overlay.dataset.next || '下一页';
+
     pagination.innerHTML = `
-      <button class="search-page-btn" id="search-prev" ${page <= 1 ? 'disabled' : ''}>上一页</button>
+      <button class="search-page-btn" id="search-prev" ${page <= 1 ? 'disabled' : ''}>${prevText}</button>
       <span class="search-page-info">${page} / ${totalPages}（共 ${total} 篇）</span>
-      <button class="search-page-btn" id="search-next" ${page >= totalPages ? 'disabled' : ''}>下一页</button>
+      <button class="search-page-btn" id="search-next" ${page >= totalPages ? 'disabled' : ''}>${nextText}</button>
     `;
 
     document.getElementById('search-prev')?.addEventListener('click', () => {

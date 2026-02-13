@@ -16,12 +16,15 @@ interface Props {
 
 const { headings } = Astro.props;
 
+import { contentConfig } from '../../lib/config';
+const tocConfig = contentConfig.components.tableOfContents;
+
 // 找到最小 level 作为基准缩进
 const minLevel = Math.min(...headings.map((h) => h.level));
 ---
 
 <nav class="toc-container" aria-label="文章目录">
-  <div class="toc-title">目录</div>
+  <div class="toc-title">{tocConfig.title}</div>
   <div class="toc-scroll-area">
     <ul class="toc-list">
       {headings.map((h, i) => (

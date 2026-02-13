@@ -13,6 +13,7 @@ import HitokotoCard from "../components/home/HitokotoCard.astro";
 import SiteInfoCard from "../components/home/SiteInfoCard.astro";
 import ArticleList from "../components/home/ArticleList.astro";
 import { uiIcons } from "../lib/svg-icons";
+import { siteConfig } from "../lib/config";
 import { postsApi } from "../lib/api";
 
 const arrowIcon = uiIcons.arrow;
@@ -50,7 +51,7 @@ const randomBackground =
   backgroundImages[Math.floor(Math.random() * backgroundImages.length)];
 ---
 
-<BlogLayout title="YukiLog">
+<BlogLayout title={siteConfig.name}>
   <div class="home-first-screen">
     <div
       class="home-bg"

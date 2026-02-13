@@ -6,30 +6,29 @@
 export const prerender = false;
 
 import BlogLayout from "../layouts/BlogLayout.astro";
+import { siteConfig, contentConfig } from "../lib/config";
+
+const e500 = contentConfig.pages.error500;
 ---
 
-<BlogLayout title="500 - 服务器错误 | YukiLog" stickyNav>
+<BlogLayout title={`500 - 服务器错误 | ${siteConfig.name}`} stickyNav>
   <div class="error-page">
     <div class="error-content">
-      <div class="error-icon">⚠️</div>
+      <div class="error-icon">{e500.icon}</div>
       <h1 class="error-code">500</h1>
-      <p class="error-title">服务器开小差了</p>
-      <p class="error-desc">
-        后端服务暂时无法响应。<br />
-        这可能是因为：
-      </p>
+      <p class="error-title">{e500.title}</p>
+      <p class="error-desc" set:html={e500.description.replace('\n', '<br />')} />
       <ul class="error-reasons">
-        <li>后端服务未启动（Rust Axum 服务）</li>
-        <li>数据库连接失败（PostgreSQL）</li>
-        <li>Redis 缓存服务不可用</li>
-        <li>API 地址配置错误（检查 .env 文件）</li>
+        {e500.reasons.map((reason) => (
+          <li>{reason}</li>
+        ))}
       </ul>
       <div class="error-actions">
-        <a href="/" class="btn-primary">返回首页</a>
-        <button onclick="location.reload()" class="btn-secondary">刷新页面</button>
+        <a href="/" class="btn-primary">{e500.primaryButton}</a>
+        <button onclick="location.reload()" class="btn-secondary">{e500.secondaryButton}</button>
       </div>
       <div class="error-hint">
-        如果问题持续，请检查后端服务是否正常运行。
+        {e500.hint}
       </div>
     </div>
   </div>
@@ -70,7 +69,7 @@ import BlogLayout from "../layouts/BlogLayout.astro";
   .error-code {
     font-size: 96px;
     font-weight: $font-weight-bold;
-    background: linear-gradient(135deg, $lian-pink, #f0b8c4);
+    background: linear-gradient(135deg, $lian-pink, $lian-pink-light);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -144,7 +143,7 @@ import BlogLayout from "../layouts/BlogLayout.astro";
   }
 
   .btn-primary {
-    background: linear-gradient(135deg, $lian-blue, #93c2e0);
+    background: linear-gradient(135deg, $lian-blue, $lian-blue-light);
     color: white;
     box-shadow: 0 2px 8px rgba($lian-blue, 0.3);
 

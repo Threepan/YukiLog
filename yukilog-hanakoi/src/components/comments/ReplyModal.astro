@@ -5,6 +5,10 @@
 // ================================
 
 import CommentForm from './CommentForm.astro';
+import { svgIcons } from '../../lib/svg-icons';
+import { contentConfig } from '../../lib/config';
+
+const cc = contentConfig.components.comments;
 
 interface Props {
   id?: string; // 弹窗唯一ID
@@ -19,13 +23,10 @@ const { id = 'reply-modal' } = Astro.props;
   <div class="modal-container">
     <div class="modal-header">
       <h3 class="modal-title">
-        💬 回复<span class="reply-to-nick"></span>
+        {cc.replyModalTitle} <span class="reply-to-nick"></span>
       </h3>
       <button class="btn-close" data-close-modal aria-label="关闭弹窗">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
+        <span class="close-icon" set:html={svgIcons.close}></span>
       </button>
     </div>
     
@@ -325,7 +326,7 @@ const { id = 'reply-modal' } = Astro.props;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
+    background: $overlay-bg;
     backdrop-filter: blur(4px);
     cursor: pointer;
   }
@@ -337,7 +338,7 @@ const { id = 'reply-modal' } = Astro.props;
     max-height: 80vh;
     background: white;
     border-radius: 12px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 32px $overlay-light;
     overflow: hidden;
     display: flex;
     flex-direction: column;
