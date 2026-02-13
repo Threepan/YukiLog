@@ -139,6 +139,9 @@ export interface Comment {
   ua: string | null;
   visitor_info: string | null;  // 解析后的访客信息（如 "Desktop Chrome 136.0 · macOS 15"）
   created_at: string;
+  // 管理端扩展字段（后端 join 返回）
+  post_title?: string;
+  post_slug?: string;
 }
 
 /**
@@ -186,6 +189,7 @@ export interface CommentListParams {
   page_size?: number;
   sort?: 'created_at_asc' | 'created_at_desc';
   post_slug?: string;
+  status?: CommentStatus;
 }
 
 // ================================
@@ -269,26 +273,6 @@ export type SearchResponse = PaginatedData<PostWithRelations>;
 // ================================
 // 管理端 DTO（Admin）
 // ================================
-
-/**
- * 评论列表查询参数
- */
-export interface CommentListParams {
-  page?: number;
-  page_size?: number;
-  post_slug?: string;  // 按文章筛选
-  status?: CommentStatus;  // 按状态筛选
-}
-
-/**
- * 更新评论请求体
- */
-export interface UpdateCommentRequest {
-  content?: string;
-  guest_name?: string;
-  guest_email?: string;
-  guest_website?: string | null;
-}
 
 /**
  * 创建主题请求体
