@@ -4,15 +4,33 @@
 // Hero + 分类卡片网格
 // ================================
 
+export const prerender = false;
+
 import BlogLayout from "../layouts/BlogLayout.astro";
 import PageHero from "../components/shared/PageHero.astro";
-import { contentConfig, derivedData } from "../lib/config";
+import { contentConfig } from "../lib/config";
 import { navIcons } from "../lib/svg-icons";
+import { themesApi } from "../lib/api";
 
 const themeIcon = navIcons.theme;
 
 const themesPageConfig = contentConfig.pages.themes;
-const themes = derivedData.themeItems;
+
+// 从后端 API 获取主题列表
+let themes = [];
+let apiError = null;
+try {
+  themes = await themesApi.list();
+} catch (error) {
+  console.error("获取主题列表失败：", error);
+  apiError = error;
+}
+
+// 如果 API 失败，显示错误页
+if (apiError) {
+  return Astro.redirect("/500");
+}
+
 // 确定性微旋转角度（交替正负，模拟散落感）
 const rotations = [1.2, -1.8, 2.1, -0.9, 1.6, -2.3, 0.7, -1.4];
 // 确定性水平错位
