@@ -12,7 +12,6 @@ import PostListCard from "../../components/shared/PostListCard.astro";
 import { navIcons } from "../../lib/svg-icons";
 import { siteConfig, contentConfig } from "../../lib/config";
 import { themesApi, postsApi } from "../../lib/api";
-import type { PostWithRelations } from "../../types/api";
 
 const themeIcon = navIcons.theme;
 
@@ -25,7 +24,7 @@ if (!slug) {
 
 // 从后端 API 获取主题信息
 let theme;
-let posts: PostWithRelations[] = [];
+let posts: any[] = [];
 let apiError = null;
 
 try {
@@ -64,15 +63,8 @@ if (apiError || !theme) {
     <a href="/themes" class="back-link">{contentConfig.pages.themes.backToAll}</a>
 
     <div class="post-list-container">
-      {posts.map((item, i) => (
-        <PostListCard post={{
-          title: item.post.title,
-          slug: item.post.slug,
-          summary: item.post.summary,
-          cover_image: item.post.cover_image,
-          created_at: item.post.created_at,
-          tags: item.tags,
-        }} index={i} />
+      {posts.map((post, i) => (
+        <PostListCard post={post} index={i} />
       ))}
     </div>
   </div>
