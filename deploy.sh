@@ -33,6 +33,10 @@ DEFAULT_REDIS_URL="redis://localhost:6379"
 DEFAULT_BACKEND_PORT=3639
 DEFAULT_FRONTEND_PORT=4132
 
+# ── 运行时状态变量 ────────────────────────────────────────
+NEED_HASH_UPDATE=false  # 是否需要在编译后更新密码哈希
+FORCE_REBUILD=false     # 是否强制重新构建（用于代码更新）
+
 # ============================================================
 #  工具函数
 # ============================================================
@@ -127,6 +131,28 @@ echo ""
 if ! confirm "确认以上信息开始部署?"; then
     echo "部署已取消。"
     exit 0
+fi
+
+# ── 检测更新模式 ──────────────────────────────────────────
+BACKEND_BIN_CHECK="$BACKEND_DIR/target/release/yukilog-backend"
+FRONTEND_DIST_CHECK="$FRONTEND_DIR/dist"
+
+if [[ -f "$BACKEND_BIN_CHECK" ]] || [[ -d "$FRONTEND_DIST_CHECK" ]]; then
+    echo ""
+    warn "检测到已有构建产物："
+    [[ -f "$BACKEND_BIN_CHECK" ]] && echo "  • 后端二进制 (target/release/yukilog-backend)"
+    [[ -d "$FRONTEND_DIST_CHECK" ]] && echo "  • 前端构建 (dist/)"
+    echo ""
+    echo -e "${CYAN}如果你更新了代码，需要重新构建；如果是首次部署，可跳过重建。${NC}"
+    if confirm "是否重新构建项目（更新模式）?"; then
+        FORCE_REBUILD=true
+        warn "将强制重新构建后端和前端"
+        # 清理构建产物
+        [[ -f "$BACKEND_BIN_CHECK" ]] && rm -f "$BACKEND_BIN_CHECK" && info "已清理后端二进制"
+        [[ -d "$FRONTEND_DIST_CHECK" ]] && rm -rf "$FRONTEND_DIST_CHECK" && info "已清理前端构建"
+    else
+        info "保留现有构建，跳过编译步骤"
+    fi
 fi
 
 # ── 清理可能存在的问题源 + 自动换源 ───────────────────────
@@ -324,25 +350,11 @@ step "5/9  生成环境配置文件"
 BACKEND_ENV="$BACKEND_DIR/.env"
 if [[ -f "$BACKEND_ENV" ]]; then
     info "后端 .env 已存在，跳过生成"
+    NEED_HASH_UPDATE=false
 else
-    warn "正在生成后端 .env ..."
-
-    # 生成密码哈希
-    info "正在生成管理员密码哈希 (Argon2) ..."
-    pushd "$BACKEND_DIR" > /dev/null
-
-    # 先确保 hash_password bin 能编译
-    if ! cargo build --bin hash_password --release --quiet 2>/dev/null; then
-        warn "hash_password 编译失败，使用占位哈希（请稍后手动替换）"
-        ADMIN_HASH="PLACEHOLDER_PLEASE_REGENERATE"
-    else
-        ADMIN_HASH=$(cargo run --bin hash_password --release -- "$ADMIN_PASSWORD" 2>/dev/null | tail -1)
-        if [[ -z "$ADMIN_HASH" || "$ADMIN_HASH" == *"error"* ]]; then
-            warn "密码哈希生成失败，使用占位值"
-            ADMIN_HASH="PLACEHOLDER_PLEASE_REGENERATE"
-        fi
-    fi
-    popd > /dev/null
+    warn "正在生成后端 .env (密码哈希将在 Rust 编译后生成) ..."
+    ADMIN_HASH="TEMP_PLACEHOLDER_WILL_BE_UPDATED_AFTER_RUST_BUILD"
+    NEED_HASH_UPDATE=true
 
     cat > "$BACKEND_ENV" <<ENVEOF
 # ====================================
@@ -406,13 +418,32 @@ fi
 
 pushd "$BACKEND_DIR" > /dev/null
 BACKEND_BIN="$BACKEND_DIR/target/release/yukilog-backend"
-if [[ -f "$BACKEND_BIN" ]]; then
+if [[ -f "$BACKEND_BIN" ]] && [[ "$FORCE_REBUILD" != "true" ]]; then
     info "后端二进制已存在，跳过编译 (如需重新编译请删除 target/release/yukilog-backend)"
 else
     warn "正在编译后端 (release 模式，可能需要几分钟)..."
     cargo build --release
     info "后端编译完成"
 fi
+
+# 生成密码哈希并更新 .env（如果需要）
+if [[ "$NEED_HASH_UPDATE" == "true" ]]; then
+    warn "正在生成管理员密码哈希 (Argon2) ..."
+    ADMIN_HASH=$(cargo run --bin hash_password --release -- "$ADMIN_PASSWORD" 2>/dev/null | tail -1)
+    if [[ -z "$ADMIN_HASH" || "$ADMIN_HASH" == *"error"* ]]; then
+        err "密码哈希生成失败，请检查 hash_password 工具"
+        ADMIN_HASH="FAILED_TO_GENERATE_PLEASE_REGENERATE_MANUALLY"
+    else
+        info "密码哈希生成成功"
+    fi
+    
+    # 更新 .env 中的占位符
+    if [[ -f "$BACKEND_ENV" ]]; then
+        sed -i "s|TEMP_PLACEHOLDER_WILL_BE_UPDATED_AFTER_RUST_BUILD|${ADMIN_HASH}|" "$BACKEND_ENV"
+        info "后端 .env 密码哈希已更新"
+    fi
+fi
+
 popd > /dev/null
 
 # ============================================================
@@ -440,7 +471,7 @@ else
 fi
 
 pushd "$FRONTEND_DIR" > /dev/null
-if [[ -d "dist" ]]; then
+if [[ -d "dist" ]] && [[ "$FORCE_REBUILD" != "true" ]]; then
     info "前端已构建，跳过 (如需重新构建请删除 dist/ 目录)"
 else
     warn "正在安装前端依赖..."
