@@ -318,7 +318,7 @@ const searchIconFixed = deduplicateSvgIds(searchIcon, '_fixed');
   // 更新按钮图标
   function updateThemeIcon() {
     const currentTheme = getTheme();
-    const icon = themeToggle.querySelector('span');
+    const icon = themeToggle!.querySelector('span');
     if (!icon) return;
     
     if (currentTheme === 'dark') {
