@@ -86,7 +86,33 @@
 
 ---
 
-## 📄 License
+## � 部署 (Deploy)
+
+YukiLog 提供一键部署脚本，自动完成环境检测、依赖安装、构建、服务注册和 SSL 配置。
+
+```bash
+# 克隆仓库后在根目录执行
+chmod +x deploy.sh
+sudo ./deploy.sh
+```
+
+脚本会自动完成以下流程：
+
+1. **交互式收集** — 域名、数据库配置、管理员账号密码
+2. **端口自动检测** — 从默认端口开始递增扫描，避免占用已有服务
+3. **依赖安装** — PostgreSQL / Redis / Nginx / Certbot / Rust / Node.js / pnpm（已安装则跳过）
+4. **数据库初始化** — 创建用户、数据库、导入表结构（已存在则跳过）
+5. **生成 `.env`** — 后端 + 前端环境变量文件（已存在则跳过）
+6. **构建** — `cargo build --release`（后端）+ `pnpm build`（前端）
+7. **Systemd 服务** — 注册 `yukilog-backend` / `yukilog-hanakoi` 服务并启动
+8. **Nginx 反向代理** — 自动生成配置、创建软链、重载
+9. **SSL 证书** — Let's Encrypt (certbot) 自动申请，HTTPS 一键启用
+
+> 所有操作均为幂等设计：已存在的文件 / 服务 / 数据库不会被覆写，可安全重复执行。
+
+---
+
+## �📄 License
 本项目采用组合授权协议：
 
 * Source Code is licensed under GNU AGPL-3.0
