@@ -158,7 +158,7 @@ button {
 
 .btn-primary {
   background: $lian-blue;
-  color: white;
+  color: var(--color-on-primary);
   
   &:hover {
     background: color.adjust($lian-blue, $lightness: -8%);
@@ -167,7 +167,7 @@ button {
 
 .btn-secondary {
   background: $lian-pink;
-  color: white;
+  color: var(--color-on-primary);
   
   &:hover {
     background: color.adjust($lian-pink, $lightness: -8%);
@@ -181,7 +181,7 @@ button {
   
   &:hover {
     background: $lian-blue;
-    color: white;
+    color: var(--color-on-primary);
   }
 }
 
@@ -224,7 +224,7 @@ button {
   
   &:focus {
     border-color: $lian-blue;
-    box-shadow: 0 0 0 3px rgba($lian-blue, 0.1);
+    box-shadow: var(--focus-ring-blue);
   }
   
   &:disabled {
@@ -236,7 +236,7 @@ button {
     border-color: $lian-error;
     
     &:focus {
-      box-shadow: 0 0 0 3px rgba($lian-error, 0.1);
+      box-shadow: var(--focus-ring-error);
     }
   }
 }
@@ -268,20 +268,20 @@ textarea.input {
   }
   
   &.tag-blue {
-    background: rgba($lian-blue, 0.15);
+    background: var(--blue-alpha-15);
     color: color.adjust($lian-blue, $lightness: -15%);
     
     &:hover {
-      background: rgba($lian-blue, 0.25);
+      background: var(--blue-alpha-25);
     }
   }
   
   &.tag-pink {
-    background: rgba($lian-pink, 0.15);
+    background: var(--pink-alpha-15);
     color: color.adjust($lian-pink, $lightness: -15%);
     
     &:hover {
-      background: rgba($lian-pink, 0.25);
+      background: var(--pink-alpha-25);
     }
   }
 }
@@ -348,6 +348,6 @@ textarea.input {
 // 选中文本颜色
 // ================================
 ::selection {
-  background: rgba($lian-pink, 0.3);
+  background: var(--pink-alpha-30);
   color: $lian-text;
 }
