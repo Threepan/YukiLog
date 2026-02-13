@@ -410,10 +410,17 @@ step "6/9  构建后端 (Rust)"
 if ! has_cmd cargo; then
     warn "Rust 未安装，正在通过 rustup 安装..."
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-    source "$HOME/.cargo/env"
+    # 明确设置 Rust 路径（支持 sudo 环境）
+    export PATH="$HOME/.cargo/bin:$PATH"
+    source "$HOME/.cargo/env" 2>/dev/null || true
     info "Rust 已安装"
 else
     info "Rust 工具链已就绪 ($(rustc --version))"
+fi
+
+# 确保 cargo 可用（防止 sudo 环境下找不到）
+if ! has_cmd cargo; then
+    export PATH="$HOME/.cargo/bin:/root/.cargo/bin:$PATH"
 fi
 
 pushd "$BACKEND_DIR" > /dev/null
@@ -429,12 +436,19 @@ fi
 # 生成密码哈希并更新 .env（如果需要）
 if [[ "$NEED_HASH_UPDATE" == "true" ]]; then
     warn "正在生成管理员密码哈希 (Argon2) ..."
-    ADMIN_HASH=$(cargo run --bin hash_password --release -- "$ADMIN_PASSWORD" 2>/dev/null | tail -1)
-    if [[ -z "$ADMIN_HASH" || "$ADMIN_HASH" == *"error"* ]]; then
-        err "密码哈希生成失败，请检查 hash_password 工具"
-        ADMIN_HASH="FAILED_TO_GENERATE_PLEASE_REGENERATE_MANUALLY"
-    else
+    
+    # 确保 cargo 在 PATH 中
+    export PATH="$HOME/.cargo/bin:/root/.cargo/bin:$PATH"
+    
+    # 生成哈希，增加错误捕获
+    ADMIN_HASH=$(cargo run --bin hash_password --release -- "$ADMIN_PASSWORD" 2>&1 | tail -1)
+    
+    # 验证哈希格式（Argon2 哈希以 $argon2 开头）
+    if [[ -n "$ADMIN_HASH" ]] && [[ "$ADMIN_HASH" =~ ^\$argon2 ]]; then
         info "密码哈希生成成功"
+    else
+        err "密码哈希生成失败: $ADMIN_HASH"
+        ADMIN_HASH="FAILED_TO_GENERATE_PLEASE_REGENERATE_MANUALLY"
     fi
     
     # 更新 .env 中的占位符
