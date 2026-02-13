@@ -401,8 +401,6 @@ PUBLIC_API_URL=http://localhost:${BACKEND_PORT}
 ENVEOF
     info "前端 .env 已生成"
 fi
-    info "前端 .env 已生成"
-fi
 
 # ============================================================
 #  第 6 步：构建后端
