@@ -10,7 +10,7 @@
 h1, h2, h3, h4, h5, h6 {
   font-weight: $font-weight-semibold;
   line-height: $line-height-tight;
-  color: $lian-text;
+  color: var(--color-text);
   margin: 0;
 }
 
@@ -43,13 +43,13 @@ h6 {
 // 段落
 p {
   line-height: $line-height-relaxed;
-  color: $lian-text;
+  color: var(--color-text);
   margin: 0;
 }
 
 // 链接
 a {
-  color: $lian-blue;
+  color: var(--color-blue);
   text-decoration: none;
   @include color-transition(color, opacity);
   
@@ -65,28 +65,28 @@ a {
 // 强调
 strong, b {
   font-weight: $font-weight-semibold;
-  color: $lian-text;
+  color: var(--color-text);
 }
 
 em, i {
   font-style: italic;
-  color: $lian-pink;
+  color: var(--color-pink);
 }
 
 // 代码
 code {
   font-family: $font-family-code;
   font-size: 0.9em;
-  background: $lian-bg;
+  background: var(--color-bg);
   padding: 0.2em 0.4em;
   border-radius: 4px;
-  color: $lian-text;
+  color: var(--color-text);
 }
 
 pre {
   font-family: $font-family-code;
   font-size: $font-size-sm;
-  background: $lian-bg;
+  background: var(--color-bg);
   padding: $spacing-md;
   border-radius: $radius-md;
   overflow-x: auto;
@@ -102,8 +102,8 @@ pre {
 blockquote {
   margin: 0;
   padding-left: $spacing-md;
-  border-left: 4px solid $lian-pink;
-  color: $lian-text-light;
+  border-left: 4px solid var(--color-pink);
+  color: var(--color-text-light);
   font-style: italic;
   
   p {
@@ -115,7 +115,7 @@ blockquote {
 ul, ol {
   padding-left: $spacing-lg;
   line-height: $line-height-relaxed;
-  color: $lian-text;
+  color: var(--color-text);
 }
 
 li {
@@ -125,14 +125,14 @@ li {
 // 小字
 small {
   font-size: $font-size-sm;
-  color: $lian-text-light;
+  color: var(--color-text-light);
 }
 
 // 分隔线（柔和）
 hr {
   border: none;
   height: 1px;
-  background: $lian-divider;
+  background: var(--color-divider);
   margin: $spacing-lg 0;
 }
 
@@ -155,11 +155,11 @@ hr {
 .font-semibold { font-weight: $font-weight-semibold; }
 .font-bold { font-weight: $font-weight-bold; }
 
-.text-primary { color: $lian-text; }
-.text-secondary { color: $lian-text-light; }
-.text-muted { color: $lian-text-muted; }
-.text-blue { color: $lian-blue; }
-.text-pink { color: $lian-pink; }
+.text-primary { color: var(--color-text); }
+.text-secondary { color: var(--color-text-light); }
+.text-muted { color: var(--color-text-muted); }
+.text-blue { color: var(--color-blue); }
+.text-pink { color: var(--color-pink); }
 
 .text-left { text-align: left; }
 .text-center { text-align: center; }
