@@ -1,0 +1,651 @@
+---
+// ================================
+// 主题管理页
+// ================================
+
+export const prerender = false;
+
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="主题管理" activeMenu="themes">
+  <!-- 操作栏 -->
+  <div class="action-bar">
+    <button class="btn-create" id="create-btn">
+      <span>+</span> 新建主题
+    </button>
+  </div>
+
+  <!-- 主题列表 -->
+  <div class="themes-table">
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      <p>加载中...</p>
+    </div>
+
+    <div id="empty" class="empty" style="display:none">
+      <p>暂无主题，点击「新建主题」创建第一个分类吧</p>
+    </div>
+
+    <table id="table-content" style="display:none">
+      <thead>
+        <tr>
+          <th>名称</th>
+          <th>Slug</th>
+          <th>描述</th>
+          <th width="100">文章数</th>
+          <th width="100">浏览数</th>
+          <th width="150">操作</th>
+        </tr>
+      </thead>
+      <tbody id="themes-tbody"></tbody>
+    </table>
+  </div>
+
+  <!-- 创建/编辑弹窗 -->
+  <div id="edit-modal" class="modal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-title">新建主题</h3>
+        <button class="modal-close" id="modal-close-btn">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="edit-form">
+          <div class="form-group">
+            <label>主题名称 *</label>
+            <input type="text" id="edit-name" required placeholder="例如：科技" />
+          </div>
+          <div class="form-group">
+            <label>Slug *</label>
+            <input type="text" id="edit-slug" required placeholder="例如：tech（自动生成）" />
+            <span class="form-hint">URL 友好标识符，仅支持小写字母、数字和连字符</span>
+          </div>
+          <div class="form-group">
+            <label>描述</label>
+            <textarea id="edit-description" rows="3" placeholder="选填，简要描述这个主题"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" id="modal-cancel-btn">取消</button>
+        <button type="submit" form="edit-form" class="btn-primary" id="modal-save-btn">保存</button>
+      </div>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  import { themesApi, adminApi } from '../../lib/api';
+  import type { Theme } from '../../types/api';
+
+  // ===== 状态管理 =====
+  let themes: Theme[] = [];
+  let editingTheme: Theme | null = null;
+
+  // ===== DOM 元素 =====
+  const loading = document.getElementById('loading')!;
+  const empty = document.getElementById('empty')!;
+  const tableContent = document.getElementById('table-content') as HTMLTableElement;
+  const themesTbody = document.getElementById('themes-tbody')!;
+  const createBtn = document.getElementById('create-btn')!;
+
+  const editModal = document.getElementById('edit-modal')!;
+  const modalTitle = document.getElementById('modal-title')!;
+  const editForm = document.getElementById('edit-form') as HTMLFormElement;
+  const editName = document.getElementById('edit-name') as HTMLInputElement;
+  const editSlug = document.getElementById('edit-slug') as HTMLInputElement;
+  const editDescription = document.getElementById('edit-description') as HTMLTextAreaElement;
+
+  // ===== 初始化 =====
+  async function init() {
+    await loadThemes();
+    bindEvents();
+  }
+
+  // ===== 加载主题列表 =====
+  async function loadThemes() {
+    loading.style.display = 'flex';
+    empty.style.display = 'none';
+    tableContent.style.display = 'none';
+
+    try {
+      themes = await themesApi.list();
+
+      if (themes.length === 0) {
+        loading.style.display = 'none';
+        empty.style.display = 'flex';
+      } else {
+        renderThemes();
+        loading.style.display = 'none';
+        tableContent.style.display = 'table';
+      }
+    } catch (err: any) {
+      loading.style.display = 'none';
+      alert(err.message || '加载主题失败');
+    }
+  }
+
+  // ===== 渲染主题列表 =====
+  function renderThemes() {
+    themesTbody.innerHTML = themes.map(theme => `
+      <tr>
+        <td class="theme-name">${escapeHtml(theme.name)}</td>
+        <td class="theme-slug">${escapeHtml(theme.slug)}</td>
+        <td class="theme-description">${theme.description ? escapeHtml(theme.description) : '<span class="text-muted">-</span>'}</td>
+        <td class="text-center">${theme.post_count || 0}</td>
+        <td class="text-center">${theme.view_count || 0}</td>
+        <td class="actions">
+          <button class="btn-edit" data-id="${theme.id}">编辑</button>
+          <button class="btn-delete" data-id="${theme.id}" data-post-count="${theme.post_count || 0}">删除</button>
+        </td>
+      </tr>
+    `).join('');
+
+    bindActionButtons();
+  }
+
+  // ===== 绑定事件 =====
+  function bindEvents() {
+    createBtn.addEventListener('click', openCreateModal);
+
+    document.getElementById('modal-close-btn')?.addEventListener('click', closeModal);
+    document.getElementById('modal-cancel-btn')?.addEventListener('click', closeModal);
+    editModal.querySelector('.modal-backdrop')?.addEventListener('click', closeModal);
+
+    editForm.addEventListener('submit', handleSubmit);
+
+    // 名称自动生成 slug
+    editName.addEventListener('input', () => {
+      if (!editingTheme) {  // 仅创建时自动生成
+        editSlug.value = generateSlug(editName.value);
+      }
+    });
+  }
+
+  // ===== 绑定操作按钮 =====
+  function bindActionButtons() {
+    document.querySelectorAll('.btn-edit').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = Number((e.target as HTMLElement).dataset.id);
+        handleEdit(id);
+      });
+    });
+
+    document.querySelectorAll('.btn-delete').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+        const id = Number(target.dataset.id);
+        const postCount = Number(target.dataset.postCount);
+        handleDelete(id, postCount);
+      });
+    });
+  }
+
+  // ===== 打开创建弹窗 =====
+  function openCreateModal() {
+    editingTheme = null;
+    modalTitle.textContent = '新建主题';
+    editForm.reset();
+    editModal.classList.add('active');
+  }
+
+  // ===== 打开编辑弹窗 =====
+  function handleEdit(id: number) {
+    const theme = themes.find(t => t.id === id);
+    if (!theme) return;
+
+    editingTheme = theme;
+    modalTitle.textContent = '编辑主题';
+    editName.value = theme.name;
+    editSlug.value = theme.slug;
+    editDescription.value = theme.description || '';
+
+    editModal.classList.add('active');
+  }
+
+  // ===== 删除主题 =====
+  async function handleDelete(id: number, postCount: number) {
+    const theme = themes.find(t => t.id === id);
+    if (!theme) return;
+
+    let confirmMsg = `确认删除主题《${theme.name}》？`;
+    if (postCount > 0) {
+      confirmMsg += `\n\n关联的 ${postCount} 篇文章将变为无主题状态。`;
+    }
+
+    if (!confirm(confirmMsg)) return;
+
+    try {
+      await adminApi.themes.delete(id);
+      await loadThemes();
+    } catch (err: any) {
+      alert(err.message || '删除失败');
+    }
+  }
+
+  // ===== 提交表单 =====
+  async function handleSubmit(e: Event) {
+    e.preventDefault();
+
+    const saveBtn = document.getElementById('modal-save-btn') as HTMLButtonElement;
+    saveBtn.disabled = true;
+    saveBtn.textContent = editingTheme ? '保存中...' : '创建中...';
+
+    const data = {
+      name: editName.value.trim(),
+      slug: editSlug.value.trim(),
+      description: editDescription.value.trim() || null,
+    };
+
+    // 验证 slug 格式
+    if (!/^[a-z0-9-]+$/.test(data.slug)) {
+      alert('Slug 仅支持小写字母、数字和连字符');
+      saveBtn.disabled = false;
+      saveBtn.textContent = '保存';
+      return;
+    }
+
+    try {
+      if (editingTheme) {
+        await adminApi.themes.update(editingTheme.id, data);
+      } else {
+        await adminApi.themes.create(data);
+      }
+
+      closeModal();
+      await loadThemes();
+    } catch (err: any) {
+      alert(err.message || '操作失败');
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = '保存';
+    }
+  }
+
+  // ===== 关闭弹窗 =====
+  function closeModal() {
+    editModal.classList.remove('active');
+    editingTheme = null;
+    editForm.reset();
+  }
+
+  // ===== 工具函数 =====
+  function generateSlug(name: string): string {
+    // 简易拼音映射（可扩展）
+    const pinyinMap: Record<string, string> = {
+      '科技': 'tech',
+      '技术': 'tech',
+      '随笔': 'essay',
+      '生活': 'life',
+      '旅行': 'travel',
+      '摄影': 'photo',
+      '读书': 'reading',
+      '音乐': 'music',
+      '电影': 'movie',
+      '美食': 'food',
+    };
+
+    const trimmed = name.trim();
+    if (pinyinMap[trimmed]) {
+      return pinyinMap[trimmed];
+    }
+
+    // 转小写、去空格、替换特殊字符为连字符
+    return trimmed
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9-]/g, '')
+      .replace(/-+/g, '-');
+  }
+
+  function escapeHtml(text: string): string {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  init();
+</script>
+
+<style lang="scss">
+  @use 'sass:color';
+
+  // 操作栏
+  .action-bar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: $spacing-lg;
+  }
+
+  .btn-create {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: $spacing-sm $spacing-lg;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    color: white;
+    background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
+    border: none;
+    border-radius: $radius-sm;
+    cursor: pointer;
+    transition: all $transition-base $ease-gentle;
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: $shadow-blue;
+    }
+
+    span {
+      font-size: $font-size-xl;
+    }
+  }
+
+  // 表格容器
+  .themes-table {
+    background: $lian-white;
+    border-radius: $radius-md;
+    box-shadow: $shadow-sm;
+    overflow: hidden;
+  }
+
+  // 加载/空状态
+  .loading,
+  .empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: $spacing-xxl;
+    color: $lian-text-muted;
+
+    p {
+      margin: $spacing-sm 0 0;
+      font-size: $font-size-sm;
+      text-align: center;
+    }
+  }
+
+  .spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid $lian-border;
+    border-top-color: $lian-blue;
+    border-radius: 50%;
+    animation: spin 600ms linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  // 表格
+  table {
+    width: 100%;
+    border-collapse: collapse;
+
+    thead {
+      background: $lian-bg;
+      border-bottom: 1px solid $lian-border;
+
+      th {
+        padding: $spacing-sm $spacing-md;
+        font-size: $font-size-xs;
+        font-weight: $font-weight-medium;
+        color: $lian-text-light;
+        text-align: left;
+      }
+    }
+
+    tbody {
+      tr {
+        border-bottom: 1px solid $lian-divider;
+        transition: background $transition-fast $ease-gentle;
+
+        &:hover {
+          background: rgba($lian-blue, 0.02);
+        }
+      }
+
+      td {
+        padding: $spacing-md;
+        font-size: $font-size-sm;
+        color: $lian-text;
+      }
+    }
+  }
+
+  .theme-name {
+    font-weight: $font-weight-semibold;
+    color: $lian-blue;
+  }
+
+  .theme-slug {
+    font-family: $font-family-code;
+    color: $lian-text-light;
+    font-size: $font-size-xs;
+  }
+
+  .theme-description {
+    color: $lian-text-light;
+    line-height: $line-height-base;
+  }
+
+  .text-center {
+    text-align: center;
+    font-family: $font-family-code;
+  }
+
+  .text-muted {
+    color: $lian-text-muted;
+  }
+
+  // 操作按钮
+  .actions {
+    display: flex;
+    gap: 4px;
+
+    button {
+      padding: 4px 12px;
+      font-size: $font-size-xs;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all $transition-fast $ease-gentle;
+    }
+
+    .btn-edit {
+      background: rgba($lian-pink, 0.1);
+      color: $lian-pink;
+
+      &:hover {
+        background: $lian-pink;
+        color: white;
+      }
+    }
+
+    .btn-delete {
+      background: rgba($lian-error, 0.1);
+      color: $lian-error;
+
+      &:hover {
+        background: $lian-error;
+        color: white;
+      }
+    }
+  }
+
+  // 弹窗
+  .modal {
+    position: fixed;
+    inset: 0;
+    z-index: $z-modal;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity $transition-base $ease-gentle,
+                visibility $transition-base $ease-gentle;
+
+    &.active {
+      opacity: 1;
+      visibility: visible;
+
+      .modal-card {
+        transform: scale(1);
+      }
+    }
+  }
+
+  .modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(2px);
+  }
+
+  .modal-card {
+    position: relative;
+    width: 90%;
+    max-width: 500px;
+    background: $lian-white;
+    border-radius: $radius-md;
+    box-shadow: $shadow-lg;
+    transform: scale(0.95);
+    transition: transform $transition-base $ease-gentle;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: $spacing-lg;
+    border-bottom: 1px solid $lian-divider;
+
+    h3 {
+      margin: 0;
+      font-size: $font-size-lg;
+      font-weight: $font-weight-semibold;
+      color: $lian-text;
+    }
+
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: $font-size-2xl;
+      color: $lian-text-muted;
+      background: none;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all $transition-fast $ease-gentle;
+
+      &:hover {
+        background: $lian-bg;
+        color: $lian-text;
+      }
+    }
+  }
+
+  .modal-body {
+    padding: $spacing-lg;
+  }
+
+  .form-group {
+    margin-bottom: $spacing-md;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    label {
+      display: block;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-medium;
+      color: $lian-text;
+      margin-bottom: $spacing-xs;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      padding: $spacing-sm $spacing-md;
+      font-size: $font-size-base;
+      color: $lian-text;
+      background: $lian-white;
+      border: 1px solid $lian-border;
+      border-radius: $radius-sm;
+      font-family: $font-family-base;
+      transition: all $transition-fast $ease-gentle;
+
+      &:focus {
+        outline: none;
+        border-color: $lian-blue;
+        box-shadow: 0 0 0 3px rgba($lian-blue, 0.1);
+      }
+
+      &::placeholder {
+        color: $lian-text-muted;
+      }
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    .form-hint {
+      display: block;
+      margin-top: 4px;
+      font-size: $font-size-xs;
+      color: $lian-text-muted;
+    }
+  }
+
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: $spacing-sm;
+    padding: $spacing-lg;
+    border-top: 1px solid $lian-divider;
+
+    button {
+      padding: $spacing-sm $spacing-lg;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-medium;
+      border: none;
+      border-radius: $radius-sm;
+      cursor: pointer;
+      transition: all $transition-fast $ease-gentle;
+    }
+
+    .btn-secondary {
+      color: $lian-text-light;
+      background: $lian-bg;
+
+      &:hover {
+        background: color.adjust($lian-bg, $lightness: -5%);
+      }
+    }
+
+    .btn-primary {
+      color: white;
+      background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
+
+      &:hover {
+        transform: translateY(-1px);
+        box-shadow: $shadow-blue;
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+  }
+</style>
