@@ -375,3 +375,40 @@ where
 
     Ok((dtos, total))
 }
+
+/// 获取站点统计数据：文章总数、总浏览量、总字数
+///
+/// # 返回
+///
+/// - `total_posts`: 已发布文章总数
+/// - `total_views`: 所有已发布文章浏览量总和
+/// - `total_words`: 所有已发布文章内容字符总长度
+pub async fn get_site_stats<C>(db: &C) -> RepoResult<(u64, i64, i64)>
+where
+    C: ConnectionTrait,
+{
+    use sea_orm::Statement;
+
+    let sql = r#"
+        SELECT 
+            COUNT(*) as total_posts,
+            COALESCE(SUM(view_count), 0) as total_views,
+            COALESCE(SUM(LENGTH(content)), 0) as total_words
+        FROM posts
+        WHERE status = 'Published'
+    "#;
+
+    let stmt = Statement::from_string(sea_orm::DatabaseBackend::Postgres, sql);
+    
+    let query_result = db.query_one(stmt).await?;
+    
+    if let Some(row) = query_result {
+        let total_posts: i64 = row.try_get("", "total_posts")?;
+        let total_views: i64 = row.try_get("", "total_views")?;
+        let total_words: i64 = row.try_get("", "total_words")?;
+        
+        Ok((total_posts as u64, total_views, total_words))
+    } else {
+        Ok((0, 0, 0))
+    }
+}
