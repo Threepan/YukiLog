@@ -1,0 +1,964 @@
+---
+// ================================
+// 友链管理页
+// ================================
+
+export const prerender = false;
+
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="友链管理" activeMenu="links">
+  <!-- 待审核提示 -->
+  <div id="pending-notice" class="notice" style="display:none">
+    <div class="notice-icon">⏳</div>
+    <div class="notice-content">
+      <h4>有新的友链等待审核</h4>
+      <p>共 <strong id="pending-count">0</strong> 条待审核友链，点击下方「待审核」标签查看</p>
+    </div>
+  </div>
+
+  <!-- 操作栏 -->
+  <div class="action-bar">
+    <div class="tabs">
+      <button class="tab active" data-status="all">全部</button>
+      <button class="tab" data-status="pending">待审核</button>
+      <button class="tab" data-status="approved">已通过</button>
+      <button class="tab" data-status="broken">已失效</button>
+    </div>
+    <button class="btn-create" id="create-btn">
+      <span>+</span> 新建友链
+    </button>
+  </div>
+
+  <!-- 友链列表 -->
+  <div class="links-table">
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      <p>加载中...</p>
+    </div>
+
+    <div id="empty" class="empty" style="display:none">
+      <p>暂无友链</p>
+    </div>
+
+    <table id="table-content" style="display:none">
+      <thead>
+        <tr>
+          <th width="200">名称</th>
+          <th>URL</th>
+          <th>描述</th>
+          <th width="80">状态</th>
+          <th width="120">更新时间</th>
+          <th width="200">操作</th>
+        </tr>
+      </thead>
+      <tbody id="links-tbody"></tbody>
+    </table>
+  </div>
+
+  <!-- 分页 -->
+  <div id="pagination" class="pagination" style="display:none">
+    <button id="prev-btn" class="page-btn" disabled>上一页</button>
+    <span class="page-info">
+      第 <span id="current-page">1</span> / <span id="total-pages">1</span> 页
+    </span>
+    <button id="next-btn" class="page-btn" disabled>下一页</button>
+  </div>
+
+  <!-- 创建/编辑弹窗 -->
+  <div id="edit-modal" class="modal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-title">新建友链</h3>
+        <button class="modal-close" id="modal-close-btn">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="edit-form">
+          <div class="form-group">
+            <label>网站名称 *</label>
+            <input type="text" id="edit-name" required placeholder="例如：Lian's Tech Blog" />
+          </div>
+          <div class="form-group">
+            <label>网站地址 *</label>
+            <input type="url" id="edit-url" required placeholder="https://example.com" />
+          </div>
+          <div class="form-group">
+            <label>网站描述</label>
+            <textarea id="edit-description" rows="3" placeholder="简单介绍一下这个网站..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>头像 URL</label>
+            <input type="url" id="edit-avatar" placeholder="https://example.com/avatar.jpg" />
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" id="modal-cancel-btn">取消</button>
+        <button type="submit" form="edit-form" class="btn-primary" id="modal-save-btn">保存</button>
+      </div>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  import { linksApi, adminApi } from '../../lib/api';
+  import type { Link } from '../../types/api';
+
+  // ===== 状态管理 =====
+  let allLinks: Link[] = [];
+  let filteredLinks: Link[] = [];
+  let currentStatus: 'all' | 'pending' | 'approved' | 'broken' = 'all';
+  let editingLink: Link | null = null;
+
+  // 分页
+  const PAGE_SIZE = 20;
+  let currentPage = 1;
+  let totalPages = 1;
+
+  // ===== DOM 元素 =====
+  const pendingNotice = document.getElementById('pending-notice')!;
+  const pendingCount = document.getElementById('pending-count')!;
+  const loading = document.getElementById('loading')!;
+  const empty = document.getElementById('empty')!;
+  const tableContent = document.getElementById('table-content') as HTMLTableElement;
+  const linksTbody = document.getElementById('links-tbody')!;
+  const createBtn = document.getElementById('create-btn')!;
+
+  const pagination = document.getElementById('pagination')!;
+  const prevBtn = document.getElementById('prev-btn')!;
+  const nextBtn = document.getElementById('next-btn')!;
+  const currentPageSpan = document.getElementById('current-page')!;
+  const totalPagesSpan = document.getElementById('total-pages')!;
+
+  const editModal = document.getElementById('edit-modal')!;
+  const modalTitle = document.getElementById('modal-title')!;
+  const editForm = document.getElementById('edit-form') as HTMLFormElement;
+  const editName = document.getElementById('edit-name') as HTMLInputElement;
+  const editUrl = document.getElementById('edit-url') as HTMLInputElement;
+  const editDescription = document.getElementById('edit-description') as HTMLTextAreaElement;
+  const editAvatar = document.getElementById('edit-avatar') as HTMLInputElement;
+
+  // ===== 初始化 =====
+  async function init() {
+    await loadLinks();
+    await checkPendingLinks();
+    bindEvents();
+  }
+
+  // ===== 加载全部友链 =====
+  async function loadLinks() {
+    loading.style.display = 'flex';
+    empty.style.display = 'none';
+    tableContent.style.display = 'none';
+    pagination.style.display = 'none';
+
+    try {
+      allLinks = await linksApi.list();
+      applyFilter();
+    } catch (err: any) {
+      loading.style.display = 'none';
+      alert(err.message || '加载友链失败');
+    }
+  }
+
+  // ===== 检查待审核友链 =====
+  async function checkPendingLinks() {
+    try {
+      const pending = await adminApi.links.pending();
+      if (pending.length > 0) {
+        pendingCount.textContent = String(pending.length);
+        pendingNotice.style.display = 'flex';
+      }
+    } catch (err) {
+      // 静默失败
+    }
+  }
+
+  // ===== 应用筛选 =====
+  function applyFilter() {
+    if (currentStatus === 'all') {
+      filteredLinks = allLinks;
+    } else {
+      filteredLinks = allLinks.filter(link => link.status === currentStatus);
+    }
+
+    currentPage = 1;
+    totalPages = Math.ceil(filteredLinks.length / PAGE_SIZE);
+
+    if (filteredLinks.length === 0) {
+      loading.style.display = 'none';
+      empty.style.display = 'flex';
+      tableContent.style.display = 'none';
+      pagination.style.display = 'none';
+    } else {
+      renderLinks();
+      loading.style.display = 'none';
+      tableContent.style.display = 'table';
+      pagination.style.display = filteredLinks.length > PAGE_SIZE ? 'flex' : 'none';
+    }
+  }
+
+  // ===== 渲染友链列表 =====
+  function renderLinks() {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const end = start + PAGE_SIZE;
+    const pageLinks = filteredLinks.slice(start, end);
+
+    linksTbody.innerHTML = pageLinks.map(link => `
+      <tr>
+        <td class="link-name">
+          ${link.avatar_url ? `<img src="${escapeHtml(link.avatar_url)}" alt="${escapeHtml(link.name)}" class="link-avatar" />` : ''}
+          <span>${escapeHtml(link.name)}</span>
+        </td>
+        <td class="link-url">
+          <a href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer">
+            ${escapeHtml(link.url)}
+          </a>
+        </td>
+        <td class="link-desc">${escapeHtml(link.description || '-')}</td>
+        <td>
+          <span class="status-badge status-${link.status}">
+            ${getStatusText(link.status)}
+          </span>
+        </td>
+        <td class="text-muted">${formatDate(link.updated_at)}</td>
+        <td class="actions">
+          ${link.status === 'pending' ? `
+            <button class="btn-approve" data-id="${link.id}" title="通过">✓</button>
+          ` : ''}
+          ${link.status === 'approved' ? `
+            <button class="btn-broken" data-id="${link.id}" title="标记失效">✗</button>
+          ` : ''}
+          <button class="btn-edit" data-id="${link.id}" title="编辑">✎</button>
+          <button class="btn-delete" data-id="${link.id}" title="删除">🗑</button>
+        </td>
+      </tr>
+    `).join('');
+
+    updatePaginationState();
+    bindActionButtons();
+  }
+
+  // ===== 更新分页状态 =====
+  function updatePaginationState() {
+    currentPageSpan.textContent = String(currentPage);
+    totalPagesSpan.textContent = String(totalPages);
+    prevBtn.disabled = currentPage === 1;
+    nextBtn.disabled = currentPage === totalPages;
+  }
+
+  // ===== 绑定事件 =====
+  function bindEvents() {
+    createBtn.addEventListener('click', openCreateModal);
+
+    // Tabs
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+        currentStatus = target.dataset.status as any;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        target.classList.add('active');
+        applyFilter();
+      });
+    });
+
+    // 分页
+    prevBtn.addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        renderLinks();
+      }
+    });
+
+    nextBtn.addEventListener('click', () => {
+      if (currentPage < totalPages) {
+        currentPage++;
+        renderLinks();
+      }
+    });
+
+    // 编辑弹窗
+    document.getElementById('modal-close-btn')?.addEventListener('click', closeEditModal);
+    document.getElementById('modal-cancel-btn')?.addEventListener('click', closeEditModal);
+    editModal.querySelector('.modal-backdrop')?.addEventListener('click', closeEditModal);
+    editForm.addEventListener('submit', handleSubmit);
+  }
+
+  // ===== 绑定操作按钮 =====
+  function bindActionButtons() {
+    document.querySelectorAll('.btn-approve').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = Number((e.target as HTMLElement).dataset.id);
+        handleApprove(id);
+      });
+    });
+
+    document.querySelectorAll('.btn-broken').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = Number((e.target as HTMLElement).dataset.id);
+        handleMarkBroken(id);
+      });
+    });
+
+    document.querySelectorAll('.btn-edit').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = Number((e.target as HTMLElement).dataset.id);
+        handleEdit(id);
+      });
+    });
+
+    document.querySelectorAll('.btn-delete').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = Number((e.target as HTMLElement).dataset.id);
+        handleDelete(id);
+      });
+    });
+  }
+
+  // ===== 通过友链 =====
+  async function handleApprove(id: number) {
+    const link = allLinks.find(l => l.id === id);
+    if (!link) return;
+
+    if (!confirm(`确认通过友链《${link.name}》？`)) return;
+
+    try {
+      await adminApi.links.approve(id);
+      await loadLinks();
+      await checkPendingLinks();
+    } catch (err: any) {
+      alert(err.message || '操作失败');
+    }
+  }
+
+  // ===== 标记失效 =====
+  async function handleMarkBroken(id: number) {
+    const link = allLinks.find(l => l.id === id);
+    if (!link) return;
+
+    if (!confirm(`确认标记友链《${link.name}》为失效？`)) return;
+
+    try {
+      await adminApi.links.markBroken(id);
+      await loadLinks();
+    } catch (err: any) {
+      alert(err.message || '操作失败');
+    }
+  }
+
+  // ===== 打开创建弹窗 =====
+  function openCreateModal() {
+    editingLink = null;
+    modalTitle.textContent = '新建友链';
+    editForm.reset();
+    editModal.classList.add('active');
+  }
+
+  // ===== 打开编辑弹窗 =====
+  function handleEdit(id: number) {
+    const link = allLinks.find(l => l.id === id);
+    if (!link) return;
+
+    editingLink = link;
+    modalTitle.textContent = '编辑友链';
+    editName.value = link.name;
+    editUrl.value = link.url;
+    editDescription.value = link.description || '';
+    editAvatar.value = link.avatar_url || '';
+
+    editModal.classList.add('active');
+  }
+
+  // ===== 删除友链 =====
+  async function handleDelete(id: number) {
+    const link = allLinks.find(l => l.id === id);
+    if (!link) return;
+
+    if (!confirm(`确认删除友链《${link.name}》？\n\n此操作不可撤销。`)) return;
+
+    try {
+      await adminApi.links.delete(id);
+      await loadLinks();
+      if (link.status === 'pending') {
+        await checkPendingLinks();
+      }
+    } catch (err: any) {
+      alert(err.message || '删除失败');
+    }
+  }
+
+  // ===== 提交表单 =====
+  async function handleSubmit(e: Event) {
+    e.preventDefault();
+
+    const saveBtn = document.getElementById('modal-save-btn') as HTMLButtonElement;
+    saveBtn.disabled = true;
+    saveBtn.textContent = editingLink ? '保存中...' : '创建中...';
+
+    const data: any = {
+      name: editName.value.trim(),
+      url: editUrl.value.trim(),
+      description: editDescription.value.trim() || null,
+      avatar_url: editAvatar.value.trim() || null,
+    };
+
+    try {
+      if (editingLink) {
+        await adminApi.links.update(editingLink.id, data);
+      } else {
+        // 创建时默认待审核
+        await linksApi.create(data);
+      }
+
+      closeEditModal();
+      await loadLinks();
+      await checkPendingLinks();
+    } catch (err: any) {
+      alert(err.message || '操作失败');
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = '保存';
+    }
+  }
+
+  // ===== 关闭弹窗 =====
+  function closeEditModal() {
+    editModal.classList.remove('active');
+    editingLink = null;
+    editForm.reset();
+  }
+
+  // ===== 工具函数 =====
+  function getStatusText(status: string): string {
+    const map: Record<string, string> = {
+      pending: '待审核',
+      approved: '已通过',
+      broken: '已失效',
+    };
+    return map[status] || status;
+  }
+
+  function formatDate(dateStr: string): string {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+    if (days === 0) return '今天';
+    if (days === 1) return '昨天';
+    if (days < 7) return `${days}天前`;
+
+    return date.toLocaleDateString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+  }
+
+  function escapeHtml(text: string): string {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  init();
+</script>
+
+<style lang="scss">
+  @use 'sass:color';
+
+  // 待审核提示
+  .notice {
+    display: flex;
+    align-items: flex-start;
+    gap: $spacing-md;
+    padding: $spacing-md $spacing-lg;
+    margin-bottom: $spacing-lg;
+    background: linear-gradient(135deg, rgba($lian-blue, 0.08) 0%, rgba($lian-pink, 0.08) 100%);
+    border-left: 3px solid $lian-pink;
+    border-radius: $radius-sm;
+    
+    .notice-icon {
+      font-size: $font-size-2xl;
+      flex-shrink: 0;
+    }
+
+    .notice-content {
+      flex: 1;
+
+      h4 {
+        margin: 0 0 4px;
+        font-size: $font-size-base;
+        font-weight: $font-weight-semibold;
+        color: $lian-text;
+      }
+
+      p {
+        margin: 0;
+        font-size: $font-size-sm;
+        color: $lian-text-light;
+
+        strong {
+          color: $lian-pink;
+          font-weight: $font-weight-semibold;
+        }
+      }
+    }
+  }
+
+  // 操作栏
+  .action-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $spacing-lg;
+  }
+
+  .tabs {
+    display: flex;
+    gap: $spacing-xs;
+
+    .tab {
+      padding: $spacing-xs $spacing-md;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-medium;
+      color: $lian-text-light;
+      background: transparent;
+      border: none;
+      border-radius: $radius-sm;
+      cursor: pointer;
+      transition: all $transition-fast $ease-gentle;
+
+      &:hover {
+        color: $lian-text;
+        background: rgba($lian-blue, 0.05);
+      }
+
+      &.active {
+        color: white;
+        background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
+      }
+    }
+  }
+
+  .btn-create {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: $spacing-sm $spacing-lg;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    color: white;
+    background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
+    border: none;
+    border-radius: $radius-sm;
+    cursor: pointer;
+    transition: all $transition-base $ease-gentle;
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: $shadow-blue;
+    }
+
+    span {
+      font-size: $font-size-xl;
+    }
+  }
+
+  // 表格容器
+  .links-table {
+    background: $lian-white;
+    border-radius: $radius-md;
+    box-shadow: $shadow-sm;
+    overflow: hidden;
+  }
+
+  // 加载/空状态
+  .loading,
+  .empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: $spacing-xxl;
+    color: $lian-text-muted;
+
+    p {
+      margin: $spacing-sm 0 0;
+      font-size: $font-size-sm;
+      text-align: center;
+    }
+  }
+
+  .spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid $lian-border;
+    border-top-color: $lian-blue;
+    border-radius: 50%;
+    animation: spin 600ms linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  // 表格
+  table {
+    width: 100%;
+    border-collapse: collapse;
+
+    thead {
+      background: $lian-bg;
+      border-bottom: 1px solid $lian-border;
+
+      th {
+        padding: $spacing-sm $spacing-md;
+        font-size: $font-size-xs;
+        font-weight: $font-weight-medium;
+        color: $lian-text-light;
+        text-align: left;
+      }
+    }
+
+    tbody {
+      tr {
+        border-bottom: 1px solid $lian-divider;
+        transition: background $transition-fast $ease-gentle;
+
+        &:hover {
+          background: rgba($lian-blue, 0.02);
+        }
+      }
+
+      td {
+        padding: $spacing-md;
+        font-size: $font-size-sm;
+        color: $lian-text;
+      }
+    }
+  }
+
+  .link-name {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    font-weight: $font-weight-medium;
+
+    .link-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+  }
+
+  .link-url {
+    a {
+      color: $lian-blue;
+      text-decoration: none;
+      font-size: $font-size-xs;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .link-desc {
+    color: $lian-text-light;
+    font-size: $font-size-xs;
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .text-muted {
+    color: $lian-text-muted;
+    font-size: $font-size-xs;
+  }
+
+  // 状态徽章
+  .status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-medium;
+    border-radius: 10px;
+
+    &.status-pending {
+      background: rgba($lian-warning, 0.15);
+      color: color.adjust($lian-warning, $lightness: -10%);
+    }
+
+    &.status-approved {
+      background: rgba($lian-success, 0.15);
+      color: color.adjust($lian-success, $lightness: -10%);
+    }
+
+    &.status-broken {
+      background: rgba($lian-text-muted, 0.15);
+      color: $lian-text-muted;
+    }
+  }
+
+  // 操作按钮
+  .actions {
+    display: flex;
+    gap: 4px;
+
+    button {
+      padding: 4px 10px;
+      font-size: $font-size-sm;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all $transition-fast $ease-gentle;
+    }
+
+    .btn-approve {
+      background: rgba($lian-blue, 0.1);
+      color: $lian-blue;
+
+      &:hover {
+        background: $lian-blue;
+        color: white;
+      }
+    }
+
+    .btn-broken {
+      background: rgba($lian-text-muted, 0.1);
+      color: $lian-text-muted;
+
+      &:hover {
+        background: $lian-text-muted;
+        color: white;
+      }
+    }
+
+    .btn-edit {
+      background: rgba($lian-pink, 0.1);
+      color: $lian-pink;
+
+      &:hover {
+        background: $lian-pink;
+        color: white;
+      }
+    }
+
+    .btn-delete {
+      background: rgba($lian-error, 0.1);
+      color: $lian-error;
+
+      &:hover {
+        background: $lian-error;
+        color: white;
+      }
+    }
+  }
+
+  // 分页
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-md;
+    padding: $spacing-lg;
+
+    .page-btn {
+      padding: $spacing-xs $spacing-md;
+      font-size: $font-size-sm;
+      color: $lian-text;
+      background: $lian-white;
+      border: 1px solid $lian-border;
+      border-radius: $radius-sm;
+      cursor: pointer;
+      transition: all $transition-fast $ease-gentle;
+
+      &:hover:not(:disabled) {
+        background: $lian-bg;
+        border-color: $lian-blue;
+        color: $lian-blue;
+      }
+
+      &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+    }
+
+    .page-info {
+      font-size: $font-size-sm;
+      color: $lian-text-light;
+    }
+  }
+
+  // 弹窗样式复用
+  .modal {
+    position: fixed;
+    inset: 0;
+    z-index: $z-modal;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity $transition-base $ease-gentle,
+                visibility $transition-base $ease-gentle;
+
+    &.active {
+      opacity: 1;
+      visibility: visible;
+
+      .modal-card {
+        transform: scale(1);
+      }
+    }
+  }
+
+  .modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(2px);
+  }
+
+  .modal-card {
+    position: relative;
+    width: 90%;
+    max-width: 500px;
+    background: $lian-white;
+    border-radius: $radius-md;
+    box-shadow: $shadow-lg;
+    transform: scale(0.95);
+    transition: transform $transition-base $ease-gentle;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: $spacing-lg;
+    border-bottom: 1px solid $lian-divider;
+
+    h3 {
+      margin: 0;
+      font-size: $font-size-lg;
+      font-weight: $font-weight-semibold;
+      color: $lian-text;
+    }
+
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: $font-size-2xl;
+      color: $lian-text-muted;
+      background: none;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all $transition-fast $ease-gentle;
+
+      &:hover {
+        background: $lian-bg;
+        color: $lian-text;
+      }
+    }
+  }
+
+  .modal-body {
+    padding: $spacing-lg;
+  }
+
+  .form-group {
+    margin-bottom: $spacing-md;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    label {
+      display: block;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-medium;
+      color: $lian-text;
+      margin-bottom: $spacing-xs;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      padding: $spacing-sm $spacing-md;
+      font-size: $font-size-base;
+      color: $lian-text;
+      background: $lian-white;
+      border: 1px solid $lian-border;
+      border-radius: $radius-sm;
+      font-family: $font-family-base;
+      transition: all $transition-fast $ease-gentle;
+
+      &:focus {
+        outline: none;
+        border-color: $lian-blue;
+        box-shadow: 0 0 0 3px rgba($lian-blue, 0.1);
+      }
+
+      &::placeholder {
+        color: $lian-text-muted;
+      }
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+  }
+
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: $spacing-sm;
+    padding: $spacing-lg;
+    border-top: 1px solid $lian-divider;
+
+    button {
+      padding: $spacing-sm $spacing-lg;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-medium;
+      border: none;
+      border-radius: $radius-sm;
+      cursor: pointer;
+      transition: all $transition-fast $ease-gentle;
+    }
+
+    .btn-secondary {
+      color: $lian-text-light;
+      background: $lian-bg;
+
+      &:hover {
+        background: color.adjust($lian-bg, $lightness: -5%);
+      }
+    }
+
+    .btn-primary {
+      color: white;
+      background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
+
+      &:hover {
+        transform: translateY(-1px);
+        box-shadow: $shadow-blue;
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+  }
+</style>
