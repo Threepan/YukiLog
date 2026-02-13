@@ -215,51 +215,65 @@ const randomBackground =
 </style>
 
 <script>
-  const btn = document.getElementById('scroll-arrow');
-  const target = document.getElementById('second-screen');
-  if (btn && target) {
-    btn.addEventListener('click', () => {
-      target.scrollIntoView({ behavior: 'smooth' });
-    });
-  }
+  document.addEventListener('astro:page-load', () => {
+    // 清理上次绑定
+    window.__yukilogHomepageCleanup?.();
 
-  // 固定侧栏显隐 - 与导航栏 sticky 同步
-  const leftSidebar = document.getElementById('fixed-sidebar-left');
-  const rightSidebar = document.getElementById('fixed-sidebar-right');
-  const getThreshold = () => window.innerHeight;
+    const btn = document.getElementById('scroll-arrow');
+    const target = document.getElementById('second-screen');
+    if (btn && target) {
+      btn.addEventListener('click', () => {
+        target.scrollIntoView({ behavior: 'smooth' });
+      });
+    }
 
-  function updateSidebars() {
-    const mobileLayout = window.innerWidth <= 968;
+    // 固定侧栏显隐 - 与导航栏 sticky 同步
+    const getThreshold = () => window.innerHeight;
 
-    const threshold = getThreshold();
-    const shouldShow = window.scrollY >= threshold - 50;
+    function updateSidebars() {
+      const mobileLayout = window.innerWidth <= 968;
 
-    // 左侧卡片
-    const profileCard = document.getElementById('profile-card');
-    // 右侧卡片
-    const hitokotoCard = document.getElementById('hitokoto-card');
-    const siteinfoCard = document.getElementById('siteinfo-card');
+      const threshold = getThreshold();
+      const shouldShow = window.scrollY >= threshold - 50;
 
-    if (mobileLayout || shouldShow) {
-      profileCard?.classList.add('visible');
-      if (!mobileLayout) {
-        hitokotoCard?.classList.add('visible');
+      // 左侧卡片
+      const profileCard = document.getElementById('profile-card');
+      // 右侧卡片
+      const hitokotoCard = document.getElementById('hitokoto-card');
+      const siteinfoCard = document.getElementById('siteinfo-card');
+
+      if (mobileLayout || shouldShow) {
+        profileCard?.classList.add('visible');
+        if (!mobileLayout) {
+          hitokotoCard?.classList.add('visible');
+        } else {
+          hitokotoCard?.classList.remove('visible');
+        }
+        // 站点信息延迟 400ms
+        if (siteinfoCard && !siteinfoCard.classList.contains('visible')) {
+          setTimeout(() => siteinfoCard.classList.add('visible'), 400);
+        }
       } else {
+        profileCard?.classList.remove('visible');
         hitokotoCard?.classList.remove('visible');
+        siteinfoCard?.classList.remove('visible');
       }
-      // 站点信息延迟 400ms
-      if (siteinfoCard && !siteinfoCard.classList.contains('visible')) {
-        setTimeout(() => siteinfoCard.classList.add('visible'), 400);
-      }
-    } else {
-      profileCard?.classList.remove('visible');
-      hitokotoCard?.classList.remove('visible');
-      siteinfoCard?.classList.remove('visible');
+    }
+
+    window.addEventListener('scroll', updateSidebars);
+    window.addEventListener('resize', updateSidebars);
+    // 初始检查
+    updateSidebars();
+
+    window.__yukilogHomepageCleanup = () => {
+      window.removeEventListener('scroll', updateSidebars);
+      window.removeEventListener('resize', updateSidebars);
+    };
+  });
+
+  declare global {
+    interface Window {
+      __yukilogHomepageCleanup?: () => void;
     }
   }
-
-  window.addEventListener('scroll', updateSidebars);
-  window.addEventListener('resize', updateSidebars);
-  // 初始检查
-  updateSidebars();
 </script>

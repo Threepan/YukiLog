@@ -34,15 +34,30 @@ const { title, description, keywords, ogImage } = Astro.props;
     
     <script>
       // 页面失去焦点时修改标题
-      const originalTitle = document.title;
-      
-      document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-          document.title = '...你 ... 要走了吗?';
-        } else {
-          document.title = originalTitle;
+      document.addEventListener('astro:page-load', () => {
+        const originalTitle = document.title;
+        
+        // 移除旧监听（避免重复）
+        if (window.__yukilogVisHandler) {
+          document.removeEventListener('visibilitychange', window.__yukilogVisHandler);
         }
+        
+        window.__yukilogVisHandler = () => {
+          if (document.hidden) {
+            document.title = '...你 ... 要走了吗?';
+          } else {
+            document.title = originalTitle;
+          }
+        };
+        
+        document.addEventListener('visibilitychange', window.__yukilogVisHandler);
       });
+      
+      declare global {
+        interface Window {
+          __yukilogVisHandler?: () => void;
+        }
+      }
     </script>
   </body>
 </html>

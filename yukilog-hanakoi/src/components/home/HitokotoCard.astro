@@ -182,21 +182,21 @@ import { contentConfig } from '../../lib/config';
 </style>
 
 <script>
+  document.addEventListener('astro:page-load', () => {
   const textEl = document.getElementById('hitokoto-text');
   const sourceEl = document.getElementById('hitokoto-source');
   const refreshBtn = document.getElementById('hitokoto-refresh');
+  if (!textEl || !sourceEl) return;
 
   async function fetchHitokoto() {
-    if (!textEl || !sourceEl) return;
-    
-    const fromEl = sourceEl.querySelector('.hitokoto-from');
-    const card = textEl.closest('.hitokoto-card') as HTMLElement;
+    const fromEl = sourceEl!.querySelector('.hitokoto-from');
+    const card = textEl!.closest('.hitokoto-card') as HTMLElement;
     
     // 锁定卡片当前高度，防止内容切换时抖动
     if (card) card.style.minHeight = `${card.offsetHeight}px`;
     
     // 淡出
-    textEl.classList.add('loading');
+    textEl!.classList.add('loading');
     if (fromEl) fromEl.classList.add('loading');
     await new Promise(r => setTimeout(r, 200));
 
@@ -204,7 +204,7 @@ import { contentConfig } from '../../lib/config';
       const res = await fetch('https://v1.hitokoto.cn/?c=a');
       const data = await res.json();
       
-      textEl.textContent = data.hitokoto || '...';
+      textEl!.textContent = data.hitokoto || '...';
       
       let source = '';
       if (data.from_who && data.from) {
@@ -214,10 +214,10 @@ import { contentConfig } from '../../lib/config';
       }
       if (fromEl) fromEl.textContent = source;
     } catch {
-      textEl.textContent = '获取失败，点击刷新重试';
+      textEl!.textContent = '获取失败，点击刷新重试';
     } finally {
       // 淡入
-      textEl.classList.remove('loading');
+      textEl!.classList.remove('loading');
       if (fromEl) fromEl.classList.remove('loading');
       // 内容渲染后释放高度锁定
       requestAnimationFrame(() => {
@@ -231,4 +231,5 @@ import { contentConfig } from '../../lib/config';
 
   // 刷新按钮
   refreshBtn?.addEventListener('click', fetchHitokoto);
+  });
 </script>

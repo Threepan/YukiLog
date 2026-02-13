@@ -123,15 +123,22 @@ const scrollConfig = contentConfig.components.scrollProgress;
 </style>
 
 <script>
-  (function () {
+  declare global {
+    interface Window {
+      __yukilogScrollCleanup?: () => void;
+    }
+  }
+
+  document.addEventListener('astro:page-load', () => {
+    window.__yukilogScrollCleanup?.();
+
     const barEl = document.getElementById('scroll-progress-bar');
     const btnEl = document.getElementById('back-to-top');
     const percentNode = document.getElementById('btt-percent');
-    if (!barEl || !btnEl || !percentNode) return;
-
-    const bar = barEl;
-    const btn = btnEl;
-    const percentEl = percentNode;
+    if (!barEl || !btnEl || !percentNode) {
+      window.__yukilogScrollCleanup = undefined;
+      return;
+    }
 
     let ticking = false;
 
@@ -140,9 +147,9 @@ const scrollConfig = contentConfig.components.scrollProgress;
       const docHeight = document.documentElement.scrollHeight - window.innerHeight;
 
       if (docHeight <= 0) {
-        bar.style.setProperty('--p', '0');
-        percentEl.textContent = '0%';
-        btn.classList.remove('visible');
+        barEl!.style.setProperty('--p', '0');
+        percentNode!.textContent = '0%';
+        btnEl!.classList.remove('visible');
         ticking = false;
         return;
       }
@@ -150,29 +157,36 @@ const scrollConfig = contentConfig.components.scrollProgress;
       const progress = Math.min(scrollTop / docHeight, 1);
       const percent = Math.round(progress * 100);
 
-      bar.style.setProperty('--p', String(progress));
-      percentEl.textContent = `${percent}%`;
+      barEl!.style.setProperty('--p', String(progress));
+      percentNode!.textContent = `${percent}%`;
 
       if (scrollTop > 200) {
-        btn.classList.add('visible');
+        btnEl!.classList.add('visible');
       } else {
-        btn.classList.remove('visible');
+        btnEl!.classList.remove('visible');
       }
 
       ticking = false;
     }
 
-    window.addEventListener('scroll', () => {
+    const onScroll = () => {
       if (!ticking) {
         requestAnimationFrame(updateProgress);
         ticking = true;
       }
-    }, { passive: true });
+    };
 
-    btn.addEventListener('click', () => {
+    const onClick = () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
+    };
 
+    window.addEventListener('scroll', onScroll, { passive: true });
+    btnEl.addEventListener('click', onClick);
     updateProgress();
-  })();
+
+    window.__yukilogScrollCleanup = () => {
+      window.removeEventListener('scroll', onScroll);
+      btnEl.removeEventListener('click', onClick);
+    };
+  });
 </script>

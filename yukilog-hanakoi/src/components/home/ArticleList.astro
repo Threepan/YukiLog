@@ -87,17 +87,16 @@ const placeholderPosts = posts as PostCardData[];
 </style>
 
 <script>
-  // 懒加载入场动画 - IntersectionObserver
-  const articleCards = document.querySelectorAll('.article-card');
+  document.addEventListener('astro:page-load', () => {
+    const articleCards = document.querySelectorAll('.article-card');
+    if (!articleCards.length) return;
 
-  if (articleCards.length > 0) {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const card = entry.target as HTMLElement;
             const index = parseInt(card.dataset.index || '0', 10);
-            // 交错延迟入场
             const delay = index * 120;
             setTimeout(() => {
               card.classList.add('visible');
@@ -113,5 +112,5 @@ const placeholderPosts = posts as PostCardData[];
     );
 
     articleCards.forEach((card) => observer.observe(card));
-  }
+  });
 </script>

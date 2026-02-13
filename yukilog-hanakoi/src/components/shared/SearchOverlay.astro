@@ -436,238 +436,249 @@ const sc = contentConfig.components.search;
   import { postsApi } from '../../lib/api';
   import type { PostWithRelations } from '../../types/api';
 
-  // ============ DOM 元素 ============
-  const overlay = document.getElementById('search-overlay')!;
-  const backdrop = document.getElementById('search-backdrop')!;
-  const input = document.getElementById('search-input') as HTMLInputElement;
-  const hint = document.getElementById('search-hint')!;
-  const loading = document.getElementById('search-loading')!;
-  const empty = document.getElementById('search-empty')!;
-  const results = document.getElementById('search-results')!;
-  const resultList = document.getElementById('search-result-list')!;
-  const pagination = document.getElementById('search-pagination')!;
-
-  // ============ 状态 ============
-  let isOpen = false;
-  let activeIndex = -1;
-  let currentPage = 1;
-  let currentQuery = '';
-  let debounceTimer: ReturnType<typeof setTimeout> | null = null;
-  const PAGE_SIZE = 8;
-
-  // ============ 打开 / 关闭 ============
-  function openSearch() {
-    isOpen = true;
-    overlay.classList.add('active');
-    document.body.style.overflow = 'hidden';
-    // 延迟聚焦，等动画开始
-    requestAnimationFrame(() => input.focus());
+  declare global {
+    interface Window {
+      __yukilogSearchCleanup?: () => void;
+    }
   }
 
-  function closeSearch() {
-    isOpen = false;
-    overlay.classList.remove('active');
-    document.body.style.overflow = '';
-    input.value = '';
-    currentQuery = '';
-    currentPage = 1;
-    activeIndex = -1;
-    showView('hint');
-  }
+  document.addEventListener('astro:page-load', () => {
+    window.__yukilogSearchCleanup?.();
 
-  // ============ 视图切换 ============
-  function showView(view: 'hint' | 'loading' | 'empty' | 'results') {
-    hint.style.display = view === 'hint' ? '' : 'none';
-    loading.style.display = view === 'loading' ? '' : 'none';
-    empty.style.display = view === 'empty' ? '' : 'none';
-    results.style.display = view === 'results' ? '' : 'none';
-  }
+    // ============ DOM 元素 ============
+    const overlay = document.getElementById('search-overlay');
+    const backdrop = document.getElementById('search-backdrop');
+    const input = document.getElementById('search-input') as HTMLInputElement | null;
+    const hint = document.getElementById('search-hint');
+    const loading = document.getElementById('search-loading');
+    const empty = document.getElementById('search-empty');
+    const results = document.getElementById('search-results');
+    const resultList = document.getElementById('search-result-list');
+    const pagination = document.getElementById('search-pagination');
 
-  // ============ 搜索逻辑 ============
-  async function doSearch(query: string, page: number) {
-    if (!query.trim()) {
-      showView('hint');
+    if (!overlay || !backdrop || !input || !hint || !loading || !empty || !results || !resultList || !pagination) {
+      window.__yukilogSearchCleanup = undefined;
       return;
     }
 
-    showView('loading');
-    currentQuery = query;
-    currentPage = page;
+    // ============ 状态 ============
+    let isOpen = false;
+    let activeIndex = -1;
+    let currentPage = 1;
+    let currentQuery = '';
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+    const PAGE_SIZE = 8;
 
-    try {
-      const data = await postsApi.search({
-        q: query,
-        page,
-        page_size: PAGE_SIZE,
-      });
+    // ============ 打开 / 关闭 ============
+    function openSearch() {
+      isOpen = true;
+      overlay!.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      requestAnimationFrame(() => input!.focus());
+    }
 
-      if (data.items.length === 0) {
-        showView('empty');
+    function closeSearch() {
+      isOpen = false;
+      overlay!.classList.remove('active');
+      document.body.style.overflow = '';
+      input!.value = '';
+      currentQuery = '';
+      currentPage = 1;
+      activeIndex = -1;
+      showView('hint');
+    }
+
+    // ============ 视图切换 ============
+    function showView(view: 'hint' | 'loading' | 'empty' | 'results') {
+      hint!.style.display = view === 'hint' ? '' : 'none';
+      loading!.style.display = view === 'loading' ? '' : 'none';
+      empty!.style.display = view === 'empty' ? '' : 'none';
+      results!.style.display = view === 'results' ? '' : 'none';
+    }
+
+    // ============ 搜索逻辑 ============
+    async function doSearch(query: string, page: number) {
+      if (!query.trim()) {
+        showView('hint');
         return;
       }
 
-      renderResults(data.items);
-      renderPagination(data.page, data.total_pages, data.total);
-      showView('results');
-      activeIndex = -1;
-      updateActiveItem();
-    } catch {
-      showView('empty');
+      showView('loading');
+      currentQuery = query;
+      currentPage = page;
+
+      try {
+        const data = await postsApi.search({
+          q: query,
+          page,
+          page_size: PAGE_SIZE,
+        });
+
+        if (data.items.length === 0) {
+          showView('empty');
+          return;
+        }
+
+        renderResults(data.items);
+        renderPagination(data.page, data.total_pages, data.total);
+        showView('results');
+        activeIndex = -1;
+        updateActiveItem();
+      } catch {
+        showView('empty');
+      }
     }
-  }
 
-  // ============ 渲染结果 ============
-  function renderResults(items: PostWithRelations[]) {
-    resultList.innerHTML = items.map((item, i) => {
-      const post = item.post;
-      const date = new Date(post.created_at).toLocaleDateString('zh-CN', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      });
-      const tags = item.tags.map(t => `<span class="search-result-tag">#${t.name}</span>`).join('');
-      const summary = post.summary || '';
-      const content = post.content || '';
-      // 优先展示 summary（已含高亮），不存在则回退到 content（含高亮摘要）
-      const excerpt = summary || content;
+    // ============ 渲染结果 ============
+    function renderResults(items: PostWithRelations[]) {
+      resultList!.innerHTML = items.map((item, i) => {
+        const post = item.post;
+        const date = new Date(post.created_at).toLocaleDateString('zh-CN', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        });
+        const tags = item.tags.map(t => `<span class="search-result-tag">#${t.name}</span>`).join('');
+        const summary = post.summary || '';
+        const content = post.content || '';
+        const excerpt = summary || content;
 
-      return `
-        <li class="search-result-item" data-index="${i}">
-          <a href="/posts/${post.slug}">
-            <div class="search-result-title">${post.title}</div>
-            ${excerpt ? `<div class="search-result-excerpt">${excerpt}</div>` : ''}
-            <div class="search-result-meta">
-              <time>${date}</time>
-              ${tags}
-            </div>
-          </a>
-        </li>
+        return `
+          <li class="search-result-item" data-index="${i}">
+            <a href="/posts/${post.slug}">
+              <div class="search-result-title">${post.title}</div>
+              ${excerpt ? `<div class="search-result-excerpt">${excerpt}</div>` : ''}
+              <div class="search-result-meta">
+                <time>${date}</time>
+                ${tags}
+              </div>
+            </a>
+          </li>
+        `;
+      }).join('');
+    }
+
+    function renderPagination(page: number, totalPages: number, total: number) {
+      if (totalPages <= 1) {
+        pagination!.innerHTML = '';
+        return;
+      }
+
+      const overlayEl = document.getElementById('search-overlay')!;
+      const prevText = overlayEl.dataset.prev || '上一页';
+      const nextText = overlayEl.dataset.next || '下一页';
+
+      pagination!.innerHTML = `
+        <button class="search-page-btn" id="search-prev" ${page <= 1 ? 'disabled' : ''}>${prevText}</button>
+        <span class="search-page-info">${page} / ${totalPages}（共 ${total} 篇）</span>
+        <button class="search-page-btn" id="search-next" ${page >= totalPages ? 'disabled' : ''}>${nextText}</button>
       `;
-    }).join('');
-  }
 
-  function renderPagination(page: number, totalPages: number, total: number) {
-    if (totalPages <= 1) {
-      pagination.innerHTML = '';
-      return;
+      document.getElementById('search-prev')?.addEventListener('click', () => {
+        if (currentPage > 1) doSearch(currentQuery, currentPage - 1);
+      });
+      document.getElementById('search-next')?.addEventListener('click', () => {
+        if (currentPage < totalPages) doSearch(currentQuery, currentPage + 1);
+      });
     }
 
-    const overlay = document.getElementById('search-overlay')!;
-    const prevText = overlay.dataset.prev || '上一页';
-    const nextText = overlay.dataset.next || '下一页';
+    // ============ 键盘导航 ============
+    function getItems(): NodeListOf<Element> {
+      return resultList!.querySelectorAll('.search-result-item');
+    }
 
-    pagination.innerHTML = `
-      <button class="search-page-btn" id="search-prev" ${page <= 1 ? 'disabled' : ''}>${prevText}</button>
-      <span class="search-page-info">${page} / ${totalPages}（共 ${total} 篇）</span>
-      <button class="search-page-btn" id="search-next" ${page >= totalPages ? 'disabled' : ''}>${nextText}</button>
-    `;
+    function updateActiveItem() {
+      const items = getItems();
+      items.forEach((el, i) => {
+        el.classList.toggle('active', i === activeIndex);
+        if (i === activeIndex) {
+          el.scrollIntoView({ block: 'nearest' });
+        }
+      });
+    }
 
-    document.getElementById('search-prev')?.addEventListener('click', () => {
-      if (currentPage > 1) doSearch(currentQuery, currentPage - 1);
-    });
-    document.getElementById('search-next')?.addEventListener('click', () => {
-      if (currentPage < totalPages) doSearch(currentQuery, currentPage + 1);
-    });
-  }
+    // ============ 事件绑定 ============
+    backdrop.addEventListener('click', closeSearch);
 
-  // ============ 键盘导航 ============
-  function getItems(): NodeListOf<Element> {
-    return resultList.querySelectorAll('.search-result-item');
-  }
+    input.addEventListener('input', () => {
+      const q = input!.value.trim();
+      if (debounceTimer) clearTimeout(debounceTimer);
 
-  function updateActiveItem() {
-    const items = getItems();
-    items.forEach((el, i) => {
-      el.classList.toggle('active', i === activeIndex);
-      if (i === activeIndex) {
-        el.scrollIntoView({ block: 'nearest' });
+      if (!q) {
+        showView('hint');
+        return;
       }
+
+      debounceTimer = setTimeout(() => {
+        doSearch(q, 1);
+      }, 300);
     });
-  }
 
-  // ============ 事件绑定 ============
+    input.addEventListener('keydown', (e) => {
+      const items = getItems();
+      const count = items.length;
 
-  // 点击遮罩关闭
-  backdrop.addEventListener('click', closeSearch);
-
-  // 输入防抖搜索
-  input.addEventListener('input', () => {
-    const q = input.value.trim();
-    if (debounceTimer) clearTimeout(debounceTimer);
-
-    if (!q) {
-      showView('hint');
-      return;
-    }
-
-    debounceTimer = setTimeout(() => {
-      doSearch(q, 1);
-    }, 300);
-  });
-
-  // 键盘快捷键
-  input.addEventListener('keydown', (e) => {
-    const items = getItems();
-    const count = items.length;
-
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        if (count > 0) {
-          activeIndex = (activeIndex + 1) % count;
-          updateActiveItem();
-        }
-        break;
-
-      case 'ArrowUp':
-        e.preventDefault();
-        if (count > 0) {
-          activeIndex = activeIndex <= 0 ? count - 1 : activeIndex - 1;
-          updateActiveItem();
-        }
-        break;
-
-      case 'Enter':
-        e.preventDefault();
-        if (activeIndex >= 0 && activeIndex < count) {
-          const link = items[activeIndex].querySelector('a') as HTMLAnchorElement;
-          if (link) {
-            closeSearch();
-            window.location.href = link.href;
+      switch (e.key) {
+        case 'ArrowDown':
+          e.preventDefault();
+          if (count > 0) {
+            activeIndex = (activeIndex + 1) % count;
+            updateActiveItem();
           }
-        }
-        break;
+          break;
 
-      case 'Escape':
-        e.preventDefault();
-        closeSearch();
-        break;
-    }
-  });
+        case 'ArrowUp':
+          e.preventDefault();
+          if (count > 0) {
+            activeIndex = activeIndex <= 0 ? count - 1 : activeIndex - 1;
+            updateActiveItem();
+          }
+          break;
 
-  // 全局快捷键：Ctrl+K / Cmd+K 打开搜索
-  document.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-      e.preventDefault();
-      if (isOpen) {
-        closeSearch();
-      } else {
-        openSearch();
+        case 'Enter':
+          e.preventDefault();
+          if (activeIndex >= 0 && activeIndex < count) {
+            const link = items[activeIndex].querySelector('a') as HTMLAnchorElement;
+            if (link) {
+              closeSearch();
+              window.location.href = link.href;
+            }
+          }
+          break;
+
+        case 'Escape':
+          e.preventDefault();
+          closeSearch();
+          break;
       }
-    }
+    });
 
-    // ESC 全局关闭
-    if (e.key === 'Escape' && isOpen) {
-      closeSearch();
-    }
-  });
+    // 全局快捷键：Ctrl+K / Cmd+K
+    const onGlobalKeydown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        if (isOpen) {
+          closeSearch();
+        } else {
+          openSearch();
+        }
+      }
 
-  // 搜索按钮绑定（NavBar 中的两个搜索按钮）
-  // 1) 固定元素中的 #search-toggle
-  document.getElementById('search-toggle')?.addEventListener('click', openSearch);
+      if (e.key === 'Escape' && isOpen) {
+        closeSearch();
+      }
+    };
 
-  // 2) navbar 内部的搜索按钮（通过 aria-label 定位）
-  document.querySelectorAll('.navbar-inner-actions .navbar-action-btn[aria-label="搜索"]').forEach(btn => {
-    btn.addEventListener('click', openSearch);
+    document.addEventListener('keydown', onGlobalKeydown);
+
+    // 搜索按钮绑定
+    document.getElementById('search-toggle')?.addEventListener('click', openSearch);
+    document.querySelectorAll('.navbar-inner-actions .navbar-action-btn[aria-label="搜索"]').forEach(btn => {
+      btn.addEventListener('click', openSearch);
+    });
+
+    window.__yukilogSearchCleanup = () => {
+      document.removeEventListener('keydown', onGlobalKeydown);
+    };
   });
 </script>
