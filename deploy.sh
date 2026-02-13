@@ -396,8 +396,11 @@ else
     warn "正在生成前端 .env ..."
     cat > "$FRONTEND_ENV" <<ENVEOF
 # YukiLog 前端配置 (自动生成)
-PUBLIC_API_URL=https://${DOMAIN}/api
+# 使用内网地址，SSR 渲染时直接调用后端（避免走 nginx 导致 CORS 问题）
+PUBLIC_API_URL=http://localhost:${BACKEND_PORT}
 ENVEOF
+    info "前端 .env 已生成"
+fi
     info "前端 .env 已生成"
 fi
 
@@ -437,17 +440,24 @@ fi
 if [[ "$NEED_HASH_UPDATE" == "true" ]]; then
     warn "正在生成管理员密码哈希 (Argon2) ..."
     
-    # 确保 cargo 在 PATH 中
-    export PATH="$HOME/.cargo/bin:/root/.cargo/bin:$PATH"
+    # 查找 cargo 可执行文件（优先当前用户，其次 root）
+    CARGO_BIN=""
+    if [[ -f "$HOME/.cargo/bin/cargo" ]]; then
+        CARGO_BIN="$HOME/.cargo/bin/cargo"
+    elif [[ -f "/root/.cargo/bin/cargo" ]]; then
+        CARGO_BIN="/root/.cargo/bin/cargo"
+    else
+        CARGO_BIN="cargo"  # fallback 到 PATH
+    fi
     
-    # 生成哈希，增加错误捕获
-    ADMIN_HASH=$(cargo run --bin hash_password --release -- "$ADMIN_PASSWORD" 2>&1 | tail -1)
+    # 生成哈希，使用绝对路径
+    ADMIN_HASH=$($CARGO_BIN run --bin hash_password --release -- "$ADMIN_PASSWORD" 2>&1 | grep '^\$argon2' | tail -1)
     
     # 验证哈希格式（Argon2 哈希以 $argon2 开头）
     if [[ -n "$ADMIN_HASH" ]] && [[ "$ADMIN_HASH" =~ ^\$argon2 ]]; then
         info "密码哈希生成成功"
     else
-        err "密码哈希生成失败: $ADMIN_HASH"
+        err "密码哈希生成失败，请稍后手动运行: cargo run --bin hash_password -- <密码>"
         ADMIN_HASH="FAILED_TO_GENERATE_PLEASE_REGENERATE_MANUALLY"
     fi
     
