@@ -265,3 +265,69 @@ export interface SearchQuery {
  * title 和 summary 中的关键词被 <mark> 标签包裹。
  */
 export type SearchResponse = PaginatedData<PostWithRelations>;
+
+// ================================
+// 管理端 DTO（Admin）
+// ================================
+
+/**
+ * 评论列表查询参数
+ */
+export interface CommentListParams {
+  page?: number;
+  page_size?: number;
+  post_slug?: string;  // 按文章筛选
+  status?: CommentStatus;  // 按状态筛选
+}
+
+/**
+ * 更新评论请求体
+ */
+export interface UpdateCommentRequest {
+  content?: string;
+  guest_name?: string;
+  guest_email?: string;
+  guest_website?: string | null;
+}
+
+/**
+ * 创建主题请求体
+ */
+export interface CreateThemeRequest {
+  name: string;
+  slug: string;
+  description?: string | null;
+}
+
+/**
+ * 更新主题请求体
+ */
+export interface UpdateThemeRequest {
+  name?: string;
+  slug?: string;
+  description?: string | null;
+}
+
+/**
+ * 创建标签请求体
+ */
+export interface CreateTagRequest {
+  name: string;
+  slug: string;
+}
+
+/**
+ * 更新标签请求体
+ */
+export interface UpdateTagRequest {
+  name?: string;
+  slug?: string;
+}
+
+/**
+ * 合并标签请求体
+ */
+export interface MergeTagsRequest {
+  source_id: number;
+  target_id: number;
+}
