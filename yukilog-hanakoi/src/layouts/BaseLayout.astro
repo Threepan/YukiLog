@@ -11,6 +11,7 @@ interface Props {
 }
 
 import SEO from '../components/shared/SEO.astro';
+import { ClientRouter } from 'astro:transitions';
 import '../styles/global.scss';
 
 const { title, description, keywords, ogImage } = Astro.props;
@@ -19,6 +20,7 @@ const { title, description, keywords, ogImage } = Astro.props;
 <!doctype html>
 <html lang="zh-CN">
   <head>
+    <ClientRouter />
     <SEO
       title={title}
       description={description}

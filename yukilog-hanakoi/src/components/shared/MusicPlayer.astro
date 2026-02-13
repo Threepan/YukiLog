@@ -8,9 +8,7 @@
 const musicUrl = await import('../../assets/music/时空漫步.mp3?url');
 ---
 
-<audio id="bg-music" loop preload="auto" transition:persist>
-  <source src={musicUrl.default} type="audio/mpeg" />
-</audio>
+<audio id="bg-music" src={musicUrl.default} loop preload="auto" transition:persist></audio>
 
 <style lang="scss">
   audio {
