@@ -50,7 +50,12 @@ for (const tag of tags) {
       status: "published",
       page_size: 999,
     });
-    tagPosts[tag.slug] = response.items || [];
+    // 转换后端返回的数据结构为前端期望的扁平格式
+    tagPosts[tag.slug] = (response.items || []).map((item: any) => ({
+      ...item.post,
+      theme: item.theme,
+      tags: item.tags,
+    }));
   } catch (error) {
     console.error(`获取标签 ${tag.slug} 的文章失败：`, error);
     tagPosts[tag.slug] = [];
