@@ -1,0 +1,160 @@
+---
+// ================================
+// 404 Not Found 页面
+// ================================
+
+import BlogLayout from "../layouts/BlogLayout.astro";
+import { siteConfig } from "../lib/config";
+---
+
+<BlogLayout title="404 - 页面未找到 | YukiLog" stickyNav>
+  <div class="error-page">
+    <div class="error-content">
+      <div class="error-icon">🌙</div>
+      <h1 class="error-code">404</h1>
+      <p class="error-title">页面走失了</p>
+      <p class="error-desc">
+        你要找的页面好像不在这里...<br />
+        也许它从未存在，也许它已经离开。
+      </p>
+      <div class="error-actions">
+        <a href="/" class="btn-primary">返回首页</a>
+        <button onclick="history.back()" class="btn-secondary">返回上一页</button>
+      </div>
+    </div>
+  </div>
+</BlogLayout>
+
+<style lang="scss">
+  .error-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: $spacing-xl $spacing-lg;
+    background: linear-gradient(180deg, $lian-bg 0%, rgba($lian-blue, 0.05) 100%);
+  }
+
+  .error-content {
+    text-align: center;
+    max-width: 500px;
+    animation: fade-in 600ms $ease-gentle;
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .error-icon {
+    font-size: 80px;
+    margin-bottom: $spacing-md;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  .error-code {
+    font-size: 96px;
+    font-weight: $font-weight-bold;
+    background: linear-gradient(135deg, $lian-pink, $lian-blue);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0;
+    line-height: 1;
+  }
+
+  .error-title {
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-semibold;
+    color: $lian-text;
+    margin: $spacing-md 0 $spacing-sm;
+  }
+
+  .error-desc {
+    font-size: $font-size-base;
+    color: $lian-text-light;
+    line-height: $line-height-relaxed;
+    margin: 0 0 $spacing-xl;
+  }
+
+  .error-actions {
+    display: flex;
+    gap: $spacing-md;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 28px;
+    border-radius: $radius-md;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    transition:
+      background $transition-fast $ease-gentle,
+      box-shadow $transition-fast $ease-gentle,
+      transform $transition-fast $ease-gentle;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, $lian-blue, #93c2e0);
+    color: white;
+    box-shadow: 0 2px 8px rgba($lian-blue, 0.3);
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba($lian-blue, 0.4);
+      transform: translateY(-2px);
+    }
+  }
+
+  .btn-secondary {
+    background: white;
+    color: $lian-text;
+    border: 1px solid $lian-border;
+    box-shadow: 0 1px 3px rgba($lian-text, 0.08);
+
+    &:hover {
+      background: $lian-white;
+      box-shadow: 0 2px 6px rgba($lian-text, 0.12);
+      transform: translateY(-2px);
+    }
+  }
+
+  @media (max-width: $container-sm) {
+    .error-code {
+      font-size: 72px;
+    }
+
+    .error-title {
+      font-size: $font-size-xl;
+    }
+
+    .error-actions {
+      flex-direction: column;
+      width: 100%;
+
+      .btn-primary,
+      .btn-secondary {
+        width: 100%;
+      }
+    }
+  }
+</style>
