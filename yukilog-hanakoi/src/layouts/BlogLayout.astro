@@ -16,6 +16,7 @@ import NavBar from '../components/navigation/NavBar.astro';
 import Footer from '../components/shared/Footer.astro';
 import ScrollProgress from '../components/shared/ScrollProgress.astro';
 import SearchOverlay from '../components/shared/SearchOverlay.astro';
+import MusicPlayer from '../components/shared/MusicPlayer.astro';
 
 const { title, description, keywords, ogImage, stickyNav = false } = Astro.props;
 ---
@@ -30,6 +31,7 @@ const { title, description, keywords, ogImage, stickyNav = false } = Astro.props
   <NavBar stickyOnly={stickyNav} />
   <SearchOverlay />
   <ScrollProgress />
+  <MusicPlayer />
   
   <main>
     <slot />
