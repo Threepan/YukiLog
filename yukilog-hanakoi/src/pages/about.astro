@@ -5,8 +5,6 @@
 // ================================
 
 import BlogLayout from "../layouts/BlogLayout.astro";
-import { Image } from "astro:assets";
-import avatarImage from "../assets/icon/logo/logo.jpg";
 import { contentConfig, siteConfig } from "../lib/config";
 import { svgIcons } from "../lib/svg-icons";
 
@@ -17,16 +15,6 @@ const socialLinks = siteConfig.social;
   <article class="about-page">
     <!-- 页头 -->
     <header class="about-header">
-      <div class="avatar-wrap">
-        <div class="avatar-glow"></div>
-        <Image
-          src={avatarImage}
-          alt="恋"
-          width={128}
-          height={128}
-          class="avatar"
-        />
-      </div>
       <h1 class="greeting">{contentConfig.pages.about.opening}<span class="name-highlight">{contentConfig.pages.about.nameHighlight}</span></h1>
     </header>
 
@@ -149,7 +137,7 @@ const socialLinks = siteConfig.social;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: $spacing-lg;
+    gap: $spacing-sm;
     padding-top: 100px;
     opacity: 0;
     animation: fade-down 700ms $ease-gentle 100ms forwards;
@@ -164,35 +152,6 @@ const socialLinks = siteConfig.social;
       opacity: 1;
       transform: translateY(0);
     }
-  }
-
-  .avatar-wrap {
-    position: relative;
-  }
-
-  .avatar-glow {
-    position: absolute;
-    inset: -5px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--color-pink), var(--color-blue));
-    opacity: 0.35;
-    filter: blur(10px);
-    animation: glow-breathe 4s ease-in-out infinite;
-  }
-
-  @keyframes glow-breathe {
-    0%, 100% { opacity: 0.3; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(1.04); }
-  }
-
-  .avatar {
-    position: relative;
-    width: 128px;
-    height: 128px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid var(--color-white);
-    box-shadow: $shadow-pink;
   }
 
   .greeting {
@@ -458,11 +417,6 @@ const socialLinks = siteConfig.social;
 
     .about-header {
       padding-top: 80px;
-    }
-
-    .avatar {
-      width: 100px;
-      height: 100px;
     }
 
     .greeting {
