@@ -371,8 +371,9 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
   .spinner {
     width: 32px;
     height: 32px;
-    border: 3px solid $lian-border;
+    border: 3px solid rgba($lian-border, 0.3);
     border-top-color: $lian-blue;
+    border-right-color: $lian-pink;
     border-radius: 50%;
     animation: spin 600ms linear infinite;
   }
@@ -387,14 +388,14 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     border-collapse: collapse;
 
     thead {
-      background: $lian-bg;
-      border-bottom: 1px solid $lian-border;
+      background: linear-gradient(135deg, rgba($lian-blue, 0.05) 0%, rgba($lian-pink, 0.05) 100%);
+      border-bottom: 2px solid rgba($lian-blue, 0.1);
 
       th {
-        padding: $spacing-sm $spacing-md;
-        font-size: $font-size-xs;
-        font-weight: $font-weight-medium;
-        color: $lian-text-light;
+        padding: $spacing-md $spacing-lg;
+        font-size: $font-size-sm;
+        font-weight: $font-weight-semibold;
+        color: $lian-text;
         text-align: left;
       }
     }
@@ -402,15 +403,16 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     tbody {
       tr {
         border-bottom: 1px solid $lian-divider;
-        transition: background $transition-fast $ease-gentle;
+        transition: all $transition-base $ease-gentle;
 
         &:hover {
-          background: rgba($lian-blue, 0.02);
+          background: linear-gradient(135deg, rgba($lian-blue, 0.03) 0%, rgba($lian-pink, 0.03) 100%);
+          transform: scale(1.01);
         }
       }
 
       td {
-        padding: $spacing-md;
+        padding: $spacing-md $spacing-lg;
         font-size: $font-size-sm;
         color: $lian-text;
       }
@@ -431,12 +433,19 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 
   .theme-badge {
     display: inline-block;
-    padding: 4px 10px;
+    padding: $spacing-xs $spacing-sm;
     font-size: $font-size-xs;
-    font-weight: $font-weight-medium;
+    font-weight: $font-weight-semibold;
     color: $lian-blue;
-    background: rgba($lian-blue, 0.08);
-    border-radius: 10px;
+    background: linear-gradient(135deg, rgba($lian-blue, 0.08) 0%, rgba($lian-blue, 0.12) 100%);
+    border-radius: 12px;
+    border: 1px solid rgba($lian-blue, 0.2);
+    transition: all $transition-fast $ease-gentle;
+
+    &:hover {
+      background: linear-gradient(135deg, rgba($lian-blue, 0.15) 0%, rgba($lian-blue, 0.2) 100%);
+      transform: scale(1.05);
+    }
   }
 
   .status-badge {
@@ -470,34 +479,37 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
   // 操作按钮
   .actions {
     display: flex;
-    gap: 4px;
+    gap: $spacing-xs;
 
     button {
-      padding: 4px 12px;
+      padding: $spacing-xs $spacing-sm;
       font-size: $font-size-xs;
+      font-weight: $font-weight-medium;
       border: none;
-      border-radius: 6px;
+      border-radius: $radius-sm;
       cursor: pointer;
-      transition: all $transition-fast $ease-gentle;
+      transition: all $transition-base $ease-gentle;
     }
 
     .btn-edit {
-      background: rgba($lian-pink, 0.1);
-      color: $lian-pink;
+      background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
+      color: white;
+      box-shadow: 0 2px 8px rgba($lian-blue, 0.2);
 
       &:hover {
-        background: $lian-pink;
-        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba($lian-blue, 0.3);
       }
     }
 
     .btn-delete {
-      background: rgba($lian-error, 0.1);
-      color: $lian-error;
+      background: linear-gradient(135deg, rgba($lian-error, 0.8) 0%, rgba($lian-error, 0.6) 100%);
+      color: white;
+      box-shadow: 0 2px 8px rgba($lian-error, 0.2);
 
       &:hover {
-        background: $lian-error;
-        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba($lian-error, 0.3);
       }
     }
   }
