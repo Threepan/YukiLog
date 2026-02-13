@@ -19,6 +19,23 @@ const { title, description, keywords, ogImage } = Astro.props;
 <!doctype html>
 <html lang="zh-CN">
   <head>
+    <!-- 主题初始化脚本（内联执行，避免闪烁） -->
+    <script is:inline>
+      (function() {
+        const THEME_KEY = 'yukilog-theme';
+        const stored = localStorage.getItem(THEME_KEY);
+        let theme = 'light';
+        
+        if (stored === 'dark' || stored === 'light') {
+          theme = stored;
+        } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          theme = 'dark';
+        }
+        
+        document.documentElement.setAttribute('data-theme', theme);
+      })();
+    </script>
+    
     <SEO
       title={title}
       description={description}
