@@ -595,8 +595,9 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
   .spinner {
     width: 32px;
     height: 32px;
-    border: 3px solid $lian-border;
+    border: 3px solid rgba($lian-border, 0.3);
     border-top-color: $lian-blue;
+    border-right-color: $lian-pink;
     border-radius: 50%;
     animation: spin 600ms linear infinite;
   }
@@ -611,14 +612,14 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     border-collapse: collapse;
 
     thead {
-      background: $lian-bg;
-      border-bottom: 1px solid $lian-border;
+      background: linear-gradient(135deg, rgba($lian-blue, 0.05) 0%, rgba($lian-pink, 0.05) 100%);
+      border-bottom: 2px solid rgba($lian-blue, 0.1);
 
       th {
-        padding: $spacing-sm $spacing-md;
-        font-size: $font-size-xs;
-        font-weight: $font-weight-medium;
-        color: $lian-text-light;
+        padding: $spacing-md $spacing-lg;
+        font-size: $font-size-sm;
+        font-weight: $font-weight-semibold;
+        color: $lian-text;
         text-align: left;
       }
     }
@@ -626,15 +627,16 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     tbody {
       tr {
         border-bottom: 1px solid $lian-divider;
-        transition: background $transition-fast $ease-gentle;
+        transition: all $transition-base $ease-gentle;
 
         &:hover {
-          background: rgba($lian-blue, 0.02);
+          background: linear-gradient(135deg, rgba($lian-blue, 0.03) 0%, rgba($lian-pink, 0.03) 100%);
+          transform: scale(1.005);
         }
       }
 
       td {
-        padding: $spacing-md;
+        padding: $spacing-md $spacing-lg;
         font-size: $font-size-sm;
         color: $lian-text;
       }
@@ -708,54 +710,59 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
   // 操作按钮
   .actions {
     display: flex;
-    gap: 4px;
+    gap: $spacing-xs;
 
     button {
-      padding: 4px 10px;
-      font-size: $font-size-sm;
+      padding: $spacing-xs $spacing-sm;
+      font-size: $font-size-xs;
+      font-weight: $font-weight-medium;
       border: none;
-      border-radius: 6px;
+      border-radius: $radius-sm;
       cursor: pointer;
-      transition: all $transition-fast $ease-gentle;
+      transition: all $transition-base $ease-gentle;
     }
 
     .btn-approve {
-      background: rgba($lian-blue, 0.1);
-      color: $lian-blue;
+      background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
+      color: white;
+      box-shadow: 0 2px 6px rgba($lian-blue, 0.2);
 
       &:hover {
-        background: $lian-blue;
-        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba($lian-blue, 0.3);
       }
     }
 
     .btn-broken {
-      background: rgba($lian-text-muted, 0.1);
-      color: $lian-text-muted;
+      background: rgba($lian-text-muted, 0.2);
+      color: $lian-text;
 
       &:hover {
         background: $lian-text-muted;
         color: white;
+        transform: translateY(-2px);
       }
     }
 
     .btn-edit {
-      background: rgba($lian-pink, 0.1);
-      color: $lian-pink;
+      background: linear-gradient(135deg, rgba($lian-pink, 0.8) 0%, rgba($lian-pink, 0.6) 100%);
+      color: white;
+      box-shadow: 0 2px 6px rgba($lian-pink, 0.2);
 
       &:hover {
-        background: $lian-pink;
-        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba($lian-pink, 0.3);
       }
     }
 
     .btn-delete {
-      background: rgba($lian-error, 0.1);
-      color: $lian-error;
+      background: linear-gradient(135deg, rgba($lian-error, 0.8) 0%, rgba($lian-error, 0.6) 100%);
+      color: white;
+      box-shadow: 0 2px 6px rgba($lian-error, 0.2);
 
       &:hover {
-        background: $lian-error;
-        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba($lian-error, 0.3);
       }
     }
   }
@@ -822,38 +829,50 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
   .modal-backdrop {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(2px);
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    animation: fadeIn $transition-base $ease-gentle;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 
   .modal-card {
     position: relative;
     width: 90%;
-    max-width: 500px;
-    background: $lian-white;
-    border-radius: $radius-md;
-    box-shadow: $shadow-lg;
-    transform: scale(0.95);
-    transition: transform $transition-base $ease-gentle;
+    max-width: 520px;
+    background: white;
+    border-radius: $radius-lg;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    transform: scale(0.9) translateY(20px);
+    transition: all $transition-base $ease-gentle;
+    border: 1px solid rgba($lian-blue, 0.1);
   }
 
   .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: $spacing-lg;
+    padding: $spacing-xl $spacing-xl $spacing-lg;
+    background: linear-gradient(135deg, rgba($lian-blue, 0.03) 0%, rgba($lian-pink, 0.03) 100%);
     border-bottom: 1px solid $lian-divider;
+    border-radius: $radius-lg $radius-lg 0 0;
 
     h3 {
       margin: 0;
-      font-size: $font-size-lg;
-      font-weight: $font-weight-semibold;
-      color: $lian-text;
+      font-size: $font-size-xl;
+      font-weight: $font-weight-bold;
+      background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
     .modal-close {
-      width: 32px;
-      height: 32px;
+      width: 36px;
+      height: 36px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -863,17 +882,18 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
       border: none;
       border-radius: 50%;
       cursor: pointer;
-      transition: all $transition-fast $ease-gentle;
+      transition: all $transition-base $ease-gentle;
 
       &:hover {
-        background: $lian-bg;
+        background: linear-gradient(135deg, rgba($lian-blue, 0.1) 0%, rgba($lian-pink, 0.1) 100%);
         color: $lian-text;
+        transform: rotate(90deg);
       }
     }
   }
 
   .modal-body {
-    padding: $spacing-lg;
+    padding: $spacing-xl;
   }
 
   .form-group {
@@ -897,16 +917,21 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
       padding: $spacing-sm $spacing-md;
       font-size: $font-size-base;
       color: $lian-text;
-      background: $lian-white;
-      border: 1px solid $lian-border;
+      background: white;
+      border: 2px solid $lian-border;
       border-radius: $radius-sm;
       font-family: $font-family-base;
-      transition: all $transition-fast $ease-gentle;
+      transition: all $transition-base $ease-gentle;
 
       &:focus {
         outline: none;
         border-color: $lian-blue;
-        box-shadow: 0 0 0 3px rgba($lian-blue, 0.1);
+        box-shadow: 0 0 0 4px rgba($lian-blue, 0.1);
+        transform: translateY(-2px);
+      }
+
+      &:hover {
+        border-color: rgba($lian-blue, 0.5);
       }
 
       &::placeholder {
@@ -923,41 +948,50 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
   .modal-footer {
     display: flex;
     justify-content: flex-end;
-    gap: $spacing-sm;
-    padding: $spacing-lg;
+    gap: $spacing-md;
+    padding: $spacing-lg $spacing-xl $spacing-xl;
     border-top: 1px solid $lian-divider;
 
     button {
-      padding: $spacing-sm $spacing-lg;
+      padding: $spacing-sm $spacing-xl;
       font-size: $font-size-sm;
-      font-weight: $font-weight-medium;
+      font-weight: $font-weight-semibold;
       border: none;
       border-radius: $radius-sm;
       cursor: pointer;
-      transition: all $transition-fast $ease-gentle;
+      transition: all $transition-base $ease-gentle;
     }
 
     .btn-secondary {
-      color: $lian-text-light;
+      color: $lian-text;
       background: $lian-bg;
+      border: 2px solid $lian-border;
 
       &:hover {
-        background: color.adjust($lian-bg, $lightness: -5%);
+        background: rgba($lian-blue, 0.05);
+        border-color: $lian-blue;
+        transform: translateY(-2px);
       }
     }
 
     .btn-primary {
       color: white;
       background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
+      box-shadow: $shadow-blue;
 
       &:hover {
-        transform: translateY(-1px);
-        box-shadow: $shadow-blue;
+        transform: translateY(-2px);
+        box-shadow: $shadow-blue-hover;
+      }
+
+      &:active {
+        transform: translateY(0);
       }
 
       &:disabled {
         opacity: 0.6;
         cursor: not-allowed;
+        transform: none;
       }
     }
   }
