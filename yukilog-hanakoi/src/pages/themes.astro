@@ -17,7 +17,7 @@ const themeIcon = navIcons.theme;
 const themesPageConfig = contentConfig.pages.themes;
 
 // 从后端 API 获取主题列表
-let themes = [];
+let themes: any[] = [];
 let apiError = null;
 try {
   themes = await themesApi.list();

@@ -83,14 +83,14 @@ import AdminLayout from '../../../../layouts/AdminLayout.astro';
 <script>
   import { adminApi, themesApi, tagsApi } from '../../../../lib/api';
   import { isValidSlug } from '../../../../lib/slugify';
-  import type { Theme, Tag, Post } from '../../../../types/api';
+  import type { Theme, Tag, PostWithRelations } from '../../../../types/api';
 
   // ===== 状态管理 =====
   let editor: any;
   let themes: Theme[] = [];
   let tags: Tag[] = [];
   let selectedTagSlugs: Set<string> = new Set();
-  let originalPost: Post | null = null;
+  let originalPost: PostWithRelations | null = null;
 
   // ===== DOM 元素 =====
   const pageLoading = document.getElementById('page-loading')!;
@@ -105,7 +105,7 @@ import AdminLayout from '../../../../layouts/AdminLayout.astro';
   const selectedTagCount = document.getElementById('selected-tag-count')!;
   
   const cancelBtn = document.getElementById('cancel-btn')!;
-  const saveDraftBtn = document.getElementById('save-draft')!;
+  const saveDraftBtn = document.getElementById('save-draft') as HTMLButtonElement;
   const publishBtn = document.getElementById('publish-btn') as HTMLButtonElement;
 
   // ===== 初始化 =====
@@ -221,7 +221,7 @@ import AdminLayout from '../../../../layouts/AdminLayout.astro';
       after: () => {
         // 编辑器初始化完成后设置内容
         if (originalPost) {
-          editor.setValue(originalPost.content);
+          editor.setValue(originalPost.post.content);
         }
       }
     });
@@ -262,15 +262,15 @@ import AdminLayout from '../../../../layouts/AdminLayout.astro';
   function fillFormData() {
     if (!originalPost) return;
 
-    titleInput.value = originalPost.title;
-    slugInput.value = originalPost.slug;
-    summaryInput.value = originalPost.summary || '';
-    coverImageInput.value = originalPost.cover_image || '';
+    titleInput.value = originalPost.post.title;
+    slugInput.value = originalPost.post.slug;
+    summaryInput.value = originalPost.post.summary || '';
+    coverImageInput.value = originalPost.post.cover_image || '';
     themeSelect.value = originalPost.theme?.slug || '';
 
     // 预选标签
     if (originalPost.tags) {
-      originalPost.tags.forEach(tag => {
+      originalPost.tags.forEach((tag: Tag) => {
         selectedTagSlugs.add(tag.slug);
         const checkbox = document.querySelector(`.tag-checkbox[value="${tag.slug}"]`) as HTMLInputElement;
         if (checkbox) {
@@ -283,7 +283,7 @@ import AdminLayout from '../../../../layouts/AdminLayout.astro';
     updateSlugPreview();
 
     // 更新按钮文本
-    if (originalPost.status === 'draft') {
+    if (originalPost.post.status === 'draft') {
       publishBtn.textContent = '发布文章';
     } else {
       publishBtn.textContent = '更新文章';
@@ -365,7 +365,7 @@ import AdminLayout from '../../../../layouts/AdminLayout.astro';
     const summaryValue = summaryInput.value.trim();
     if (summaryValue) {
       data.summary = summaryValue;
-    } else if (originalPost.summary && !summaryValue) {
+    } else if (originalPost.post.summary && !summaryValue) {
       data.summary = null;  // 清空
     }
     // 否则 undefined（不传，不修改）
@@ -374,7 +374,7 @@ import AdminLayout from '../../../../layouts/AdminLayout.astro';
     const coverValue = coverImageInput.value.trim();
     if (coverValue) {
       data.cover_image = coverValue;
-    } else if (originalPost.cover_image && !coverValue) {
+    } else if (originalPost.post.cover_image && !coverValue) {
       data.cover_image = null;
     }
 
@@ -388,7 +388,7 @@ import AdminLayout from '../../../../layouts/AdminLayout.astro';
 
     // 提交
     try {
-      await adminApi.posts.update(originalPost.id, data);
+      await adminApi.posts.update(originalPost.post.slug, data);
       alert(`文章「${title}」${status === 'published' ? '更新' : '保存为草稿'}成功！`);
       window.location.href = '/admin/posts';
     } catch (err: any) {

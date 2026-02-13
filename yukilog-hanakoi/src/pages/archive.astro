@@ -17,14 +17,14 @@ const archiveIcon = navIcons.archive;
 const archivePageConfig = contentConfig.pages.archive;
 
 // 从后端 API 获取所有已发布文章
-let allPosts = [];
+let allPosts: any[] = [];
 let apiError = null;
 try {
   const response = await postsApi.list({
     page_size: 999,
     status: "published",
   });
-  allPosts = response.posts || [];
+  allPosts = response.items || [];
 } catch (error) {
   console.error("获取文章列表失败：", error);
   apiError = error;

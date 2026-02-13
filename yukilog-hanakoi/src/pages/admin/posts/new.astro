@@ -99,7 +99,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
   const selectedTagCount = document.getElementById('selected-tag-count')!;
   
   const cancelBtn = document.getElementById('cancel-btn')!;
-  const saveDraftBtn = document.getElementById('save-draft')!;
+  const saveDraftBtn = document.getElementById('save-draft') as HTMLButtonElement;
   const publishBtn = document.getElementById('publish-btn') as HTMLButtonElement;
 
   // ===== 初始化 =====

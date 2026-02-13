@@ -20,7 +20,7 @@ const tagIcon = navIcons.tag;
 const tagsPageConfig = contentConfig.pages.tags;
 
 // 从后端 API 获取标签列表
-let tags = [];
+let tags: any[] = [];
 let apiError = null;
 try {
   tags = await tagsApi.list();
@@ -46,11 +46,11 @@ const tagPosts: Record<string, any[]> = {};
 for (const tag of tags) {
   try {
     const response = await postsApi.list({
-      tag_slugs: [tag.slug],
+      tag_slugs: tag.slug,
       status: "published",
       page_size: 999,
     });
-    tagPosts[tag.slug] = response.posts || [];
+    tagPosts[tag.slug] = response.items || [];
   } catch (error) {
     console.error(`获取标签 ${tag.slug} 的文章失败：`, error);
     tagPosts[tag.slug] = [];

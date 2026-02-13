@@ -17,12 +17,12 @@ const linksPageConfig = contentConfig.pages.links;
 const bestFriend = linksPageConfig.bestFriend;
 
 // 从后端 API 获取友链列表
-let apiLinks = [];
+let apiLinks: any[] = [];
 let apiError = null;
 try {
   const response = await linksApi.list();
   // 只显示已通过审核的友链
-  apiLinks = response.filter((link) => link.status === "approved");
+  apiLinks = response.filter((link) => link.status === "active");
 } catch (error) {
   console.error("获取友链列表失败：", error);
   apiError = error;
@@ -35,9 +35,9 @@ if (apiError) {
 
 // 将 API 返回的友链转换为组件所需格式
 const friends = apiLinks.map((link) => ({
-  name: link.name,
+  name: link.title,
   description: link.description || "",
-  avatar: link.avatar_url,
+  avatar: link.avatar,
   url: link.url,
 }));
 ---

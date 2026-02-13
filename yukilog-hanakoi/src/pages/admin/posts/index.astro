@@ -36,11 +36,11 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       <thead>
         <tr>
           <th>标题</th>
-          <th width="100">主题</th>
-          <th width="80">状态</th>
-          <th width="80">浏览</th>
-          <th width="120">创建时间</th>
-          <th width="150">操作</th>
+          <th style="width: 100px">主题</th>
+          <th style="width: 80px">状态</th>
+          <th style="width: 80px">浏览</th>
+          <th style="width: 120px">创建时间</th>
+          <th style="width: 150px">操作</th>
         </tr>
       </thead>
       <tbody id="posts-tbody"></tbody>
@@ -59,11 +59,36 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 
 <script>
   import { adminApi } from '../../../lib/api';
-  import type { Post } from '../../../types/api';
+  import type { PostWithRelations } from '../../../types/api';
+
+  // 扁平化文章数据（合并 post + relations）
+  interface FlatPost {
+    id: number;
+    title: string;
+    slug: string;
+    status: string;
+    view_count: number;
+    created_at: string;
+    theme: { name: string; slug: string } | null;
+    tags: { name: string; slug: string }[];
+  }
+
+  function flattenPost(item: PostWithRelations): FlatPost {
+    return {
+      id: item.post.id,
+      title: item.post.title,
+      slug: item.post.slug,
+      status: item.post.status,
+      view_count: item.post.view_count,
+      created_at: item.post.created_at,
+      theme: item.theme,
+      tags: item.tags,
+    };
+  }
 
   // ===== 状态管理 =====
-  let allPosts: Post[] = [];
-  let filteredPosts: Post[] = [];
+  let allPosts: FlatPost[] = [];
+  let filteredPosts: FlatPost[] = [];
   let currentStatus: 'all' | 'published' | 'draft' = 'all';
 
   // 分页
@@ -79,8 +104,8 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
   const createBtn = document.getElementById('create-btn')!;
 
   const pagination = document.getElementById('pagination')!;
-  const prevBtn = document.getElementById('prev-btn')!;
-  const nextBtn = document.getElementById('next-btn')!;
+  const prevBtn = document.getElementById('prev-btn') as HTMLButtonElement;
+  const nextBtn = document.getElementById('next-btn') as HTMLButtonElement;
   const currentPageSpan = document.getElementById('current-page')!;
   const totalPagesSpan = document.getElementById('total-pages')!;
 
@@ -98,7 +123,8 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     pagination.style.display = 'none';
 
     try {
-      allPosts = await adminApi.posts.list();
+      const response = await adminApi.posts.list();
+      allPosts = response.items.map(flattenPost);
       applyFilter();
     } catch (err: any) {
       loading.style.display = 'none';
@@ -155,7 +181,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
         <td class="text-muted">${formatDate(post.created_at)}</td>
         <td class="actions">
           <button class="btn-edit" data-slug="${escapeHtml(post.slug)}">编辑</button>
-          <button class="btn-delete" data-id="${post.id}" data-title="${escapeHtml(post.title)}">删除</button>
+          <button class="btn-delete" data-slug="${escapeHtml(post.slug)}" data-title="${escapeHtml(post.title)}">删除</button>
         </td>
       </tr>
     `).join('');
@@ -217,19 +243,19 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     document.querySelectorAll('.btn-delete').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const target = e.target as HTMLElement;
-        const id = Number(target.dataset.id);
+        const slug = target.dataset.slug || '';
         const title = target.dataset.title || '';
-        handleDelete(id, title);
+        handleDelete(slug, title);
       });
     });
   }
 
   // ===== 删除文章 =====
-  async function handleDelete(id: number, title: string) {
+  async function handleDelete(slug: string, title: string) {
     if (!confirm(`确认删除文章《${title}》？\n\n此操作不可撤销。`)) return;
 
     try {
-      await adminApi.posts.delete(id);
+      await adminApi.posts.delete(slug);
       await loadPosts();
     } catch (err: any) {
       alert(err.message || '删除失败');

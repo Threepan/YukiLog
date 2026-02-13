@@ -8,6 +8,7 @@ import CommentSection from "../../components/comments/CommentSection.astro";
 import { contentConfig, siteConfig } from "../../lib/config";
 import { renderMarkdown } from "../../lib/markdown";
 import { postsApi, commentsApi } from "../../lib/api";
+import type { CommentNode } from "../../types/api";
 
 const { slug } = Astro.params;
 
@@ -30,13 +31,18 @@ if (apiError || !currentPost) {
   return Astro.redirect("/404");
 }
 
+// 解构文章数据
+const post = currentPost.post;
+const postTheme = currentPost.theme;
+const postTags = currentPost.tags;
+
 // 增加浏览数（后台异步，不阻塞渲染）
 postsApi.incrementView(slug).catch((err) => {
   console.error("增加浏览数失败：", err);
 });
 
 // 获取评论列表
-let comments = [];
+let comments: CommentNode[] = [];
 try {
   comments = await commentsApi.getPostComments(slug);
 } catch (error) {
@@ -47,12 +53,12 @@ try {
 const hp = contentConfig.markdown.headingPrefixes;
 
 // 渲染 Markdown 内容
-const { html: markdownHtml, headings } = await renderMarkdown(currentPost.content);
+const { html: markdownHtml, headings } = await renderMarkdown(post.content);
 ---
 
 <BlogLayout
-  title={`${currentPost.title} | ${siteConfig.name}`}
-  description={currentPost.summary}
+  title={`${post.title} | ${siteConfig.name}`}
+  description={post.summary ?? undefined}
   keywords={["Markdown", "样式测试", "占位文章"]}
   stickyNav={true}
 >
@@ -75,10 +81,10 @@ const { html: markdownHtml, headings } = await renderMarkdown(currentPost.conten
         </nav>
 
         <header class="post-header">
-          <h1 class="post-title">{currentPost.title}</h1>
-          <p class="post-summary">{currentPost.summary}</p>
-          <time datetime={currentPost.created_at}>
-            {new Date(currentPost.created_at).toLocaleDateString("zh-CN", {
+          <h1 class="post-title">{post.title}</h1>
+          <p class="post-summary">{post.summary}</p>
+          <time datetime={post.created_at}>
+            {new Date(post.created_at).toLocaleDateString("zh-CN", {
               year: "numeric",
               month: "long",
               day: "numeric",
