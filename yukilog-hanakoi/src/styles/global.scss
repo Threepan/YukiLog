@@ -27,6 +27,7 @@
 html {
   scroll-behavior: smooth;
   font-size: 16px; // 基准字号
+  background-color: var(--color-bg); // 防止body背景透出时显示白色
 }
 
 body {
