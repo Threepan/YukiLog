@@ -89,8 +89,8 @@ export const siteConfig = {
   ],
   startDate: "2026-02-11",
   seo: {
-    keywords: ["博客", "技术", "Rust", "TypeScript", "前端", "后端", "全栈"],
-    ogImage: "/images/og-image.jpg",
+    keywords: ["YukiLog", "恋的博客", "个人博客", "Lian"],
+    ogImage: "",
   },
 } satisfies SiteConfig;
 
@@ -177,9 +177,9 @@ export const contentConfig = {
         nickLabel: "昵称 *",
         nickPlaceholder: "你的昵称",
         emailLabel: "邮箱 *",
-        emailPlaceholder: "your@email.com",
+        emailPlaceholder: "邮箱地址",
         websiteLabel: "个人网站",
-        websitePlaceholder: "https://your-site.com （可选）",
+        websitePlaceholder: "站点地址（选填）",
         hint: "支持 Markdown 基础语法 · 提交后需等待审核",
       },
       item: {
