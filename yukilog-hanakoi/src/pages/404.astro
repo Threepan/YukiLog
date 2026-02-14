@@ -4,12 +4,12 @@
 // ================================
 
 import BlogLayout from "../layouts/BlogLayout.astro";
-import { siteConfig, contentConfig } from "../lib/config";
+import { contentConfig } from "../lib/config";
 
 const e404 = contentConfig.pages.error404;
 ---
 
-<BlogLayout title={`404 - 页面未找到 | ${siteConfig.name}`} stickyNav>
+<BlogLayout title="404 - 页面未找到" description="你迷路了" stickyNav>
   <div class="error-page">
     <div class="error-content">
       <div class="error-icon">{e404.icon}</div>

@@ -10,7 +10,7 @@ import BlogLayout from "../../layouts/BlogLayout.astro";
 import PageHero from "../../components/shared/PageHero.astro";
 import PostListCard from "../../components/shared/PostListCard.astro";
 import { navIcons } from "../../lib/svg-icons";
-import { siteConfig, contentConfig } from "../../lib/config";
+import { contentConfig } from "../../lib/config";
 import { themesApi, postsApi } from "../../lib/api";
 
 const themeIcon = navIcons.theme;
@@ -52,7 +52,7 @@ if (apiError || !theme) {
 }
 ---
 
-<BlogLayout title={`${theme.name} - ${siteConfig.name}`} stickyNav>
+<BlogLayout title={theme.name} description={theme.description || `${theme.name} 主题下的所有文章`} stickyNav>
   <PageHero
     title={theme.name}
     subtitle={theme.description || `共 ${theme.post_count} 篇文章`}

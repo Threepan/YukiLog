@@ -67,7 +67,7 @@ const archiveData = Array.from(yearMap.entries())
 const totalPosts = archiveData.reduce((sum, y) => sum + y.posts.length, 0);
 ---
 
-<BlogLayout title={`归档 - ${siteConfig.name}`} stickyNav>
+<BlogLayout title="归档" description="按时间线浏览所有文章" stickyNav>
   <PageHero
     title="归档"
     subtitle={`${archivePageConfig.heroSubtitlePrefix} ${totalPosts} ${archivePageConfig.heroSubtitleSuffix}`}

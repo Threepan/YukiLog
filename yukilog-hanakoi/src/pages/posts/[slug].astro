@@ -5,7 +5,7 @@ import BlogLayout from "../../layouts/BlogLayout.astro";
 import ProfileCard from "../../components/home/ProfileCard.astro";
 import TableOfContents from "../../components/posts/TableOfContents.astro";
 import CommentSection from "../../components/comments/CommentSection.astro";
-import { contentConfig, siteConfig } from "../../lib/config";
+import { contentConfig } from "../../lib/config";
 import { renderMarkdown } from "../../lib/markdown";
 import { postsApi, commentsApi } from "../../lib/api";
 import type { CommentNode } from "../../types/api";
@@ -57,9 +57,9 @@ const { html: markdownHtml, headings } = await renderMarkdown(post.content);
 ---
 
 <BlogLayout
-  title={`${post.title} | ${siteConfig.name}`}
+  title={post.title}
   description={post.summary ?? undefined}
-  keywords={["Markdown", "样式测试", "占位文章"]}
+  keywords={postTags.length > 0 ? postTags.map(t => t.name) : undefined}
   stickyNav={true}
 >
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/katex.min.css" slot="head" />

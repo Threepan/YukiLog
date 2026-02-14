@@ -6,12 +6,12 @@
 export const prerender = false;
 
 import BlogLayout from "../layouts/BlogLayout.astro";
-import { siteConfig, contentConfig } from "../lib/config";
+import { contentConfig } from "../lib/config";
 
 const e500 = contentConfig.pages.error500;
 ---
 
-<BlogLayout title={`500 - 服务器错误 | ${siteConfig.name}`} stickyNav>
+<BlogLayout title="500 - 服务器错误" description="服务器出了点问题" stickyNav>
   <div class="error-page">
     <div class="error-content">
       <div class="error-icon">{e500.icon}</div>

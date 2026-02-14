@@ -24,36 +24,31 @@ const {
 
 const fullTitle = title === siteConfig.name ? title : `${title} - ${siteConfig.name}`;
 const url = canonical || Astro.url.href;
+const resolvedOgImage = ogImage || logoIcon.src;
 ---
 
-<!-- Primary Meta Tags -->
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="description" content={description} />
 <meta name="keywords" content={keywords.join(', ')} />
 <meta name="author" content={siteConfig.author.name} />
+<meta property="og:locale" content="zh_CN" />
+<meta name="theme-color" content="#E8A4B4" />
 <title>{fullTitle}</title>
 
-<!-- Canonical URL -->
 <link rel="canonical" href={url} />
 
-<!-- Open Graph / Facebook -->
 <meta property="og:type" content="website" />
 <meta property="og:url" content={url} />
 <meta property="og:title" content={fullTitle} />
 <meta property="og:description" content={description} />
-<meta property="og:image" content={ogImage} />
+<meta property="og:image" content={resolvedOgImage} />
 <meta property="og:site_name" content={siteConfig.name} />
 
-<!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:url" content={url} />
 <meta name="twitter:title" content={fullTitle} />
 <meta name="twitter:description" content={description} />
-<meta name="twitter:image" content={ogImage} />
+<meta name="twitter:image" content={resolvedOgImage} />
 
-<!-- Favicon -->
 <link rel="icon" type="image/jpeg" href={logoIcon.src} />
-
-<!-- RSS Feed (可选) -->
-<link rel="alternate" type="application/rss+xml" title={siteConfig.name} href="/rss.xml" />
