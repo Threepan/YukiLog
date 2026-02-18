@@ -17,6 +17,10 @@ import { postsApi } from "../lib/api";
 
 const arrowIcon = uiIcons.arrow;
 
+// 读取排序参数（默认 created_at）
+const url = new URL(Astro.request.url);
+const currentSort = (url.searchParams.get('sort') || 'created_at') as 'created_at' | 'updated_at' | 'view_count';
+
 // 从后端 API 获取最新 20 篇已发布文章
 let recentPosts: any[] = [];
 let apiError = null;
@@ -25,6 +29,7 @@ try {
     page: 1,
     page_size: 20,
     status: "published",
+    sort: currentSort,
   });
   // 转换后端返回的数据结构为前端期望的扁平格式
   recentPosts = (response.items || []).map((item: any) => ({
@@ -74,7 +79,7 @@ const randomBackground =
   </aside>
 
   <div class="home-second-screen" id="second-screen">
-    <ArticleList posts={recentPosts} />
+    <ArticleList posts={recentPosts} currentSort={currentSort} />
   </div>
   
   <aside class="fixed-sidebar fixed-sidebar-right" id="fixed-sidebar-right">
