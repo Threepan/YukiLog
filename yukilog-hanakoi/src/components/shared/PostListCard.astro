@@ -76,6 +76,7 @@ const hasCover = !!post.cover_image;
 
     opacity: 0;
     transform: translateY(16px);
+    will-change: transform;         /* 强制 GPU 合成，确保 overflow:hidden 圆角在动画中生效 */
     transition:
       opacity 500ms cubic-bezier(0.4, 0, 0.2, 1),
       transform 500ms cubic-bezier(0.4, 0, 0.2, 1),
@@ -90,7 +91,7 @@ const hasCover = !!post.cover_image;
     width: 100%;
     height: auto;
     object-fit: cover;
-    border-radius: 18px;
+    /* 不需要 border-radius，父级 overflow:hidden 已裁剪 */
     transition: transform 500ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
@@ -129,9 +130,9 @@ const hasCover = !!post.cover_image;
     inset: 0;
     background: linear-gradient(
       to bottom,
-      rgba(0, 0, 0, 0.3) 0%,
-      rgba(0, 0, 0, 0.5) 50%,
-      rgba(0, 0, 0, 0.7) 100%
+      rgba(0, 0, 0, 0.05) 0%,
+      rgba(0, 0, 0, 0.25) 50%,
+      rgba(0, 0, 0, 0.55) 100%
     );
     z-index: 1;
   }
