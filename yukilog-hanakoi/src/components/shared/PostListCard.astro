@@ -71,6 +71,7 @@ const hasCover = !!post.cover_image;
     border-radius: 18px;
     border-left: 3px solid transparent;
     overflow: hidden;
+    clip-path: inset(0 round 18px); /* 强制 GPU 合成时裁剪圆角 */
     text-decoration: none;
     box-shadow: var(--shadow-sm);
     break-inside: avoid;          /* 瀑布流列不拆断 */
