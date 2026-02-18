@@ -154,6 +154,8 @@
 
   /* ===== 特殊效果颜色 ===== */
   /* 渐变背景 - 用于 background 属性 */
+  --gradient-primary: linear-gradient(135deg, #7EB6D9 0%, #93C3E8 100%);
+  --gradient-primary-light: linear-gradient(135deg, #A9D1E8 0%, #C4E0F3 100%);
   --gradient-blue-pink: linear-gradient(135deg, var(--blue-alpha-05) 0%, var(--pink-alpha-05) 100%);
   --gradient-blue-pink-8: linear-gradient(135deg, var(--blue-alpha-08) 0%, var(--pink-alpha-08) 100%);
   --gradient-blue-pink-strong: linear-gradient(135deg, var(--blue-alpha-15) 0%, var(--pink-alpha-15) 100%);
@@ -310,6 +312,8 @@
   --white-alpha-95: rgba(255, 255, 255, 0.70);
   
   /* 渐变背景 - 暗色模式下更明显的渐变 */
+  --gradient-primary: linear-gradient(135deg, #5E9DC8 0%, #7EB6D9 100%);
+  --gradient-primary-light: linear-gradient(135deg, #7EB6D9 0%, #93C3E8 100%);
   --gradient-blue-pink: linear-gradient(135deg, var(--blue-alpha-10) 0%, var(--pink-alpha-10) 100%);
   --gradient-blue-pink-8: linear-gradient(135deg, var(--blue-alpha-15) 0%, var(--pink-alpha-15) 100%);
   --gradient-blue-pink-strong: linear-gradient(135deg, var(--blue-alpha-25) 0%, var(--pink-alpha-25) 100%);
