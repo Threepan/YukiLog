@@ -2,10 +2,12 @@
 // ================================
 // 文章列表卡片组件（通用）
 // 用于主题详情页、标签页等场景
-// 架构：与主页 ArticleCard 相同的稳定方案
-//   - 卡片 hover 只改 box-shadow，绝不改 transform
-//   - 图片 scale 由独立内层 .plc-cover-inner 裁剪
-//   - 避免 transform + overflow:hidden + border-radius 合成层冲突
+//
+// 【圆角修复方案说明】
+// img 是 replaced element，浏览器做 scale 动画时会提升为独立 GPU 合成层，
+// 该合成层会穿透父元素的 overflow:hidden + border-radius 裁剪。
+// 解决方案：封面用 CSS ::before 伪元素 + background-image 渲染，
+// 伪元素不是 replaced element，始终遵守父元素的 overflow:hidden 裁剪。
 // ================================
 
 interface Props {
@@ -22,28 +24,27 @@ interface Props {
 
 const { post, index } = Astro.props;
 const hasCover = !!post.cover_image;
+
+// 将封面 URL 通过 CSS 变量传入，供 ::before 使用
+const coverStyle = hasCover
+  ? `--cover-url: url('${post.cover_image!.replace(/'/g, "%27")}')`
+  : '';
 ---
 
 <a
   href={`/posts/${post.slug}`}
   class="post-list-card"
   class:list={[{ 'has-cover': hasCover }]}
-  style={`--pi: ${index}`}
+  style={`--pi: ${index}; ${coverStyle}`}
 >
-  {/* 封面区域 */}
+  {/* 封面区域（::before 负责渲染并缩放图片，parent overflow:hidden 裁剪） */}
   <div class="plc-cover">
-    <div class="plc-cover-inner">
-      {hasCover ? (
-        <img src={post.cover_image!} alt="" loading="lazy" />
-      ) : (
-        <div class="plc-fallback"></div>
-      )}
-    </div>
+    {!hasCover && <div class="plc-fallback"></div>}
     {/* 渐变遮罩 */}
     <div class="plc-overlay"></div>
   </div>
 
-  {/* 文字信息（绝对定位，贴底）*/}
+  {/* 文字信息（绝对定位，贴底） */}
   <div class="plc-body">
     <h3 class="plc-title">{post.title}</h3>
     {post.summary && <p class="plc-summary">{post.summary}</p>}
@@ -69,8 +70,7 @@ const hasCover = !!post.cover_image;
 <style>
   /* ========================================
      卡片容器
-     关键：hover 只改 box-shadow / border-color
-     绝不改 transform → 圆角永远不会丢失
+     hover 只改 box-shadow / border-color，不改 transform
      ======================================== */
   .post-list-card {
     position: relative;
@@ -83,7 +83,6 @@ const hasCover = !!post.cover_image;
     break-inside: avoid;
     margin-bottom: 1.25rem;
 
-    /* 入场动画（一次性 transition，不影响后续 hover） */
     opacity: 0;
     transform: translateY(16px);
     transition:
@@ -99,7 +98,6 @@ const hasCover = !!post.cover_image;
     transform: translateY(0);
   }
 
-  /* hover：只改阴影和边框色，不改 transform */
   .post-list-card:hover {
     box-shadow: var(--shadow-blue-md);
     border-left-color: var(--color-blue);
@@ -112,35 +110,33 @@ const hasCover = !!post.cover_image;
 
   /* ========================================
      封面区域
+     ::before 负责背景图，overflow:hidden 裁剪 scale 动画
+     伪元素不是 replaced element，不会被提升为独立 GPU 层
      ======================================== */
   .plc-cover {
     position: relative;
     width: 100%;
-  }
-
-  /* 内层裁剪容器 — 隔离图片 scale 动画 */
-  .plc-cover-inner {
-    width: 100%;
-    height: 100%;
+    aspect-ratio: 16 / 10;
     overflow: hidden;
-
-    img {
-      display: block;
-      width: 100%;
-      height: auto;
-      object-fit: cover;
-      transition: transform 500ms cubic-bezier(0.4, 0, 0.2, 1);
-    }
   }
 
-  .post-list-card:hover .plc-cover-inner img {
+  /* 有封面：::before 渲染背景图并做缩放动画 */
+  .has-cover .plc-cover::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--cover-url) center / cover no-repeat;
+    transition: transform 500ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .post-list-card:hover .plc-cover::before {
     transform: scale(1.05);
   }
 
   /* 无封面占位 */
   .plc-fallback {
     width: 100%;
-    min-height: 220px;
+    height: 100%;
     background: linear-gradient(135deg, var(--blue-alpha-15) 0%, var(--pink-alpha-15) 100%);
   }
 
@@ -160,8 +156,8 @@ const hasCover = !!post.cover_image;
   .post-list-card:not(.has-cover) .plc-overlay {
     background: linear-gradient(
       to bottom,
-      rgba(0, 0, 0, 0.05) 0%,
-      rgba(0, 0, 0, 0.1) 100%
+      rgba(0, 0, 0, 0.03) 0%,
+      rgba(0, 0, 0, 0.08) 100%
     );
   }
 
@@ -271,10 +267,6 @@ const hasCover = !!post.cover_image;
   @media (max-width: 640px) {
     .post-list-card {
       margin-bottom: 1rem;
-    }
-
-    .plc-fallback {
-      min-height: 200px;
     }
 
     .plc-body {
