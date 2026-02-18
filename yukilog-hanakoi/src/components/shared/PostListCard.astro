@@ -90,6 +90,11 @@ const hasCover = !!post.cover_image;
     width: 100%;
     height: auto;
     object-fit: cover;
+    transition: transform 500ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .post-list-card:hover .plc-bg-image {
+    transform: scale(1.05);
   }
 
   /* ===== 无封面渐变背景 ===== */
@@ -127,17 +132,7 @@ const hasCover = !!post.cover_image;
       rgba(0, 0, 0, 0.5) 50%,
       rgba(0, 0, 0, 0.7) 100%
     );
-    transition: background 400ms cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 1;
-  }
-
-  .post-list-card:hover .plc-overlay {
-    background: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 0.4) 0%,
-      rgba(0, 0, 0, 0.6) 50%,
-      rgba(0, 0, 0, 0.75) 100%
-    );
   }
 
   /* 无封面时的滤镜层（更浅）*/
@@ -146,14 +141,6 @@ const hasCover = !!post.cover_image;
       to bottom,
       rgba(0, 0, 0, 0.05) 0%,
       rgba(0, 0, 0, 0.1) 100%
-    );
-  }
-
-  .post-list-card:not(.has-cover):hover .plc-overlay {
-    background: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 0.08) 0%,
-      rgba(0, 0, 0, 0.15) 100%
     );
   }
 
@@ -177,7 +164,10 @@ const hasCover = !!post.cover_image;
     margin: 0;
     line-height: 1.4;
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    transition: color 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    transition:
+      color 300ms cubic-bezier(0.4, 0, 0.2, 1),
+      transform 300ms cubic-bezier(0.4, 0, 0.2, 1),
+      text-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .post-list-card:not(.has-cover) .plc-title {
@@ -185,22 +175,26 @@ const hasCover = !!post.cover_image;
     text-shadow: none;
   }
 
-  .post-list-card:hover .plc-title {
-    color: var(--color-blue);
-  }
-
-  .post-list-card:nth-child(even):hover .plc-title {
-    color: var(--color-pink);
-  }
-
+  /* 有封面：悬停时标题变色 + 放大 + 光晕 */
   .post-list-card.has-cover:hover .plc-title {
-    color: #ffffff;
-    text-shadow: 0 2px 12px rgba(126, 182, 217, 0.6);
+    color: var(--color-blue);
+    transform: scale(1.03);
+    text-shadow: 0 2px 16px rgba(126, 182, 217, 0.8);
   }
 
   .post-list-card.has-cover:nth-child(even):hover .plc-title {
-    color: #ffffff;
-    text-shadow: 0 2px 12px rgba(232, 164, 180, 0.6);
+    color: var(--color-pink);
+    text-shadow: 0 2px 16px rgba(232, 164, 180, 0.8);
+  }
+
+  /* 无封面：悬停时标题变色 + 放大 */
+  .post-list-card:not(.has-cover):hover .plc-title {
+    color: var(--color-blue);
+    transform: scale(1.03);
+  }
+
+  .post-list-card:not(.has-cover):nth-child(even):hover .plc-title {
+    color: var(--color-pink);
   }
 
   .plc-summary {
