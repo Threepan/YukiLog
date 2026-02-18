@@ -9,17 +9,40 @@ import ArticleCard from "./ArticleCard.astro";
 import type { PostCardData } from "../../types";
 import { contentConfig } from "../../lib/config";
 
-// 接收从父组件传递的文章列表
+// 接收从父组件传递的文章列表 + 当前排序
 interface Props {
   posts: PostCardData[];
+  currentSort?: 'created_at' | 'updated_at' | 'view_count';
 }
 
-const { posts } = Astro.props;
+const { posts, currentSort = 'created_at' } = Astro.props;
 const placeholderPosts = posts as PostCardData[];
+
+const sortOptions = [
+  { key: 'created_at' as const, label: '最新' },
+  { key: 'view_count' as const, label: '最热' },
+  { key: 'updated_at' as const, label: '最近更新' },
+];
 ---
 
 <section class="article-list-section" id="article-list">
-  <h2 class="article-list-title">最近 {placeholderPosts.length} 篇博客</h2>
+  <div class="article-list-header">
+    <h2 class="article-list-title">
+      {currentSort === 'view_count' ? '最热' : currentSort === 'updated_at' ? '最近更新' : '最新'}
+      {' '}{placeholderPosts.length} 篇博客
+    </h2>
+    <div class="sort-pills">
+      {sortOptions.map((opt) => (
+        <a
+          href={opt.key === 'created_at' ? '/#article-list' : `/?sort=${opt.key}#article-list`}
+          class:list={['sort-pill', { active: currentSort === opt.key }]}
+          data-astro-prefetch
+        >
+          {opt.label}
+        </a>
+      ))}
+    </div>
+  </div>
   <div class="article-list-container">
     {placeholderPosts.map((post, i) => (
       <ArticleCard post={post} index={i} />
@@ -38,14 +61,54 @@ const placeholderPosts = posts as PostCardData[];
     padding-bottom: $spacing-xxl;
   }
 
-  .article-list-title {
+  .article-list-header {
     max-width: 800px;
     margin: 0 auto;
     padding: calc(#{$spacing-xxl * 2} - 30px) $spacing-md 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-md;
+  }
+
+  .article-list-title {
     font-size: $font-size-lg;
     font-weight: $font-weight-medium;
     color: $lian-text-light;
     letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  .sort-pills {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .sort-pill {
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-medium;
+    color: $lian-text-muted;
+    background: transparent;
+    border: 1.5px solid transparent;
+    text-decoration: none;
+    transition: all 0.25s ease;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+
+    &:hover {
+      color: $lian-blue;
+      background: var(--blue-alpha-06);
+      border-color: var(--blue-alpha-15);
+    }
+
+    &.active {
+      color: $lian-pink;
+      background: var(--pink-alpha-08);
+      border-color: var(--pink-alpha-20);
+    }
   }
 
   .article-list-container {
@@ -74,9 +137,10 @@ const placeholderPosts = posts as PostCardData[];
 
   // 响应式：小屏无侧栏，全宽
   @media (max-width: $container-lg) {
-    .article-list-title {
+    .article-list-header {
       max-width: 100%;
       padding: $spacing-lg $spacing-md 0;
+      flex-wrap: wrap;
     }
 
     .article-list-container {
