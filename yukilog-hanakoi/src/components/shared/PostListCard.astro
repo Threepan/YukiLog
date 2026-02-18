@@ -2,8 +2,10 @@
 // ================================
 // 文章列表卡片组件（通用）
 // 用于主题详情页、标签页等场景
-// 封面图作为整个卡片的背景，加暗色渐变滤镜
-// 文字浮于图片上方
+// 架构：与主页 ArticleCard 相同的稳定方案
+//   - 卡片 hover 只改 box-shadow，绝不改 transform
+//   - 图片 scale 由独立内层 .plc-cover-inner 裁剪
+//   - 避免 transform + overflow:hidden + border-radius 合成层冲突
 // ================================
 
 interface Props {
@@ -28,19 +30,20 @@ const hasCover = !!post.cover_image;
   class:list={[{ 'has-cover': hasCover }]}
   style={`--pi: ${index}`}
 >
-  <!-- 背景图片层（撑开容器高度）-->
-  {hasCover ? (
-    <div class="plc-cover-wrapper">
-      <img src={post.cover_image!} alt="" class="plc-bg-image" loading="lazy" />
+  {/* 封面区域 */}
+  <div class="plc-cover">
+    <div class="plc-cover-inner">
+      {hasCover ? (
+        <img src={post.cover_image!} alt="" loading="lazy" />
+      ) : (
+        <div class="plc-fallback"></div>
+      )}
     </div>
-  ) : (
-    <div class="plc-fallback-bg"></div>
-  )}
+    {/* 渐变遮罩 */}
+    <div class="plc-overlay"></div>
+  </div>
 
-  <!-- 暗色渐变滤镜层 -->
-  <div class="plc-overlay"></div>
-
-  <!-- 文字信息（浮于背景之上，紧贴底部）-->
+  {/* 文字信息（绝对定位，贴底）*/}
   <div class="plc-body">
     <h3 class="plc-title">{post.title}</h3>
     {post.summary && <p class="plc-summary">{post.summary}</p>}
@@ -64,7 +67,11 @@ const hasCover = !!post.cover_image;
 </a>
 
 <style>
-  /* ===== 基础卡片 ===== */
+  /* ========================================
+     卡片容器
+     关键：hover 只改 box-shadow / border-color
+     绝不改 transform → 圆角永远不会丢失
+     ======================================== */
   .post-list-card {
     position: relative;
     display: block;
@@ -73,9 +80,10 @@ const hasCover = !!post.cover_image;
     overflow: hidden;
     text-decoration: none;
     box-shadow: var(--shadow-sm);
-    break-inside: avoid;          /* 瀑布流列不拆断 */
-    margin-bottom: 1.25rem;       /* 同列卡片间距 */
+    break-inside: avoid;
+    margin-bottom: 1.25rem;
 
+    /* 入场动画（一次性 transition，不影响后续 hover） */
     opacity: 0;
     transform: translateY(16px);
     transition:
@@ -86,53 +94,57 @@ const hasCover = !!post.cover_image;
     transition-delay: calc(var(--pi) * 60ms);
   }
 
-  /* ===== 图片包装层（clip-path 确保 scale 动画不溢出圆角）===== */
-  .plc-cover-wrapper {
-    width: 100%;
-    overflow: hidden;
-    border-radius: inherit;  /* 继承卡片圆角 */
-    clip-path: inset(0 round 18px); /* GPU 合成时强制裁剪 */
-  }
-
-  /* ===== 背景图片 ===== */
-  .plc-bg-image {
-    display: block;
-    width: 100%;
-    height: auto;
-    object-fit: cover;
-    transition: transform 500ms cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .post-list-card:hover .plc-bg-image {
-    transform: scale(1.05);
-  }
-
-  /* ===== 无封面渐变背景 ===== */
-  .plc-fallback-bg {
-    width: 100%;
-    min-height: 220px;
-    background: linear-gradient(135deg, var(--blue-alpha-15) 0%, var(--pink-alpha-15) 100%);
-  }
-
   .post-list-card.visible {
     opacity: 1;
     transform: translateY(0);
   }
 
-  /* 奇数项：蓝色 hover */
+  /* hover：只改阴影和边框色，不改 transform */
   .post-list-card:hover {
     box-shadow: var(--shadow-blue-md);
     border-left-color: var(--color-blue);
-    transform: translateY(-3px);
   }
 
-  /* 偶数项：粉色 hover */
   .post-list-card:nth-child(even):hover {
     box-shadow: var(--shadow-pink-md);
     border-left-color: var(--color-pink);
   }
 
-  /* ===== 暗色滤镜层 ===== */
+  /* ========================================
+     封面区域
+     ======================================== */
+  .plc-cover {
+    position: relative;
+    width: 100%;
+  }
+
+  /* 内层裁剪容器 — 隔离图片 scale 动画 */
+  .plc-cover-inner {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+
+    img {
+      display: block;
+      width: 100%;
+      height: auto;
+      object-fit: cover;
+      transition: transform 500ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+  }
+
+  .post-list-card:hover .plc-cover-inner img {
+    transform: scale(1.05);
+  }
+
+  /* 无封面占位 */
+  .plc-fallback {
+    width: 100%;
+    min-height: 220px;
+    background: linear-gradient(135deg, var(--blue-alpha-15) 0%, var(--pink-alpha-15) 100%);
+  }
+
+  /* 渐变遮罩 */
   .plc-overlay {
     position: absolute;
     inset: 0;
@@ -142,10 +154,9 @@ const hasCover = !!post.cover_image;
       rgba(0, 0, 0, 0.25) 50%,
       rgba(0, 0, 0, 0.55) 100%
     );
-    z-index: 1;
+    pointer-events: none;
   }
 
-  /* 无封面时的滤镜层（更浅）*/
   .post-list-card:not(.has-cover) .plc-overlay {
     background: linear-gradient(
       to bottom,
@@ -154,7 +165,9 @@ const hasCover = !!post.cover_image;
     );
   }
 
-  /* ===== 文字区域（浮于背景之上，绝对定位紧贴底部）===== */
+  /* ========================================
+     文字区域（绝对定位贴底）
+     ======================================== */
   .plc-body {
     position: absolute;
     bottom: 0;
@@ -170,13 +183,11 @@ const hasCover = !!post.cover_image;
   .plc-title {
     font-size: 1.125rem;
     font-weight: 600;
-    color: #ffffff;
+    color: #fff;
     margin: 0;
     line-height: 1.4;
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    transition:
-      color 300ms cubic-bezier(0.4, 0, 0.2, 1),
-      transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    transition: color 300ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .post-list-card:not(.has-cover) .plc-title {
@@ -184,23 +195,11 @@ const hasCover = !!post.cover_image;
     text-shadow: none;
   }
 
-  /* 有封面：悬停时标题变色 + 放大 */
-  .post-list-card.has-cover:hover .plc-title {
+  .post-list-card:hover .plc-title {
     color: var(--color-blue);
-    transform: scale(1.03);
   }
 
-  .post-list-card.has-cover:nth-child(even):hover .plc-title {
-    color: var(--color-pink);
-  }
-
-  /* 无封面：悬停时标题变色 + 放大 */
-  .post-list-card:not(.has-cover):hover .plc-title {
-    color: var(--color-blue);
-    transform: scale(1.03);
-  }
-
-  .post-list-card:not(.has-cover):nth-child(even):hover .plc-title {
+  .post-list-card:nth-child(even):hover .plc-title {
     color: var(--color-pink);
   }
 
@@ -249,7 +248,7 @@ const hasCover = !!post.cover_image;
 
   .plc-tag {
     font-size: 0.6875rem;
-    color: #ffffff;
+    color: #fff;
     background: rgba(255, 255, 255, 0.2);
     backdrop-filter: blur(8px);
     padding: 2px 9px;
@@ -266,12 +265,15 @@ const hasCover = !!post.cover_image;
     text-shadow: none;
   }
 
+  /* ========================================
+     响应式
+     ======================================== */
   @media (max-width: 640px) {
     .post-list-card {
       margin-bottom: 1rem;
     }
 
-    .plc-fallback-bg {
+    .plc-fallback {
       min-height: 200px;
     }
 
