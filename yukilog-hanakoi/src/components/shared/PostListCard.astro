@@ -90,6 +90,7 @@ const hasCover = !!post.cover_image;
     width: 100%;
     height: auto;
     object-fit: cover;
+    border-radius: 18px;
     transition: transform 500ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
@@ -166,8 +167,7 @@ const hasCover = !!post.cover_image;
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     transition:
       color 300ms cubic-bezier(0.4, 0, 0.2, 1),
-      transform 300ms cubic-bezier(0.4, 0, 0.2, 1),
-      text-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1);
+      transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .post-list-card:not(.has-cover) .plc-title {
@@ -175,16 +175,14 @@ const hasCover = !!post.cover_image;
     text-shadow: none;
   }
 
-  /* 有封面：悬停时标题变色 + 放大 + 光晕 */
+  /* 有封面：悬停时标题变色 + 放大 */
   .post-list-card.has-cover:hover .plc-title {
     color: var(--color-blue);
     transform: scale(1.03);
-    text-shadow: 0 2px 16px rgba(126, 182, 217, 0.8);
   }
 
   .post-list-card.has-cover:nth-child(even):hover .plc-title {
     color: var(--color-pink);
-    text-shadow: 0 2px 16px rgba(232, 164, 180, 0.8);
   }
 
   /* 无封面：悬停时标题变色 + 放大 */
