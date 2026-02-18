@@ -71,7 +71,6 @@ const hasCover = !!post.cover_image;
     border-radius: 18px;
     border-left: 3px solid transparent;
     overflow: hidden;
-    clip-path: inset(0 round 18px); /* 强制 GPU 合成时裁剪圆角 */
     text-decoration: none;
     box-shadow: var(--shadow-sm);
     break-inside: avoid;          /* 瀑布流列不拆断 */
@@ -87,10 +86,12 @@ const hasCover = !!post.cover_image;
     transition-delay: calc(var(--pi) * 60ms);
   }
 
-  /* ===== 图片包装层（关键：内层 overflow:hidden 裁剪 scale 动画）===== */
+  /* ===== 图片包装层（clip-path 确保 scale 动画不溢出圆角）===== */
   .plc-cover-wrapper {
     width: 100%;
     overflow: hidden;
+    border-radius: inherit;  /* 继承卡片圆角 */
+    clip-path: inset(0 round 18px); /* GPU 合成时强制裁剪 */
   }
 
   /* ===== 背景图片 ===== */
