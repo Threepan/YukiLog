@@ -126,6 +126,7 @@ const hasCover = !!post.cover_image;
   .plc-cover-inner {
     width: 100%;
     overflow: hidden;
+    border-radius: 18px;  /* 独立裁剪圆角，不依赖外层 */
 
     img {
       display: block;
