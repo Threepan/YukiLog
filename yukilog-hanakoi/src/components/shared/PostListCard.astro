@@ -3,12 +3,6 @@
 // 文章列表卡片组件（通用）
 // 用于主题详情页、标签页等场景
 //
-// 【圆角修复方案】
-// 根因：.post-list-card 入场动画后 transform: translateY(0) 仍非 none，
-// 浏览器会创建合成层，导致 overflow:hidden + border-radius 裁剪失效。
-// 修复：.visible 状态设 transform: none（彻底消除合成层），
-// 图片 scale 由内层 .plc-cover-inner（自身有 overflow:hidden，无 transform）裁剪。
-// 与主页 ArticleCard 的 .article-cover > .cover-inner > img 完全一致的架构。
 // ================================
 
 interface Props {
@@ -59,8 +53,8 @@ const hasCover = !!post.cover_image;
       </time>
       {post.tags && post.tags.length > 0 && (
         <div class="plc-tags">
-          {post.tags.slice(0, 3).map((tag) => (
-            <span class="plc-tag">#{tag.name}</span>
+          {post.tags.slice(0, 3).map((tag, ti) => (
+            <span class="plc-tag" data-ti={ti}>#{tag.name}</span>
           ))}
         </div>
       )}
@@ -132,6 +126,7 @@ const hasCover = !!post.cover_image;
       display: block;
       width: 100%;
       height: auto;
+      min-height: 220px;  /* 保障封面图不过矮，确保文字区域有空间 */
       object-fit: cover;
       transition: transform 500ms cubic-bezier(0.4, 0, 0.2, 1);
     }
@@ -192,7 +187,14 @@ const hasCover = !!post.cover_image;
     margin: 0;
     line-height: 1.4;
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    transition: color 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: left center;
+    transition:
+      color 300ms cubic-bezier(0.4, 0, 0.2, 1),
+      transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .post-list-card:hover .plc-title {
+    transform: scale(1.04);
   }
 
   .post-list-card:not(.has-cover) .plc-title {
@@ -201,11 +203,11 @@ const hasCover = !!post.cover_image;
   }
 
   .post-list-card:hover .plc-title {
-    color: var(--color-blue);
+    color: var(--color-blue-light);
   }
 
   .post-list-card:nth-child(even):hover .plc-title {
-    color: var(--color-pink);
+    color: var(--color-pink-light);
   }
 
   .plc-summary {
@@ -251,23 +253,65 @@ const hasCover = !!post.cover_image;
     flex-wrap: wrap;
   }
 
-  .plc-tag {
+  /* 有封面：标签叠在深色遮罩上，三色轮换 */
+  .has-cover .plc-tag {
     font-size: 0.6875rem;
-    color: #fff;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(8px);
     padding: 2px 9px;
     border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(8px);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+    transition: transform 200ms ease, opacity 200ms ease;
+  }
+  .has-cover .plc-tag:hover {
+    transform: scale(1.08);
+    opacity: 0.9;
   }
 
+  /* 1st tag：蓝色 */
+  .has-cover .plc-tag[data-ti="0"] {
+    color: #cce8f8;
+    background: rgba(126, 182, 217, 0.28);
+    border: 1px solid rgba(126, 182, 217, 0.45);
+  }
+  /* 2nd tag：粉色 */
+  .has-cover .plc-tag[data-ti="1"] {
+    color: #fcd5de;
+    background: rgba(232, 164, 180, 0.28);
+    border: 1px solid rgba(232, 164, 180, 0.45);
+  }
+  /* 3rd tag：混合 */
+  .has-cover .plc-tag[data-ti="2"] {
+    color: #e8d8f8;
+    background: rgba(180, 150, 210, 0.25);
+    border: 1px solid rgba(180, 150, 210, 0.40);
+  }
+
+  /* 无封面：标签在浅色背景上 */
   .post-list-card:not(.has-cover) .plc-tag {
+    font-size: 0.6875rem;
+    padding: 2px 9px;
+    border-radius: 12px;
+    backdrop-filter: none;
+    text-shadow: none;
+    transition: transform 200ms ease;
+  }
+  .post-list-card:not(.has-cover) .plc-tag:hover {
+    transform: scale(1.08);
+  }
+  .post-list-card:not(.has-cover) .plc-tag[data-ti="0"] {
+    color: var(--color-blue);
+    background: var(--blue-alpha-08);
+    border: 1px solid var(--blue-alpha-20);
+  }
+  .post-list-card:not(.has-cover) .plc-tag[data-ti="1"] {
     color: var(--color-pink);
     background: var(--pink-alpha-08);
-    backdrop-filter: none;
-    border: none;
-    text-shadow: none;
+    border: 1px solid var(--pink-alpha-20);
+  }
+  .post-list-card:not(.has-cover) .plc-tag[data-ti="2"] {
+    color: #9b7ac8;
+    background: rgba(155, 122, 200, 0.08);
+    border: 1px solid rgba(155, 122, 200, 0.20);
   }
 
   /* ========================================
