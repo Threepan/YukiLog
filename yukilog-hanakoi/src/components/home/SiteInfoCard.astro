@@ -220,23 +220,34 @@ const formattedWords = stats.total_words >= 1000
 </style>
 
 <script define:vars={{ startDate: siteConfig.startDate }}>
-  // 实时更新运行时长
-  const uptimeEl = document.getElementById('siteinfo-uptime');
-  
-  function updateUptime() {
+  document.addEventListener('astro:page-load', () => {
+    // 清理上次的定时器，防止 View Transitions 导致多个定时器叠加
+    if (typeof window.__uptimeTimer !== 'undefined') {
+      clearInterval(window.__uptimeTimer);
+    }
+
+    const uptimeEl = document.getElementById('siteinfo-uptime');
     if (!uptimeEl) return;
-    const start = new Date(startDate);
-    const now = new Date();
-    const diff = now.getTime() - start.getTime();
-    
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-    
-    uptimeEl.textContent = `${days} 天 ${hours} 时 ${minutes} 分 ${seconds} 秒`;
-  }
-  
-  updateUptime();
-  setInterval(updateUptime, 1000);
+
+    function updateUptime() {
+      const start = new Date(startDate);
+      const now = new Date();
+      const diff = now.getTime() - start.getTime();
+
+      if (diff < 0) {
+        uptimeEl.textContent = '0 天 0 时 0 分 0 秒';
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      uptimeEl.textContent = `${days} 天 ${hours} 时 ${minutes} 分 ${seconds} 秒`;
+    }
+
+    updateUptime();
+    window.__uptimeTimer = setInterval(updateUptime, 1000);
+  });
 </script>
