@@ -16,31 +16,23 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     </button>
   </div>
 
-  <!-- 主题列表 -->
-  <div class="themes-table">
-    <div id="loading" class="loading">
-      <div class="spinner"></div>
-      <p>加载中...</p>
-    </div>
-
-    <div id="empty" class="empty" style="display:none">
-      <p>暂无主题，点击「新建主题」创建第一个分类吧</p>
-    </div>
-
-    <table id="table-content" style="display:none">
-      <thead>
-        <tr>
-          <th>名称</th>
-          <th>Slug</th>
-          <th>描述</th>
-          <th style="width: 100px">文章数</th>
-          <th style="width: 100px">浏览数</th>
-          <th style="width: 150px">操作</th>
-        </tr>
-      </thead>
-      <tbody id="themes-tbody"></tbody>
-    </table>
+  <!-- 状态区 -->
+  <div id="loading" class="loading">
+    <div class="spinner"></div>
+    <p>加载中...</p>
   </div>
+
+  <div id="empty" class="empty" style="display:none">
+    <p>暂无主题，点击「新建主题」创建第一个分类吧</p>
+  </div>
+
+  <div id="error-state" class="error-state" style="display:none">
+    <p id="error-msg">加载失败</p>
+    <button id="retry-btn" class="btn-retry">重试</button>
+  </div>
+
+  <!-- 主题卡片网格 -->
+  <div id="themes-grid" class="themes-grid" style="display:none"></div>
 
   <!-- 创建/编辑弹窗 -->
   <div id="edit-modal" class="modal">
@@ -79,233 +71,138 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
   import { themesApi, adminApi } from '../../lib/api';
   import type { Theme } from '../../types/api';
 
-  // ===== 状态管理 =====
+  // ===== 状态管理（模块级，跨导航保持） =====
   let themes: Theme[] = [];
   let editingTheme: Theme | null = null;
 
-  // ===== DOM 元素 =====
-  const loading = document.getElementById('loading')!;
-  const empty = document.getElementById('empty')!;
-  const tableContent = document.getElementById('table-content') as HTMLTableElement;
-  const themesTbody = document.getElementById('themes-tbody')!;
-  const createBtn = document.getElementById('create-btn')!;
+  document.addEventListener('astro:page-load', () => {
+    const themesGrid = document.getElementById('themes-grid')!;
+    if (!themesGrid) return;
 
-  const editModal = document.getElementById('edit-modal')!;
-  const modalTitle = document.getElementById('modal-title')!;
-  const editForm = document.getElementById('edit-form') as HTMLFormElement;
-  const editName = document.getElementById('edit-name') as HTMLInputElement;
-  const editSlug = document.getElementById('edit-slug') as HTMLInputElement;
-  const editDescription = document.getElementById('edit-description') as HTMLTextAreaElement;
+    const loading = document.getElementById('loading')!;
+    const empty = document.getElementById('empty')!;
+    const errorState = document.getElementById('error-state')!;
+    const errorMsg = document.getElementById('error-msg')!;
+    const createBtn = document.getElementById('create-btn')!;
+    const editModal = document.getElementById('edit-modal')!;
+    const modalTitle = document.getElementById('modal-title')!;
+    const editForm = document.getElementById('edit-form') as HTMLFormElement;
+    const editName = document.getElementById('edit-name') as HTMLInputElement;
+    const editSlug = document.getElementById('edit-slug') as HTMLInputElement;
+    const editDescription = document.getElementById('edit-description') as HTMLTextAreaElement;
 
-  // ===== 初始化 =====
-  async function init() {
-    await loadThemes();
-    bindEvents();
-  }
-
-  // ===== 加载主题列表 =====
-  async function loadThemes() {
-    loading.style.display = 'flex';
-    empty.style.display = 'none';
-    tableContent.style.display = 'none';
-
-    try {
-      themes = await themesApi.list();
-
-      if (themes.length === 0) {
-        loading.style.display = 'none';
-        empty.style.display = 'flex';
-      } else {
-        renderThemes();
-        loading.style.display = 'none';
-        tableContent.style.display = 'table';
-      }
-    } catch (err: any) {
-      loading.style.display = 'none';
-      alert(err.message || '加载主题失败');
+    function escapeHtml(text: string): string {
+      const d = document.createElement('div'); d.textContent = text; return d.innerHTML;
     }
-  }
 
-  // ===== 渲染主题列表 =====
-  function renderThemes() {
-    themesTbody.innerHTML = themes.map(theme => `
-      <tr>
-        <td class="theme-name">${escapeHtml(theme.name)}</td>
-        <td class="theme-slug">${escapeHtml(theme.slug)}</td>
-        <td class="theme-description">${theme.description ? escapeHtml(theme.description) : '<span class="text-muted">-</span>'}</td>
-        <td class="text-center">${theme.post_count || 0}</td>
-        <td class="text-center">${theme.view_count || 0}</td>
-        <td class="actions">
-          <button class="btn-edit" data-id="${theme.id}">编辑</button>
-          <button class="btn-delete" data-id="${theme.id}" data-post-count="${theme.post_count || 0}">删除</button>
-        </td>
-      </tr>
-    `).join('');
+    function generateSlug(name: string): string {
+      const map: Record<string, string> = { '科技':'tech','技术':'tech','随笔':'essay','生活':'life','旅行':'travel','摄影':'photo','读书':'reading','音乐':'music','电影':'movie','美食':'food' };
+      return map[name.trim()] || name.trim().toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'').replace(/-+/g,'-');
+    }
 
-    bindActionButtons();
-  }
+    function renderThemes() {
+      themesGrid.innerHTML = themes.map(theme => `
+        <div class="theme-card">
+          <div class="theme-card-body">
+            <div class="theme-card-top">
+              <h3 class="theme-name">${escapeHtml(theme.name)}</h3>
+              <code class="theme-slug-code">${escapeHtml(theme.slug)}</code>
+            </div>
+            ${theme.description ? `<p class="theme-desc">${escapeHtml(theme.description)}</p>` : ''}
+            <div class="theme-stats">
+              <span class="stat-item">📝 ${theme.post_count || 0} 篇文章</span>
+              <span class="stat-item">👁 ${theme.view_count || 0} 次浏览</span>
+            </div>
+          </div>
+          <div class="theme-card-actions">
+            <button class="btn-edit" data-id="${theme.id}">编辑</button>
+            <button class="btn-delete" data-id="${theme.id}" data-post-count="${theme.post_count || 0}">删除</button>
+          </div>
+        </div>
+      `).join('');
+      bindActionButtons();
+    }
 
-  // ===== 绑定事件 =====
-  function bindEvents() {
+    async function loadThemes() {
+      loading.style.display = 'flex';
+      empty.style.display = 'none';
+      errorState.style.display = 'none';
+      themesGrid.style.display = 'none';
+      try {
+        themes = await themesApi.list();
+        if (themes.length === 0) {
+          loading.style.display = 'none'; empty.style.display = 'flex';
+        } else {
+          renderThemes(); loading.style.display = 'none'; themesGrid.style.display = 'grid';
+        }
+      } catch (err: any) {
+        loading.style.display = 'none';
+        errorMsg.textContent = err.message || '加载主题失败';
+        errorState.style.display = 'flex';
+      }
+    }
+
+    function bindActionButtons() {
+      themesGrid.querySelectorAll('.btn-edit').forEach(btn => {
+        btn.addEventListener('click', (e) => handleEdit(Number((e.target as HTMLElement).dataset.id)));
+      });
+      themesGrid.querySelectorAll('.btn-delete').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const t = e.target as HTMLElement;
+          handleDelete(Number(t.dataset.id), Number(t.dataset.postCount));
+        });
+      });
+    }
+
+    function openCreateModal() {
+      editingTheme = null; modalTitle.textContent = '新建主题'; editForm.reset(); editModal.classList.add('active');
+    }
+
+    function handleEdit(id: number) {
+      const theme = themes.find(t => t.id === id); if (!theme) return;
+      editingTheme = theme; modalTitle.textContent = '编辑主题';
+      editName.value = theme.name; editSlug.value = theme.slug; editDescription.value = theme.description || '';
+      editModal.classList.add('active');
+    }
+
+    async function handleDelete(id: number, postCount: number) {
+      const theme = themes.find(t => t.id === id); if (!theme) return;
+      let msg = `确认删除主题《${theme.name}》？`;
+      if (postCount > 0) msg += `\n\n关联的 ${postCount} 篇文章将变为无主题状态。`;
+      if (!confirm(msg)) return;
+      try { await adminApi.themes.delete(id); await loadThemes(); }
+      catch (err: any) { alert(err.message || '删除失败'); }
+    }
+
+    async function handleSubmit(e: Event) {
+      e.preventDefault();
+      const saveBtn = document.getElementById('modal-save-btn') as HTMLButtonElement;
+      saveBtn.disabled = true; saveBtn.textContent = editingTheme ? '保存中...' : '创建中...';
+      const data = { name: editName.value.trim(), slug: editSlug.value.trim(), description: editDescription.value.trim() || null };
+      if (!/^[a-z0-9-]+$/.test(data.slug)) {
+        alert('Slug 仅支持小写字母、数字和连字符');
+        saveBtn.disabled = false; saveBtn.textContent = '保存'; return;
+      }
+      try {
+        if (editingTheme) { await adminApi.themes.update(editingTheme.id, data); }
+        else { await adminApi.themes.create(data); }
+        closeModal(); await loadThemes();
+      } catch (err: any) { alert(err.message || '操作失败'); }
+      finally { saveBtn.disabled = false; saveBtn.textContent = '保存'; }
+    }
+
+    function closeModal() { editModal.classList.remove('active'); editingTheme = null; editForm.reset(); }
+
     createBtn.addEventListener('click', openCreateModal);
-
+    document.getElementById('retry-btn')?.addEventListener('click', loadThemes);
     document.getElementById('modal-close-btn')?.addEventListener('click', closeModal);
     document.getElementById('modal-cancel-btn')?.addEventListener('click', closeModal);
     editModal.querySelector('.modal-backdrop')?.addEventListener('click', closeModal);
-
     editForm.addEventListener('submit', handleSubmit);
+    editName.addEventListener('input', () => { if (!editingTheme) editSlug.value = generateSlug(editName.value); });
 
-    // 名称自动生成 slug
-    editName.addEventListener('input', () => {
-      if (!editingTheme) {  // 仅创建时自动生成
-        editSlug.value = generateSlug(editName.value);
-      }
-    });
-  }
-
-  // ===== 绑定操作按钮 =====
-  function bindActionButtons() {
-    document.querySelectorAll('.btn-edit').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const id = Number((e.target as HTMLElement).dataset.id);
-        handleEdit(id);
-      });
-    });
-
-    document.querySelectorAll('.btn-delete').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const target = e.target as HTMLElement;
-        const id = Number(target.dataset.id);
-        const postCount = Number(target.dataset.postCount);
-        handleDelete(id, postCount);
-      });
-    });
-  }
-
-  // ===== 打开创建弹窗 =====
-  function openCreateModal() {
-    editingTheme = null;
-    modalTitle.textContent = '新建主题';
-    editForm.reset();
-    editModal.classList.add('active');
-  }
-
-  // ===== 打开编辑弹窗 =====
-  function handleEdit(id: number) {
-    const theme = themes.find(t => t.id === id);
-    if (!theme) return;
-
-    editingTheme = theme;
-    modalTitle.textContent = '编辑主题';
-    editName.value = theme.name;
-    editSlug.value = theme.slug;
-    editDescription.value = theme.description || '';
-
-    editModal.classList.add('active');
-  }
-
-  // ===== 删除主题 =====
-  async function handleDelete(id: number, postCount: number) {
-    const theme = themes.find(t => t.id === id);
-    if (!theme) return;
-
-    let confirmMsg = `确认删除主题《${theme.name}》？`;
-    if (postCount > 0) {
-      confirmMsg += `\n\n关联的 ${postCount} 篇文章将变为无主题状态。`;
-    }
-
-    if (!confirm(confirmMsg)) return;
-
-    try {
-      await adminApi.themes.delete(id);
-      await loadThemes();
-    } catch (err: any) {
-      alert(err.message || '删除失败');
-    }
-  }
-
-  // ===== 提交表单 =====
-  async function handleSubmit(e: Event) {
-    e.preventDefault();
-
-    const saveBtn = document.getElementById('modal-save-btn') as HTMLButtonElement;
-    saveBtn.disabled = true;
-    saveBtn.textContent = editingTheme ? '保存中...' : '创建中...';
-
-    const data = {
-      name: editName.value.trim(),
-      slug: editSlug.value.trim(),
-      description: editDescription.value.trim() || null,
-    };
-
-    // 验证 slug 格式
-    if (!/^[a-z0-9-]+$/.test(data.slug)) {
-      alert('Slug 仅支持小写字母、数字和连字符');
-      saveBtn.disabled = false;
-      saveBtn.textContent = '保存';
-      return;
-    }
-
-    try {
-      if (editingTheme) {
-        await adminApi.themes.update(editingTheme.id, data);
-      } else {
-        await adminApi.themes.create(data);
-      }
-
-      closeModal();
-      await loadThemes();
-    } catch (err: any) {
-      alert(err.message || '操作失败');
-    } finally {
-      saveBtn.disabled = false;
-      saveBtn.textContent = '保存';
-    }
-  }
-
-  // ===== 关闭弹窗 =====
-  function closeModal() {
-    editModal.classList.remove('active');
-    editingTheme = null;
-    editForm.reset();
-  }
-
-  // ===== 工具函数 =====
-  function generateSlug(name: string): string {
-    // 简易拼音映射（可扩展）
-    const pinyinMap: Record<string, string> = {
-      '科技': 'tech',
-      '技术': 'tech',
-      '随笔': 'essay',
-      '生活': 'life',
-      '旅行': 'travel',
-      '摄影': 'photo',
-      '读书': 'reading',
-      '音乐': 'music',
-      '电影': 'movie',
-      '美食': 'food',
-    };
-
-    const trimmed = name.trim();
-    if (pinyinMap[trimmed]) {
-      return pinyinMap[trimmed];
-    }
-
-    // 转小写、去空格、替换特殊字符为连字符
-    return trimmed
-      .toLowerCase()
-      .replace(/\s+/g, '-')
-      .replace(/[^a-z0-9-]/g, '')
-      .replace(/-+/g, '-');
-  }
-
-  function escapeHtml(text: string): string {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  }
-
-  init();
+    loadThemes();
+  });
 </script>
 
 <style lang="scss">
@@ -342,14 +239,6 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     }
   }
 
-  // 表格容器
-  .themes-table {
-    background: $lian-white;
-    border-radius: $radius-md;
-    box-shadow: $shadow-sm;
-    overflow: hidden;
-  }
-
   // 加载/空状态
   .loading,
   .empty {
@@ -381,109 +270,154 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     to { transform: rotate(360deg); }
   }
 
-  // 表格
-  table {
-    width: 100%;
-    border-collapse: collapse;
+  // 主题卡片网格
+  .themes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: $spacing-md;
+    margin-bottom: $spacing-lg;
+  }
 
-    thead {
-      background: linear-gradient(135deg, rgba($lian-blue, 0.05) 0%, rgba($lian-pink, 0.05) 100%);
-      border-bottom: 2px solid rgba($lian-blue, 0.1);
+  .theme-card {
+    background: $lian-white;
+    border-radius: $radius-md;
+    box-shadow: $shadow-sm;
+    border: 1px solid $lian-divider;
+    display: flex;
+    flex-direction: column;
+    transition: all $transition-base $ease-gentle;
 
-      th {
-        padding: $spacing-md $spacing-lg;
-        font-size: $font-size-sm;
-        font-weight: $font-weight-semibold;
-        color: $lian-text;
-        text-align: left;
-      }
-    }
-
-    tbody {
-      tr {
-        border-bottom: 1px solid $lian-divider;
-        transition: all $transition-base $ease-gentle;
-
-        &:hover {
-          background: linear-gradient(135deg, rgba($lian-blue, 0.03) 0%, rgba($lian-pink, 0.03) 100%);
-          transform: scale(1.01);
-        }
-      }
-
-      td {
-        padding: $spacing-md $spacing-lg;
-        font-size: $font-size-sm;
-        color: $lian-text;
-      }
+    &:hover {
+      box-shadow: $shadow-blue;
+      border-color: rgba($lian-blue, 0.3);
+      transform: translateY(-2px);
     }
   }
 
+  .theme-card-body {
+    flex: 1;
+    padding: $spacing-lg;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+  }
+
+  .theme-card-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: $spacing-sm;
+    flex-wrap: wrap;
+  }
+
   .theme-name {
+    font-size: $font-size-lg;
     font-weight: $font-weight-bold;
     background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+    margin: 0;
   }
 
-  .theme-slug {
+  .theme-slug-code {
+    font-size: $font-size-xs;
     font-family: $font-family-code;
     color: $lian-text-muted;
-    font-size: $font-size-xs;
+    background: rgba($lian-blue, 0.06);
     padding: 2px 8px;
-    background: rgba($lian-blue, 0.05);
     border-radius: 6px;
+    white-space: nowrap;
   }
 
-  .theme-description {
+  .theme-desc {
+    font-size: $font-size-sm;
     color: $lian-text-light;
     line-height: $line-height-base;
+    margin: 0;
   }
 
-  .text-center {
-    text-align: center;
-    font-family: $font-family-code;
+  .theme-stats {
+    display: flex;
+    gap: $spacing-md;
+    margin-top: auto;
+    padding-top: $spacing-sm;
   }
 
-  .text-muted {
+  .stat-item {
+    font-size: $font-size-xs;
     color: $lian-text-muted;
   }
 
-  // 操作按钮
-  .actions {
+  .theme-card-actions {
     display: flex;
     gap: $spacing-xs;
+    padding: $spacing-sm $spacing-lg $spacing-md;
+    border-top: 1px solid $lian-divider;
+    background: rgba($lian-bg, 0.5);
+    border-radius: 0 0 $radius-md $radius-md;
+  }
 
-    button {
-      padding: $spacing-xs $spacing-sm;
-      font-size: $font-size-xs;
-      font-weight: $font-weight-medium;
-      border: none;
-      border-radius: $radius-sm;
-      cursor: pointer;
-      transition: all $transition-base $ease-gentle;
+  // 错误状态
+  .error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $spacing-md;
+    padding: $spacing-xxl;
+    p { font-size: $font-size-sm; color: $lian-error; }
+  }
+
+  .btn-retry {
+    padding: $spacing-xs $spacing-lg;
+    font-size: $font-size-sm;
+    color: var(--color-white);
+    background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
+    border: none; border-radius: $radius-sm; cursor: pointer;
+    transition: all $transition-base $ease-gentle;
+    &:hover { box-shadow: $shadow-blue; transform: translateY(-1px); }
+  }
+
+  // 操作按钮（卡片内）
+  .btn-edit {
+    flex: 1;
+    padding: $spacing-xs $spacing-sm;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-medium;
+    color: $lian-blue;
+    background: rgba($lian-blue, 0.08);
+    border: 1px solid rgba($lian-blue, 0.25);
+    border-radius: $radius-sm;
+    cursor: pointer;
+    transition: all $transition-base $ease-gentle;
+    text-align: center;
+
+    &:hover {
+      background: $lian-blue;
+      color: var(--color-white);
+      box-shadow: $shadow-blue;
+      transform: translateY(-1px);
     }
+  }
 
-    .btn-edit {
-      background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
-      color: var(--color-on-primary);
-      box-shadow: 0 2px 8px rgba($lian-blue, 0.2);
+  .btn-delete {
+    flex: 1;
+    padding: $spacing-xs $spacing-sm;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-medium;
+    color: $lian-error;
+    background: rgba($lian-error, 0.08);
+    border: 1px solid rgba($lian-error, 0.25);
+    border-radius: $radius-sm;
+    cursor: pointer;
+    transition: all $transition-base $ease-gentle;
+    text-align: center;
 
-      &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba($lian-blue, 0.3);
-      }
-    }
-
-    .btn-delete {
-      background: linear-gradient(135deg, rgba($lian-error, 0.8) 0%, rgba($lian-error, 0.6) 100%);
-      color: var(--color-on-primary);
-      box-shadow: 0 2px 8px rgba($lian-error, 0.2);
-
-      &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba($lian-error, 0.3);
-      }
+    &:hover {
+      background: $lian-error;
+      color: var(--color-white);
+      box-shadow: 0 4px 12px rgba($lian-error, 0.3);
+      transform: translateY(-1px);
     }
   }
 
