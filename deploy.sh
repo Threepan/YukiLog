@@ -497,7 +497,10 @@ if [[ -d "dist" ]] && [[ "$FORCE_REBUILD" != "true" ]]; then
     info "前端已构建，跳过 (如需重新构建请删除 dist/ 目录)"
 else
     warn "正在安装前端依赖..."
-    pnpm install --frozen-lockfile 2>/dev/null || pnpm install
+    # pnpm v10 默认屏蔽 build scripts；明确允许 esbuild/sharp/@parcel/watcher
+    # 通过 package.json 中 pnpm.onlyBuiltDependencies 声明（已内置），
+    # 首次安装仍需 --no-frozen-lockfile 以触发 postinstall
+    pnpm install --no-frozen-lockfile 2>/dev/null || pnpm install
     warn "正在构建前端..."
     pnpm build
     info "前端构建完成"
