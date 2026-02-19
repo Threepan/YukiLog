@@ -97,15 +97,13 @@ if (apiError || !theme) {
   }
 
   .post-list-container {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: $spacing-lg;
+    columns: 2;
+    column-gap: $spacing-lg;
   }
 
   @media (max-width: $container-md) {
     .post-list-container {
-      grid-template-columns: 1fr;
-      gap: $spacing-md;
+      columns: 1;
     }
   }
 

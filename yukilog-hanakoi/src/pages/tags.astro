@@ -389,14 +389,14 @@ const tagSlugsWithPosts = Object.keys(tagPosts).filter(
     }
   }
 
-  // 标签文章组：默认隐藏，激活后显示（双栏网格）
+  // 标签文章组：默认隐藏，激活后显示（双栏瀑布流）
   .tag-group {
     display: none;
-    grid-template-columns: repeat(2, 1fr);
-    gap: $spacing-lg;
+    columns: 2;
+    column-gap: $spacing-lg;
 
     &.active {
-      display: grid;
+      display: block;
     }
   }
 
@@ -414,8 +414,7 @@ const tagSlugsWithPosts = Object.keys(tagPosts).filter(
   // ================================
   @media (max-width: $container-md) {
     .tag-group {
-      grid-template-columns: 1fr;
-      gap: $spacing-md;
+      columns: 1;
     }
   }
 
