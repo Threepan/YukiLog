@@ -1,10 +1,10 @@
-// ================================
-// 工具类 - 通用样式助手
-// ================================
+/* ================================ */
+/* 工具类 - 通用样式助手 */
+/* ================================ */
 
-// ================================
-// 圆角
-// ================================
+/* ================================ */
+/* 圆角 */
+/* ================================ */
 .rounded-sm { border-radius: var(--radius-sm); }
 .rounded-md { border-radius: var(--radius-md); }
 .rounded-lg { border-radius: var(--radius-lg); }
@@ -19,18 +19,18 @@
 .rounded-b-md { border-bottom-left-radius: var(--radius-md); border-bottom-right-radius: var(--radius-md); }
 .rounded-b-lg { border-bottom-left-radius: var(--radius-lg); border-bottom-right-radius: var(--radius-lg); }
 
-// ================================
-// 阴影
-// ================================
+/* ================================ */
+/* 阴影 */
+/* ================================ */
 .shadow-none { box-shadow: none; }
 .shadow-sm { box-shadow: var(--shadow-sm); }
 .shadow-md { box-shadow: var(--shadow-md); }
 .shadow-lg { box-shadow: var(--shadow-lg); }
 .shadow-hover { box-shadow: var(--shadow-hover); }
 
-// ================================
-// 间距 - Margin
-// ================================
+/* ================================ */
+/* 间距 - Margin */
+/* ================================ */
 .m-0 { margin: 0; }
 .m-xs { margin: var(--spacing-xs); }
 .m-sm { margin: var(--spacing-sm); }
@@ -40,7 +40,7 @@
 .m-xxl { margin: var(--spacing-xxl); }
 .m-auto { margin: auto; }
 
-// Margin Top
+/* Margin Top */
 .mt-0 { margin-top: 0; }
 .mt-xs { margin-top: var(--spacing-xs); }
 .mt-sm { margin-top: var(--spacing-sm); }
@@ -49,7 +49,7 @@
 .mt-xl { margin-top: var(--spacing-xl); }
 .mt-xxl { margin-top: var(--spacing-xxl); }
 
-// Margin Bottom
+/* Margin Bottom */
 .mb-0 { margin-bottom: 0; }
 .mb-xs { margin-bottom: var(--spacing-xs); }
 .mb-sm { margin-bottom: var(--spacing-sm); }
@@ -58,7 +58,7 @@
 .mb-xl { margin-bottom: var(--spacing-xl); }
 .mb-xxl { margin-bottom: var(--spacing-xxl); }
 
-// Margin Left
+/* Margin Left */
 .ml-0 { margin-left: 0; }
 .ml-xs { margin-left: var(--spacing-xs); }
 .ml-sm { margin-left: var(--spacing-sm); }
@@ -67,7 +67,7 @@
 .ml-xl { margin-left: var(--spacing-xl); }
 .ml-auto { margin-left: auto; }
 
-// Margin Right
+/* Margin Right */
 .mr-0 { margin-right: 0; }
 .mr-xs { margin-right: var(--spacing-xs); }
 .mr-sm { margin-right: var(--spacing-sm); }
@@ -76,22 +76,22 @@
 .mr-xl { margin-right: var(--spacing-xl); }
 .mr-auto { margin-right: auto; }
 
-// Margin X (水平)
+/* Margin X (水平) */
 .mx-auto { margin-left: auto; margin-right: auto; }
 .mx-xs { margin-left: var(--spacing-xs); margin-right: var(--spacing-xs); }
 .mx-sm { margin-left: var(--spacing-sm); margin-right: var(--spacing-sm); }
 .mx-md { margin-left: var(--spacing-md); margin-right: var(--spacing-md); }
 .mx-lg { margin-left: var(--spacing-lg); margin-right: var(--spacing-lg); }
 
-// Margin Y (垂直)
+/* Margin Y (垂直) */
 .my-xs { margin-top: var(--spacing-xs); margin-bottom: var(--spacing-xs); }
 .my-sm { margin-top: var(--spacing-sm); margin-bottom: var(--spacing-sm); }
 .my-md { margin-top: var(--spacing-md); margin-bottom: var(--spacing-md); }
 .my-lg { margin-top: var(--spacing-lg); margin-bottom: var(--spacing-lg); }
 
-// ================================
-// 间距 - Padding
-// ================================
+/* ================================ */
+/* 间距 - Padding */
+/* ================================ */
 .p-0 { padding: 0; }
 .p-xs { padding: var(--spacing-xs); }
 .p-sm { padding: var(--spacing-sm); }
@@ -100,7 +100,7 @@
 .p-xl { padding: var(--spacing-xl); }
 .p-xxl { padding: var(--spacing-xxl); }
 
-// Padding Top
+/* Padding Top */
 .pt-0 { padding-top: 0; }
 .pt-xs { padding-top: var(--spacing-xs); }
 .pt-sm { padding-top: var(--spacing-sm); }
@@ -108,7 +108,7 @@
 .pt-lg { padding-top: var(--spacing-lg); }
 .pt-xl { padding-top: var(--spacing-xl); }
 
-// Padding Bottom
+/* Padding Bottom */
 .pb-0 { padding-bottom: 0; }
 .pb-xs { padding-bottom: var(--spacing-xs); }
 .pb-sm { padding-bottom: var(--spacing-sm); }
@@ -116,37 +116,37 @@
 .pb-lg { padding-bottom: var(--spacing-lg); }
 .pb-xl { padding-bottom: var(--spacing-xl); }
 
-// Padding Left
+/* Padding Left */
 .pl-0 { padding-left: 0; }
 .pl-xs { padding-left: var(--spacing-xs); }
 .pl-sm { padding-left: var(--spacing-sm); }
 .pl-md { padding-left: var(--spacing-md); }
 .pl-lg { padding-left: var(--spacing-lg); }
 
-// Padding Right
+/* Padding Right */
 .pr-0 { padding-right: 0; }
 .pr-xs { padding-right: var(--spacing-xs); }
 .pr-sm { padding-right: var(--spacing-sm); }
 .pr-md { padding-right: var(--spacing-md); }
 .pr-lg { padding-right: var(--spacing-lg); }
 
-// Padding X
+/* Padding X */
 .px-xs { padding-left: var(--spacing-xs); padding-right: var(--spacing-xs); }
 .px-sm { padding-left: var(--spacing-sm); padding-right: var(--spacing-sm); }
 .px-md { padding-left: var(--spacing-md); padding-right: var(--spacing-md); }
 .px-lg { padding-left: var(--spacing-lg); padding-right: var(--spacing-lg); }
 .px-xl { padding-left: var(--spacing-xl); padding-right: var(--spacing-xl); }
 
-// Padding Y
+/* Padding Y */
 .py-xs { padding-top: var(--spacing-xs); padding-bottom: var(--spacing-xs); }
 .py-sm { padding-top: var(--spacing-sm); padding-bottom: var(--spacing-sm); }
 .py-md { padding-top: var(--spacing-md); padding-bottom: var(--spacing-md); }
 .py-lg { padding-top: var(--spacing-lg); padding-bottom: var(--spacing-lg); }
 .py-xl { padding-top: var(--spacing-xl); padding-bottom: var(--spacing-xl); }
 
-// ================================
-// Display
-// ================================
+/* ================================ */
+/* Display */
+/* ================================ */
 .block { display: block; }
 .inline-block { display: inline-block; }
 .inline { display: inline; }
@@ -155,9 +155,9 @@
 .grid { display: grid; }
 .hidden { display: none; }
 
-// ================================
-// Flexbox
-// ================================
+/* ================================ */
+/* Flexbox */
+/* ================================ */
 .flex-row { flex-direction: row; }
 .flex-col { flex-direction: column; }
 .flex-wrap { flex-wrap: wrap; }
@@ -184,17 +184,17 @@
 .gap-lg { gap: var(--spacing-lg); }
 .gap-xl { gap: var(--spacing-xl); }
 
-// ================================
-// 位置
-// ================================
+/* ================================ */
+/* 位置 */
+/* ================================ */
 .relative { position: relative; }
 .absolute { position: absolute; }
 .fixed { position: fixed; }
 .sticky { position: sticky; }
 
-// ================================
-// 尺寸
-// ================================
+/* ================================ */
+/* 尺寸 */
+/* ================================ */
 .w-full { width: 100%; }
 .w-auto { width: auto; }
 .w-screen { width: 100vw; }
@@ -208,39 +208,39 @@
 .max-w-lg { max-width: 1024px; }
 .max-w-xl { max-width: 1200px; }
 
-// ================================
-// 溢出
-// ================================
+/* ================================ */
+/* 溢出 */
+/* ================================ */
 .overflow-hidden { overflow: hidden; }
 .overflow-auto { overflow: auto; }
 .overflow-scroll { overflow: scroll; }
 .overflow-x-auto { overflow-x: auto; }
 .overflow-y-auto { overflow-y: auto; }
 
-// ================================
-// 光标
-// ================================
+/* ================================ */
+/* 光标 */
+/* ================================ */
 .cursor-pointer { cursor: pointer; }
 .cursor-default { cursor: default; }
 .cursor-not-allowed { cursor: not-allowed; }
 
-// ================================
-// 不透明度
-// ================================
+/* ================================ */
+/* 不透明度 */
+/* ================================ */
 .opacity-0 { opacity: 0; }
 .opacity-50 { opacity: 0.5; }
 .opacity-75 { opacity: 0.75; }
 .opacity-100 { opacity: 1; }
 
-// ================================
-// 指针事件
-// ================================
+/* ================================ */
+/* 指针事件 */
+/* ================================ */
 .pointer-events-none { pointer-events: none; }
 .pointer-events-auto { pointer-events: auto; }
 
-// ================================
-// 选择
-// ================================
+/* ================================ */
+/* 选择 */
+/* ================================ */
 .select-none { user-select: none; }
 .select-text { user-select: text; }
 .select-all { user-select: all; }

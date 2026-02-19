@@ -1,8 +1,8 @@
-// ================================
-// 动画定义 - 恋的温柔动画系统
-// ================================
+/* ================================ */
+/* 动画定义 - 恋的温柔动画系统 */
+/* ================================ */
 
-// 导航栏渐入
+/* 导航栏渐入 */
 @keyframes nav-fade-in {
   from {
     opacity: 0;
@@ -12,7 +12,7 @@
   }
 }
 
-// 导航项滑入（从右往左 40px）
+/* 导航项滑入（从右往左 40px） */
 @keyframes nav-item-slide-in {
   from {
     opacity: 0;
@@ -24,7 +24,7 @@
   }
 }
 
-// 组件从左侧滑入（100px，用于个人信息/站点信息）
+/* 组件从左侧滑入（100px，用于个人信息/站点信息） */
 @keyframes slide-in-left {
   from {
     opacity: 0;
@@ -36,7 +36,7 @@
   }
 }
 
-// 组件从右侧滑入（100px）
+/* 组件从右侧滑入（100px） */
 @keyframes slide-in-right {
   from {
     opacity: 0;
@@ -48,7 +48,7 @@
   }
 }
 
-// 组件从上方滑入
+/* 组件从上方滑入 */
 @keyframes slide-in-top {
   from {
     opacity: 0;
@@ -60,7 +60,7 @@
   }
 }
 
-// 组件从下方滑入
+/* 组件从下方滑入 */
 @keyframes slide-in-bottom {
   from {
     opacity: 0;
@@ -72,7 +72,7 @@
   }
 }
 
-// 通用淡入
+/* 通用淡入 */
 @keyframes fade-in {
   from {
     opacity: 0;
@@ -82,7 +82,7 @@
   }
 }
 
-// 脉冲（非常轻微，用于提示）
+/* 脉冲（非常轻微，用于提示） */
 @keyframes pulse-gentle {
   0%, 100% {
     opacity: 1;
@@ -92,41 +92,41 @@
   }
 }
 
-// ================================
-// Mixins - 便捷使用动画
-// ================================
+/* ================================ */
+/* Mixins - 便捷使用动画 */
+/* ================================ */
 
-// 淡入动画
+/* 淡入动画 */
 @mixin fade-in($duration: var(--transition-base), $delay: 0s) {
   opacity: 0;
   animation: fade-in $duration var(--ease-gentle) $delay forwards;
 }
 
-// 从左滑入
+/* 从左滑入 */
 @mixin slide-in-left($duration: var(--transition-base), $delay: 0s) {
   opacity: 0;
   animation: slide-in-left $duration var(--ease-gentle) $delay forwards;
 }
 
-// 从右滑入
+/* 从右滑入 */
 @mixin slide-in-right($duration: var(--transition-base), $delay: 0s) {
   opacity: 0;
   animation: slide-in-right $duration var(--ease-gentle) $delay forwards;
 }
 
-// 从上滑入
+/* 从上滑入 */
 @mixin slide-in-top($duration: var(--transition-base), $delay: 0s) {
   opacity: 0;
   animation: slide-in-top $duration var(--ease-gentle) $delay forwards;
 }
 
-// 从下滑入
+/* 从下滑入 */
 @mixin slide-in-bottom($duration: var(--transition-base), $delay: 0s) {
   opacity: 0;
   animation: slide-in-bottom $duration var(--ease-gentle) $delay forwards;
 }
 
-// 悬停轻微上浮（2px，柔和）
+/* 悬停轻微上浮（2px，柔和） */
 @mixin hover-lift($distance: -2px) {
   transition: 
     transform var(--transition-fast) var(--ease-out), 
@@ -138,7 +138,7 @@
   }
 }
 
-// 悬停放大（轻微）
+/* 悬停放大（轻微） */
 @mixin hover-scale($scale: 1.02) {
   transition: transform var(--transition-fast) var(--ease-out);
   
@@ -147,7 +147,7 @@
   }
 }
 
-// 悬停增强阴影
+/* 悬停增强阴影 */
 @mixin hover-shadow-enhance {
   transition: box-shadow var(--transition-fast) var(--ease-out);
   
@@ -156,7 +156,7 @@
   }
 }
 
-// 柔和的颜色过渡
+/* 柔和的颜色过渡 */
 @mixin color-transition($properties...) {
   $transitions: ();
   @each $prop in $properties {
@@ -165,14 +165,14 @@
   transition: $transitions;
 }
 
-// 交互反馈（按下效果，非常轻微）
+/* 交互反馈（按下效果，非常轻微） */
 @mixin active-scale($scale: 0.98) {
   &:active {
     transform: scale($scale);
   }
 }
 
-// 加载骨架屏动画（温柔的闪烁）
+/* 加载骨架屏动画（温柔的闪烁） */
 @keyframes skeleton-loading {
   0% {
     background-position: -200% 0;
