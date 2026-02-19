@@ -60,79 +60,68 @@ const hasCover = !!post.cover_image;
   </div>
 </a>
 
-<style lang="scss">
-  // 备用渐变色组（无封面图时轮流使用）
-  $fallback-gradients: (
-    "linear-gradient(135deg, #7EB6D9 0%, #E8A4B4 100%)",
-    "linear-gradient(135deg, #E8A4B4 0%, #f0c0a0 100%)",
-    "linear-gradient(135deg, #93c2e0 0%, #7EB6D9 100%)",
-    "linear-gradient(135deg, #a8d5ba 0%, #7EB6D9 100%)",
-    "linear-gradient(135deg, #E8A4B4 0%, #93c2e0 100%)",
-  );
+<style>
+  /* 备用渐变：无封面图时 */
+  .plc-bg-fallback {
+    background: linear-gradient(135deg, var(--color-blue) 0%, var(--color-pink) 100%);
+  }
 
   .post-list-card {
     display: block;
     position: relative;
     min-height: 220px;
-    border-radius: $radius-lg;
+    border-radius: 24px;
     overflow: hidden;
     text-decoration: none;
     cursor: pointer;
 
-    // 入场动画：默认不可见
     opacity: 0;
     transform: translateY(20px);
     transition:
-      opacity 500ms $ease-gentle,
-      transform 500ms $ease-gentle,
-      box-shadow $transition-base $ease-gentle;
+      opacity 500ms cubic-bezier(0.4, 0, 0.2, 1),
+      transform 500ms cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1);
     transition-delay: calc(var(--pi) * 60ms);
-
-    &.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    &:hover {
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
-      transform: translateY(-6px);
-
-      .plc-bg {
-        transform: scale(1.06);
-      }
-
-      .plc-overlay {
-        background: linear-gradient(
-          to top,
-          rgba(0, 0, 0, 0.80) 0%,
-          rgba(0, 0, 0, 0.45) 50%,
-          rgba(0, 0, 0, 0.25) 100%
-        );
-      }
-
-      &.visible {
-        transform: translateY(-6px);
-      }
-    }
   }
 
-  // 背景层
+  .post-list-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .post-list-card:hover {
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+    transform: translateY(-6px);
+  }
+
+  .post-list-card.visible:hover {
+    transform: translateY(-6px);
+  }
+
+  .post-list-card:hover .plc-bg {
+    transform: scale(1.06);
+  }
+
+  .post-list-card:hover .plc-overlay {
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.80) 0%,
+      rgba(0, 0, 0, 0.45) 50%,
+      rgba(0, 0, 0, 0.25) 100%
+    );
+  }
+
+  /* 背景层 */
   .plc-bg {
     position: absolute;
     inset: 0;
     background-size: cover;
     background-position: center;
-    transition: transform 600ms $ease-gentle;
+    transition: transform 600ms cubic-bezier(0.4, 0, 0.2, 1);
     will-change: transform;
   }
 
-  // 无封面图的备用渐变：通过 nth-child 交替
-  // 子组件无法直接获取 nth-child，由父容器 CSS 控制
-  .plc-bg-fallback {
-    background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
-  }
-
-  // 暗色叠加层（从底部往上渐变，使文字可读）
+  /* 暗色叠加层 */
   .plc-overlay {
     position: absolute;
     inset: 0;
@@ -142,28 +131,27 @@ const hasCover = !!post.cover_image;
       rgba(0, 0, 0, 0.35) 50%,
       rgba(0, 0, 0, 0.15) 100%
     );
-    transition: background $transition-base $ease-gentle;
+    transition: background 300ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  // 内容层（定位在暗色层之上）
+  /* 内容层：绝对定位贴底 */
   .plc-content {
-    position: relative;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
     z-index: 1;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
-    padding: $spacing-lg;
-    min-height: 220px;
-    height: 100%;
-    box-sizing: border-box;
+    padding: 1.25rem 1.25rem 1.25rem;
   }
 
   .plc-title {
-    font-size: $font-size-lg;
-    font-weight: $font-weight-semibold;
+    font-size: 1.125rem;
+    font-weight: 600;
     color: #fff;
-    margin: 0 0 $spacing-xs;
-    line-height: $line-height-tight;
+    margin: 0 0 0.375rem;
+    line-height: 1.25;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -172,10 +160,10 @@ const hasCover = !!post.cover_image;
   }
 
   .plc-summary {
-    font-size: $font-size-sm;
+    font-size: 0.875rem;
     color: rgba(255, 255, 255, 0.82);
-    line-height: $line-height-base;
-    margin: 0 0 $spacing-xs;
+    line-height: 1.6;
+    margin: 0 0 0.375rem;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -186,15 +174,15 @@ const hasCover = !!post.cover_image;
   .plc-meta {
     display: flex;
     align-items: center;
-    gap: $spacing-sm;
+    gap: 1rem;
     flex-wrap: wrap;
-    margin-top: $spacing-xs;
+    margin-top: 0.375rem;
   }
 
   .plc-date {
-    font-size: $font-size-xs;
+    font-size: 0.75rem;
     color: rgba(255, 255, 255, 0.65);
-    font-family: $font-family-code;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
   }
 
   .plc-tags {
@@ -204,7 +192,7 @@ const hasCover = !!post.cover_image;
   }
 
   .plc-tag {
-    font-size: $font-size-xs;
+    font-size: 0.75rem;
     color: rgba(255, 255, 255, 0.85);
     background: rgba(255, 255, 255, 0.18);
     padding: 1px 8px;
@@ -213,77 +201,70 @@ const hasCover = !!post.cover_image;
     -webkit-backdrop-filter: blur(4px);
   }
 
-  // 响应式
-  @media (max-width: $container-sm) {
+  @media (max-width: 640px) {
     .plc-content {
-      min-height: 180px;
-      padding: $spacing-md;
+      padding: 1rem;
     }
   }
 </style>
 
 
-<style lang="scss">
+<style>
   .post-list-card {
     display: block;
-    padding: $spacing-lg $spacing-xl;
+    padding: 2rem 3rem;
     background: var(--color-white);
-    border-radius: $radius-sm;
+    border-radius: 16px;
     text-decoration: none;
-    box-shadow: $shadow-sm;
+    box-shadow: var(--shadow-sm);
     border-left: 3px solid transparent;
     overflow: hidden;
-    transition:
-      box-shadow $transition-base $ease-gentle,
-      transform $transition-base $ease-gentle,
-      border-color $transition-base $ease-gentle;
 
-    // 入场动画
     opacity: 0;
     transform: translateY(16px);
     transition:
-      opacity 500ms $ease-gentle,
-      transform 500ms $ease-gentle,
-      box-shadow $transition-base $ease-gentle,
-      border-color $transition-base $ease-gentle;
+      opacity 500ms cubic-bezier(0.4, 0, 0.2, 1),
+      transform 500ms cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1),
+      border-color 300ms cubic-bezier(0.4, 0, 0.2, 1);
     transition-delay: calc(var(--pi) * 60ms);
+  }
 
-    &.has-cover {
-      padding: 0;
-      border-left: none;
+  .post-list-card.has-cover {
+    padding: 0;
+    border-left: none;
+  }
 
-      .plc-info {
-        padding: $spacing-md $spacing-xl $spacing-lg;
-      }
-    }
+  .post-list-card.has-cover .plc-info {
+    padding: 1.5rem 3rem 2rem;
+  }
 
-    &.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
+  .post-list-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
 
-    &:hover {
-      box-shadow: $shadow-blue;
-      transform: translateY(-2px);
-      border-left-color: $lian-blue;
+  .post-list-card:hover {
+    box-shadow: var(--shadow-blue-md);
+    transform: translateY(-2px);
+    border-left-color: var(--color-blue);
+  }
 
-      .plc-title {
-        color: $lian-blue;
-      }
+  .post-list-card:hover .plc-title {
+    color: var(--color-blue);
+  }
 
-      .plc-cover img {
-        transform: scale(1.06);
-      }
-    }
+  .post-list-card:hover .plc-cover img {
+    transform: scale(1.06);
+  }
 
-    &:nth-child(even):hover {
-      box-shadow: $shadow-pink;
-      border-left-color: $lian-pink;
+  .post-list-card:nth-child(even):hover {
+    box-shadow: var(--shadow-pink-md);
+    border-left-color: var(--color-pink);
+  }
 
-      .plc-title {
-        color: $lian-pink;
-      }
-    }
+  .post-list-card:nth-child(even):hover .plc-title {
+    color: var(--color-pink);
   }
 
   .plc-cover {
@@ -291,37 +272,37 @@ const hasCover = !!post.cover_image;
     min-height: 140px;
     max-height: 320px;
     overflow: hidden;
+  }
 
-    img {
-      width: 100%;
-      height: auto;
-      min-height: 140px;
-      max-height: 320px;
-      object-fit: cover;
-      display: block;
-      transition: transform 500ms $ease-gentle;
-    }
+  .plc-cover img {
+    width: 100%;
+    height: auto;
+    min-height: 140px;
+    max-height: 320px;
+    object-fit: cover;
+    display: block;
+    transition: transform 500ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .plc-info {
     display: flex;
     flex-direction: column;
-    gap: $spacing-xs;
+    gap: 0.5rem;
   }
 
   .plc-title {
-    font-size: $font-size-lg;
-    font-weight: $font-weight-semibold;
-    color: $lian-text;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-text);
     margin: 0;
-    line-height: $line-height-tight;
-    transition: color $transition-fast $ease-gentle;
+    line-height: 1.25;
+    transition: color 200ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .plc-summary {
-    font-size: $font-size-sm;
-    color: $lian-text-light;
-    line-height: $line-height-base;
+    font-size: 0.875rem;
+    color: var(--color-text-light);
+    line-height: 1.6;
     margin: 0;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -332,14 +313,14 @@ const hasCover = !!post.cover_image;
   .plc-meta {
     display: flex;
     align-items: center;
-    gap: $spacing-sm;
-    margin-top: $spacing-xs;
+    gap: 1rem;
+    margin-top: 0.5rem;
   }
 
   .plc-date {
-    font-size: $font-size-xs;
-    color: $lian-text-muted;
-    font-family: $font-family-code;
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
   }
 
   .plc-tags {
@@ -349,20 +330,20 @@ const hasCover = !!post.cover_image;
   }
 
   .plc-tag {
-    font-size: $font-size-xs;
-    color: $lian-pink;
-    background: rgba($lian-pink, 0.08);
+    font-size: 0.75rem;
+    color: var(--color-pink);
+    background: var(--pink-alpha-08);
     padding: 1px 8px;
     border-radius: 12px;
   }
 
-  @media (max-width: $container-sm) {
+  @media (max-width: 640px) {
     .post-list-card {
-      padding: $spacing-md;
+      padding: 1.5rem;
+    }
 
-      &.has-cover {
-        padding: 0;
-      }
+    .post-list-card.has-cover {
+      padding: 0;
     }
   }
 </style>
