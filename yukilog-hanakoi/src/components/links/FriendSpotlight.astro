@@ -75,7 +75,7 @@ const { name, description, avatar, url, message, friendSince, greeting, sinceLab
   .friend-letter-section {
     display: flex;
     justify-content: center;
-    padding: var(--spacing-xxl) 0 var(--spacing-xxl) * 1.5;
+    padding: var(--spacing-xxl) 0 calc(var(--spacing-xxl) * 1.5);
     perspective: 1000px; /* 3D 视角 */
   }
 
@@ -159,13 +159,13 @@ const { name, description, avatar, url, message, friendSince, greeting, sinceLab
     width: 100%;
     max-width: 480px;
     margin: 0 auto;
-    padding: var(--spacing-xxl) var(--spacing-xl) * 1.5 var(--spacing-xl);
+    padding: var(--spacing-xxl) calc(var(--spacing-xl) * 1.5) var(--spacing-xl);
     background: 
       repeating-linear-gradient(
         transparent,
         transparent 31px,
-        rgba(var(--color-text-muted), 0.08) 31px,
-        rgba(var(--color-text-muted), 0.08) 32px
+        var(--muted-alpha-08) 31px,
+        var(--muted-alpha-08) 32px
       ),
       linear-gradient(to bottom,
         var(--color-white) 0%,

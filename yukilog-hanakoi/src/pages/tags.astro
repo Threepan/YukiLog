@@ -276,7 +276,7 @@ const tagSlugsWithPosts = Object.keys(tagPosts).filter(
   .tags-page {
     max-width: 1000px;
     margin: 0 auto;
-    padding: var(--spacing-xl) var(--spacing-lg) var(--spacing-xxl) * 2;
+    padding: var(--spacing-xl) var(--spacing-lg) calc(var(--spacing-xxl) * 2);
   }
 
   /* ================================ */
@@ -357,7 +357,7 @@ const tagSlugsWithPosts = Object.keys(tagPosts).filter(
       background: var(--color-surface, #fff);
       border-color: var(--color-border);
       .tag-name { color: var(--color-text); }
-      .tag-count { background: rgba(var(--color-text-muted), 0.1); color: var(--color-text-muted); }
+      .tag-count { background: var(--muted-alpha-10); color: var(--color-text-muted); }
       &:hover { background: var(--color-white); box-shadow: var(--shadow-sm); transform: translateY(-2px); }
     }
 
@@ -426,7 +426,7 @@ const tagSlugsWithPosts = Object.keys(tagPosts).filter(
     align-items: center;
     justify-content: center;
     border: none;
-    background: rgba(var(--color-text-muted), 0.08);
+    background: var(--muted-alpha-08);
     color: var(--color-text-muted);
     border-radius: 50%;
     cursor: pointer;

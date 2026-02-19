@@ -156,8 +156,8 @@ const randomBackground =
     min-height: 100vh;
     background: var(--color-bg);
     /* 为两侧固定侧栏留出空间（侧栏宽度 ~280px + 边距 ~60px + 间隙 24px = ~364px 每侧） */
-    padding-left: clamp(0px, calc(clamp(240px, 24vw, 280px) + clamp(var(--spacing-md), 4vw, var(--spacing-xl) * 2) + 24px), 370px);
-    padding-right: clamp(0px, calc(clamp(240px, 24vw, 280px) + clamp(var(--spacing-md), 4vw, var(--spacing-xl) * 2) + 24px), 370px);
+    padding-left: clamp(0px, calc(clamp(240px, 24vw, 280px) + clamp(var(--spacing-md), 4vw, calc(var(--spacing-xl) * 2)) + 24px), 370px);
+    padding-right: clamp(0px, calc(clamp(240px, 24vw, 280px) + clamp(var(--spacing-md), 4vw, calc(var(--spacing-xl) * 2)) + 24px), 370px);
   }
   
   /* 固定侧栏（跟随导航栏显隐） */
@@ -178,11 +178,11 @@ const randomBackground =
   }
   
   .fixed-sidebar-left {
-    left: clamp(var(--spacing-md), 4vw, var(--spacing-xl) * 2);
+    left: clamp(var(--spacing-md), 4vw, calc(var(--spacing-xl) * 2));
   }
   
   .fixed-sidebar-right {
-    right: clamp(var(--spacing-md), 4vw, var(--spacing-xl) * 2);
+    right: clamp(var(--spacing-md), 4vw, calc(var(--spacing-xl) * 2));
   }
   
   /* 响应式：小于 1400px 转为流式布局（侧栏与内容不再重叠） */
