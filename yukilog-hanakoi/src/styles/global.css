@@ -3,8 +3,10 @@
 /* 恋的温柔博客系统 */
 /* ================================ */
 
-/* 导入主题系统（CSS Variables 定义） */
-/* 导入样式模块（variables 已通过 Vite additionalData 注入） */
+@import './tokens.css';
+@import './animations.css';
+@import './typography.css';
+@import './utilities.css';
 /* ================================ */
 /* 全局重置 */
 /* ================================ */
