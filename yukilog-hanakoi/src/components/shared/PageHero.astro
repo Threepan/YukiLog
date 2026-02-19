@@ -110,13 +110,13 @@ const heroBgSrc =
     background: var(--white-alpha-85);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-md);
+    color: var(--color-blue); /* SVG fill="currentColor" 继承此值 */
+  }
 
-    :global(svg) {
-      width: 28px;
-      height: 28px;
-      color: var(--color-blue);
-      fill: currentColor;
-    }
+  .hero-icon :global(svg) {
+    width: 28px;
+    height: 28px;
+    display: block;
   }
 
   /* 标题 */
