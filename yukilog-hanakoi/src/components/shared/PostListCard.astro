@@ -3,7 +3,7 @@
 // 文章列表卡片组件（通用）
 // 用于主题详情页、标签页等场景
 // 封面图作为整个卡片的背景，加暗色渐变滤镜
-// 双栏网格布局由父容器控制
+// 文字浮于图片上方
 // ================================
 
 interface Props {
@@ -25,18 +25,13 @@ const hasCover = !!post.cover_image;
 <a
   href={`/posts/${post.slug}`}
   class="post-list-card"
-  style={`--pi: ${index}`}
+  class:list={[{ 'has-cover': hasCover }]}
+  style={`--pi: ${index}; ${hasCover ? `--bg-image: url('${post.cover_image}')` : ''}`}
 >
-  <!-- 封面图（自然高度）或渐变占位 -->
-  {hasCover ? (
-    <div class="plc-cover">
-      <img src={post.cover_image!} alt={post.title} loading="lazy" />
-    </div>
-  ) : (
-    <div class="plc-fallback"></div>
-  )}
+  <!-- 暗色渐变滤镜层 -->
+  <div class="plc-overlay"></div>
 
-  <!-- 文字信息 -->
+  <!-- 文字信息（浮于背景之上）-->
   <div class="plc-body">
     <h3 class="plc-title">{post.title}</h3>
     {post.summary && <p class="plc-summary">{post.summary}</p>}
@@ -62,8 +57,9 @@ const hasCover = !!post.cover_image;
 <style>
   /* ===== 基础卡片 ===== */
   .post-list-card {
+    position: relative;
     display: block;
-    background: var(--color-white);
+    min-height: 280px;
     border-radius: 18px;
     border-left: 3px solid transparent;
     overflow: hidden;
@@ -80,6 +76,17 @@ const hasCover = !!post.cover_image;
       box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1),
       border-color 300ms cubic-bezier(0.4, 0, 0.2, 1);
     transition-delay: calc(var(--pi) * 60ms);
+
+    /* 背景图片 */
+    background-image: var(--bg-image);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+
+  /* 无封面时的渐变背景 */
+  .post-list-card:not(.has-cover) {
+    background: linear-gradient(135deg, var(--blue-alpha-15) 0%, var(--pink-alpha-15) 100%);
   }
 
   .post-list-card.visible {
@@ -100,44 +107,71 @@ const hasCover = !!post.cover_image;
     border-left-color: var(--color-pink);
   }
 
-  /* ===== 封面图（自然尺寸）===== */
-  .plc-cover {
-    overflow: hidden;
-    line-height: 0;  /* 消除 img 下方空隙 */
+  /* ===== 暗色滤镜层 ===== */
+  .plc-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.3) 0%,
+      rgba(0, 0, 0, 0.5) 50%,
+      rgba(0, 0, 0, 0.7) 100%
+    );
+    transition: background 400ms cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
   }
 
-  .plc-cover img {
-    width: 100%;
-    height: auto;
-    display: block;
-    transition: transform 500ms cubic-bezier(0.4, 0, 0.2, 1);
+  .post-list-card:hover .plc-overlay {
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.4) 0%,
+      rgba(0, 0, 0, 0.6) 50%,
+      rgba(0, 0, 0, 0.75) 100%
+    );
   }
 
-  .post-list-card:hover .plc-cover img {
-    transform: scale(1.04);
+  /* 无封面时的滤镜层（更浅）*/
+  .post-list-card:not(.has-cover) .plc-overlay {
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.05) 0%,
+      rgba(0, 0, 0, 0.1) 100%
+    );
   }
 
-  /* ===== 无封面渐变占位 ===== */
-  .plc-fallback {
-    height: 100px;
-    background: linear-gradient(135deg, var(--blue-alpha-15) 0%, var(--pink-alpha-15) 100%);
+  .post-list-card:not(.has-cover):hover .plc-overlay {
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.08) 0%,
+      rgba(0, 0, 0, 0.15) 100%
+    );
   }
 
-  /* ===== 文字区域 ===== */
+  /* ===== 文字区域（浮于背景之上）===== */
   .plc-body {
-    padding: 1.125rem 1.5rem 1.375rem;
+    position: relative;
+    z-index: 2;
+    padding: 1.5rem 1.75rem;
     display: flex;
     flex-direction: column;
-    gap: 0.375rem;
+    gap: 0.5rem;
+    height: 100%;
+    justify-content: flex-end;
   }
 
   .plc-title {
-    font-size: 1rem;
+    font-size: 1.125rem;
     font-weight: 600;
-    color: var(--color-text);
+    color: #ffffff;
     margin: 0;
-    line-height: 1.35;
+    line-height: 1.4;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     transition: color 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .post-list-card:not(.has-cover) .plc-title {
+    color: var(--color-text);
+    text-shadow: none;
   }
 
   .post-list-card:hover .plc-title {
@@ -148,15 +182,31 @@ const hasCover = !!post.cover_image;
     color: var(--color-pink);
   }
 
+  .post-list-card.has-cover:hover .plc-title {
+    color: #ffffff;
+    text-shadow: 0 2px 12px rgba(126, 182, 217, 0.6);
+  }
+
+  .post-list-card.has-cover:nth-child(even):hover .plc-title {
+    color: #ffffff;
+    text-shadow: 0 2px 12px rgba(232, 164, 180, 0.6);
+  }
+
   .plc-summary {
-    font-size: 0.8125rem;
-    color: var(--color-text-light);
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.9);
     line-height: 1.65;
     margin: 0;
     display: -webkit-box;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  .post-list-card:not(.has-cover) .plc-summary {
+    color: var(--color-text-light);
+    text-shadow: none;
   }
 
   .plc-meta {
@@ -164,32 +214,58 @@ const hasCover = !!post.cover_image;
     align-items: center;
     gap: 0.75rem;
     flex-wrap: wrap;
-    margin-top: 0.25rem;
+    margin-top: 0.5rem;
   }
 
   .plc-date {
-    font-size: 0.6875rem;
-    color: var(--color-text-muted);
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.85);
     font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+
+  .post-list-card:not(.has-cover) .plc-date {
+    color: var(--color-text-muted);
+    text-shadow: none;
   }
 
   .plc-tags {
     display: flex;
-    gap: 4px;
+    gap: 6px;
     flex-wrap: wrap;
   }
 
   .plc-tag {
     font-size: 0.6875rem;
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+    padding: 2px 9px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  }
+
+  .post-list-card:not(.has-cover) .plc-tag {
     color: var(--color-pink);
     background: var(--pink-alpha-08);
-    padding: 1px 7px;
-    border-radius: 10px;
+    backdrop-filter: none;
+    border: none;
+    text-shadow: none;
   }
 
   @media (max-width: 640px) {
     .post-list-card {
       margin-bottom: 1rem;
+      min-height: 240px;
+    }
+
+    .plc-body {
+      padding: 1.25rem 1.5rem;
+    }
+
+    .plc-title {
+      font-size: 1rem;
     }
   }
 </style>

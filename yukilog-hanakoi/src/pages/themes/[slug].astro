@@ -63,9 +63,15 @@ if (apiError || !theme) {
     <a href="/themes" class="back-link">{contentConfig.pages.themes.backToAll}</a>
 
     <div class="post-list-container">
-      {posts.map((post, i) => (
-        <PostListCard post={post} index={i} />
-      ))}
+      <div class="post-list-column" data-column="0"></div>
+      <div class="post-list-column" data-column="1"></div>
+
+      <!-- 隐藏的卡片模板，用于 JS 动态分配 -->
+      <div class="post-list-source" style="display: none;">
+        {posts.map((post, i) => (
+          <PostListCard post={post} index={i} />
+        ))}
+      </div>
     </div>
   </div>
 </BlogLayout>
@@ -79,8 +85,51 @@ if (apiError || !theme) {
       fetch(`/api/public/themes/${themeSlug}/view`, { method: 'POST' }).catch(() => {});
     }
 
-    const cards = document.querySelectorAll<HTMLElement>('.post-list-card');
+    // 动态平衡双栏布局
+    const source = document.querySelector<HTMLElement>('.post-list-source');
+    const columns = document.querySelectorAll<HTMLElement>('.post-list-column');
+
+    if (!source || columns.length !== 2) return;
+
+    const cards = Array.from(source.querySelectorAll<HTMLElement>('.post-list-card'));
     if (!cards.length) return;
+
+    // 检测是否为移动端
+    const isMobile = window.innerWidth <= 768;
+
+    if (isMobile) {
+      // 移动端：所有卡片放入第一栏
+      cards.forEach((card) => {
+        columns[0].appendChild(card.cloneNode(true));
+      });
+    } else {
+      // 桌面端：动态平衡分配
+      const columnHeights = [0, 0];
+
+      cards.forEach((card) => {
+        // 克隆卡片以获取其高度
+        const clone = card.cloneNode(true) as HTMLElement;
+        clone.style.visibility = 'hidden';
+        clone.style.position = 'absolute';
+        document.body.appendChild(clone);
+
+        const cardHeight = clone.offsetHeight;
+        document.body.removeChild(clone);
+
+        // 找到当前高度较小的栏
+        const targetColumn = columnHeights[0] <= columnHeights[1] ? 0 : 1;
+
+        // 将卡片添加到目标栏
+        columns[targetColumn].appendChild(card.cloneNode(true));
+        columnHeights[targetColumn] += cardHeight + 20; // 20 = margin-bottom
+      });
+    }
+
+    // 清理源容器
+    source.remove();
+
+    // 入场动画
+    const allCards = document.querySelectorAll<HTMLElement>('.post-list-card');
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -92,7 +141,16 @@ if (apiError || !theme) {
       },
       { threshold: 0.08 }
     );
-    cards.forEach((card) => observer.observe(card));
+    allCards.forEach((card) => observer.observe(card));
+
+    // 响应式处理：窗口大小变化时重新布局
+    let resizeTimer: number;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(() => {
+        location.reload();
+      }, 500);
+    });
   });
 </script>
 
@@ -104,13 +162,24 @@ if (apiError || !theme) {
   }
 
   .post-list-container {
-    columns: 2;
-    column-gap: $spacing-lg;
+    display: flex;
+    gap: $spacing-lg;
+    align-items: flex-start;
+  }
+
+  .post-list-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
   }
 
   @media (max-width: $container-md) {
     .post-list-container {
-      columns: 1;
+      flex-direction: column;
+    }
+
+    .post-list-column:not(:first-child) {
+      display: none;
     }
   }
 
