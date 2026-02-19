@@ -366,7 +366,6 @@
   --shadow-error-lg:    0 4px 12px var(--error-alpha-40), 0 0 0 1px var(--error-alpha-20);
   --shadow-error-hover: 0 4px 10px var(--error-alpha-40), 0 0 0 1px var(--error-alpha-20);
 
-  /* 方向性阴影（暗色模式增强发光） */
   --shadow-pink:              -2px 2px 8px rgba(245, 184, 200, 0.30);
   --shadow-pink-offset-hover: -3px 3px 12px rgba(245, 184, 200, 0.50);
   --shadow-blue:              -2px 2px 8px rgba(109, 180, 232, 0.30);
@@ -410,7 +409,6 @@
   --bg-warning-subtle: rgba(245, 194, 139, 0.15);
   --bg-warning-soft:   rgba(245, 194, 139, 0.28);
 
-  /* 暗色预计算颜色（color.adjust 的近似等价） */
   --color-pink-l5:  #F9C8D5;
   --color-pink-l8:  #FBCEDD;
   --color-pink-l10: #FCD3E2;
