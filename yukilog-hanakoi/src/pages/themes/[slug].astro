@@ -59,7 +59,7 @@ if (apiError || !theme) {
     icon={themeIcon}
   />
 
-  <div class="theme-detail-page">
+  <div class="theme-detail-page" data-theme-slug={slug}>
     <a href="/themes" class="back-link">{contentConfig.pages.themes.backToAll}</a>
 
     <div class="post-list-container">
@@ -72,6 +72,13 @@ if (apiError || !theme) {
 
 <script>
   document.addEventListener('astro:page-load', () => {
+    const page = document.querySelector<HTMLElement>('.theme-detail-page');
+    const themeSlug = page?.dataset.themeSlug;
+    if (themeSlug) {
+      // 增加主题浏览量（fire-and-forget）
+      fetch(`/api/public/themes/${themeSlug}/view`, { method: 'POST' }).catch(() => {});
+    }
+
     const cards = document.querySelectorAll<HTMLElement>('.post-list-card');
     if (!cards.length) return;
     const observer = new IntersectionObserver(

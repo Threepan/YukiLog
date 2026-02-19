@@ -188,6 +188,9 @@ const tagSlugsWithPosts = Object.keys(tagPosts).filter(
       bubbles.forEach((b) => b.classList.remove('active'));
       btn.classList.add('active');
 
+      // 增加标签浏览量（fire-and-forget）
+      fetch(`/api/public/tags/${slug}/view`, { method: 'POST' }).catch(() => {});
+
       postsTitle.textContent = name;
       showTagGroup(slug);
       postsSection.classList.add('show');
