@@ -15,14 +15,7 @@ export default defineConfig({
 
   vite: {
     plugins: [tailwindcss()],
-    css: {
-      preprocessorOptions: {
-        scss: {
-          // 自动注入变量文件到所有 SCSS 文件
-          additionalData: `@use "/src/styles/variables.scss" as *;`,
-        },
-      },
-    },
+
     server: {
       allowedHosts: true,
     },
