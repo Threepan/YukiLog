@@ -203,21 +203,29 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
       const start = (currentPage - 1) * PAGE_SIZE;
       const pageLinks = filteredLinks.slice(start, start + PAGE_SIZE);
 
-      linksGrid.innerHTML = pageLinks.map(link => `
+      linksGrid.innerHTML = pageLinks.map(link => {
+        const initial = (link.title || '?').charAt(0).toUpperCase();
+        const avatarHtml = link.avatar
+          ? `<img src="${escapeHtml(link.avatar)}" alt="${escapeHtml(link.title)}" class="site-avatar"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" /><div class="site-avatar-fallback" style="display:none">${initial}</div>`
+          : `<div class="site-avatar-fallback">${initial}</div>`;
+
+        return `
         <div class="link-card">
-          <div class="link-header">
-            ${link.avatar
-              ? `<img src="${escapeHtml(link.avatar)}" alt="${escapeHtml(link.title)}" class="link-avatar" />`
-              : '<div class="link-avatar-fallback"></div>'}
+          <div class="link-top">
+            <div class="link-avatar-wrap">${avatarHtml}</div>
             <div class="link-info">
               <span class="link-title">${escapeHtml(link.title)}</span>
               <a class="link-url-text" href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(link.url)}</a>
             </div>
-            <span class="status-badge status-${link.status}">${getStatusText(link.status)}</span>
+            <span class="status-dot status-dot-${link.status}" title="${getStatusText(link.status)}"></span>
           </div>
-          ${link.description ? `<p class="link-desc">${escapeHtml(link.description)}</p>` : ''}
+          ${link.description ? `<p class="link-desc">${escapeHtml(link.description)}</p>` : '<p class="link-no-desc">暂无描述</p>'}
           <div class="link-footer">
-            <span class="link-date">${formatDate(link.created_at)}</span>
+            <div class="link-footer-left">
+              <span class="status-badge status-${link.status}">${getStatusText(link.status)}</span>
+              <span class="link-date">${formatDate(link.created_at)}</span>
+            </div>
             <div class="link-actions">
               ${link.status === 'pending' ? `<button class="btn-approve" data-id="${link.id}">通过</button>` : ''}
               ${link.status === 'active' ? `<button class="btn-broken" data-id="${link.id}">失效</button>` : ''}
@@ -226,7 +234,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
             </div>
           </div>
         </div>
-      `).join('');
+      `}).join('');
 
       updatePaginationState();
       bindActionButtons();
@@ -494,10 +502,10 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     border-radius: 20px;
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--color-divider);
-    padding: 1.5rem 2rem;
+    padding: 1.5rem 1.75rem;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.875rem;
     transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
@@ -507,26 +515,38 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     transform: translateY(-2px);
   }
 
-  .link-header {
+  /* 顶部：头像 + 信息 + 状态点 */
+  .link-top {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 1rem;
   }
 
-  .link-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
+  .link-avatar-wrap {
+    position: relative;
     flex-shrink: 0;
   }
 
-  .link-avatar-fallback {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
+  .site-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    object-fit: cover;
+    border: 1px solid var(--color-divider);
+  }
+
+  .site-avatar-fallback {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
     background: linear-gradient(135deg, var(--blue-alpha-15) 0%, var(--pink-alpha-15) 100%);
-    flex-shrink: 0;
+    border: 1px solid var(--blue-alpha-15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: var(--color-blue);
   }
 
   .link-info {
@@ -534,11 +554,11 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 3px;
   }
 
   .link-title {
-    font-size: 0.875rem;
+    font-size: 0.9375rem;
     font-weight: 600;
     color: var(--color-text);
     overflow: hidden;
@@ -553,14 +573,30 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    opacity: 0.8;
   }
 
   .link-url-text:hover {
+    opacity: 1;
     text-decoration: underline;
   }
 
+  /* 状态指示点 */
+  .status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+
+  .status-dot-active   { background: #3ab26e; box-shadow: 0 0 0 3px rgba(58,178,110,0.2); }
+  .status-dot-pending  { background: #e8984a; box-shadow: 0 0 0 3px rgba(232,152,74,0.2); }
+  .status-dot-broken   { background: var(--color-error); box-shadow: 0 0 0 3px var(--error-alpha-15); }
+
+  /* 描述 */
   .link-desc {
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     color: var(--color-text-light);
     line-height: 1.6;
     margin: 0;
@@ -570,13 +606,28 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     -webkit-box-orient: vertical;
   }
 
+  .link-no-desc {
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+    margin: 0;
+    font-style: italic;
+  }
+
+  /* 底部：状态徽章 + 日期 + 按钮 */
   .link-footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
     border-top: 1px solid var(--color-divider);
-    padding-top: 1rem;
-    gap: 1rem;
+    padding-top: 0.875rem;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .link-footer-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
   }
 
   .link-date {

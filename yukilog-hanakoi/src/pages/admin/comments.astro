@@ -170,6 +170,21 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
       }
     }
 
+    // ===== 头像渐变色（按昵称首字母散列）=====
+    function avatarGradient(name: string): string {
+      const palettes = [
+        'linear-gradient(135deg, #4a90d9 0%, #7ab3e8 100%)',
+        'linear-gradient(135deg, #d9659a 0%, #e8a0c0 100%)',
+        'linear-gradient(135deg, #7c6ff7 0%, #a89ff5 100%)',
+        'linear-gradient(135deg, #e8984a 0%, #f5c87a 100%)',
+        'linear-gradient(135deg, #3ab26e 0%, #7dd6a4 100%)',
+        'linear-gradient(135deg, #e05252 0%, #f0948e 100%)',
+      ];
+      let h = 0;
+      for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
+      return palettes[Math.abs(h) % palettes.length];
+    }
+
     // ===== 渲染评论卡片 =====
     function renderComments() {
       commentsGrid.innerHTML = comments.map(comment => {
@@ -177,20 +192,32 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
         const statusText = getStatusText(comment.status);
         const canApprove = comment.status === 'pending';
         const canReject = comment.status === 'pending';
+        const initial = (comment.guest_nick || '?').charAt(0).toUpperCase();
+        const bg = avatarGradient(comment.guest_nick || '?');
+        const postLabel = escapeHtml(comment.post_title || comment.post_slug || '未知文章');
+        const postHref = comment.post_slug ? `/posts/${escapeHtml(comment.post_slug)}` : '#';
 
         return `
           <div class="comment-card">
-            <div class="comment-body">
-              <p class="comment-text">${escapeHtml(comment.content)}</p>
-              <div class="comment-meta">
-                <span class="author-name">${escapeHtml(comment.guest_nick)}</span>
+            <div class="comment-header">
+              <div class="author-avatar" style="background:${bg}">${initial}</div>
+              <div class="author-info">
+                <div class="author-top-row">
+                  <span class="author-name">${escapeHtml(comment.guest_nick)}</span>
+                  <span class="status-badge ${statusClass}">${statusText}</span>
+                </div>
                 <span class="author-email">${escapeHtml(comment.guest_email)}</span>
-                <span class="post-ref">${escapeHtml(comment.post_title || comment.post_slug || '未知文章')}</span>
-                <span class="comment-date">${formatDate(comment.created_at)}</span>
+                ${comment.visitor_info ? `<span class="visitor-info">${escapeHtml(comment.visitor_info)}</span>` : ''}
               </div>
             </div>
+            <div class="comment-body">
+              <p class="comment-text">${escapeHtml(comment.content)}</p>
+            </div>
+            <div class="comment-meta-row">
+              <a class="post-chip" href="${postHref}" target="_blank" rel="noopener noreferrer">${postLabel}</a>
+              <span class="comment-date">${formatDate(comment.created_at)}</span>
+            </div>
             <div class="comment-footer">
-              <span class="status-badge ${statusClass}">${statusText}</span>
               <div class="comment-actions">
                 ${canApprove ? `<button class="btn-approve" data-id="${comment.id}">通过</button>` : ''}
                 ${canReject ? `<button class="btn-reject" data-id="${comment.id}">拒绝</button>` : ''}
@@ -450,6 +477,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     border: 1px solid var(--color-divider);
     display: flex;
     flex-direction: column;
+    overflow: hidden;
     transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
@@ -459,70 +487,139 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     transform: translateY(-2px);
   }
 
-  .comment-body {
+  /* 卡片头部：头像 + 作者信息 */
+  .comment-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.5rem 1.75rem 0;
+  }
+
+  .author-avatar {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+    letter-spacing: 0;
+  }
+
+  .author-info {
     flex: 1;
-    padding: 1.5rem 2rem 1rem;
+    min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 2px;
   }
 
-  .comment-text {
-    font-size: 0.875rem;
-    color: var(--color-text);
-    line-height: 1.6;
-    margin: 0;
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-  }
-
-  .comment-meta {
+  .author-top-row {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
     align-items: center;
-    font-size: 0.75rem;
-    color: var(--color-text-muted);
-    margin-top: 0.5rem;
+    justify-content: space-between;
+    gap: 0.5rem;
   }
 
   .author-name {
-    font-weight: 500;
+    font-size: 0.9375rem;
+    font-weight: 600;
     color: var(--color-text);
-  }
-
-  .author-email {
-    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
-    color: var(--color-text-muted);
-  }
-
-  .post-ref {
-    background: var(--blue-alpha-06);
-    color: var(--color-blue);
-    padding: 1px 6px;
-    border-radius: 4px;
-    max-width: 180px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  .comment-date {
+  .author-email {
+    font-size: 0.75rem;
     font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
-    margin-left: auto;
+    color: var(--color-text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
-  .comment-footer {
+  .visitor-info {
+    font-size: 0.6875rem;
+    color: var(--color-text-muted);
+    background: var(--blue-alpha-05);
+    padding: 1px 6px;
+    border-radius: 6px;
+    display: inline-block;
+    margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* 评论正文 */
+  .comment-body {
+    padding: 1rem 1.75rem 0.75rem;
+  }
+
+  .comment-text {
+    font-size: 0.875rem;
+    color: var(--color-text-light);
+    line-height: 1.65;
+    margin: 0;
+    padding-left: 0.875rem;
+    border-left: 3px solid var(--blue-alpha-20);
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+  }
+
+  /* 来源文章行 */
+  .comment-meta-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0 1.75rem 1rem;
+    flex-wrap: wrap;
+  }
+
+  .post-chip {
+    display: inline-flex;
+    align-items: center;
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.75rem;
+    color: var(--color-blue);
+    background: var(--blue-alpha-08);
+    border: 1px solid var(--blue-alpha-15);
+    padding: 2px 8px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 150ms;
+  }
+
+  .post-chip:hover {
+    background: var(--blue-alpha-15);
+  }
+
+  .comment-date {
+    font-size: 0.75rem;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    color: var(--color-text-muted);
+    margin-left: auto;
+  }
+
+  /* 底部操作区 */
+  .comment-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
     gap: 1rem;
-    padding: 1rem 2rem 1.5rem;
+    padding: 0.875rem 1.75rem 1.25rem;
     border-top: 1px solid var(--color-divider);
     background: color-mix(in srgb, var(--color-bg) 50%, transparent);
-    border-radius: 0 0 20px 20px;
     flex-wrap: wrap;
   }
 
