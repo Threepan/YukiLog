@@ -222,7 +222,7 @@ const tagSlugsWithPosts = Object.keys(tagPosts).filter(
   @use "sass:color";
 
   .tags-page {
-    max-width: 800px;
+    max-width: 1000px;
     margin: 0 auto;
     padding: $spacing-xl $spacing-lg $spacing-xxl * 2;
   }
@@ -389,14 +389,14 @@ const tagSlugsWithPosts = Object.keys(tagPosts).filter(
     }
   }
 
-  // 标签文章组：默认隐藏，激活后显示
+  // 标签文章组：默认隐藏，激活后显示（双栏网格）
   .tag-group {
     display: none;
-    flex-direction: column;
-    gap: $spacing-md;
+    grid-template-columns: repeat(2, 1fr);
+    gap: $spacing-lg;
 
     &.active {
-      display: flex;
+      display: grid;
     }
   }
 
@@ -412,6 +412,13 @@ const tagSlugsWithPosts = Object.keys(tagPosts).filter(
   // ================================
   // 响应式
   // ================================
+  @media (max-width: $container-md) {
+    .tag-group {
+      grid-template-columns: 1fr;
+      gap: $spacing-md;
+    }
+  }
+
   @media (max-width: $container-sm) {
     .tags-page {
       padding: $spacing-lg $spacing-sm $spacing-xxl;

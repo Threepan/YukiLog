@@ -71,32 +71,42 @@ if (apiError || !theme) {
 </BlogLayout>
 
 <script>
-  const cards = document.querySelectorAll<HTMLElement>('.post-list-card');
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-          observer.unobserve(entry.target);
-        }
-      });
-    },
-    { threshold: 0.1 }
-  );
-  cards.forEach((card) => observer.observe(card));
+  document.addEventListener('astro:page-load', () => {
+    const cards = document.querySelectorAll<HTMLElement>('.post-list-card');
+    if (!cards.length) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.08 }
+    );
+    cards.forEach((card) => observer.observe(card));
+  });
 </script>
 
 <style lang="scss">
   .theme-detail-page {
-    max-width: 800px;
+    max-width: 1000px;
     margin: 0 auto;
     padding: $spacing-xl $spacing-lg $spacing-xxl * 2;
   }
 
   .post-list-container {
-    display: flex;
-    flex-direction: column;
-    gap: $spacing-md;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: $spacing-lg;
+  }
+
+  @media (max-width: $container-md) {
+    .post-list-container {
+      grid-template-columns: 1fr;
+      gap: $spacing-md;
+    }
   }
 
   .back-link {
