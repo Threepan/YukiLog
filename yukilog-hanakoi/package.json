@@ -9,7 +9,11 @@
     "astro": "astro"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["@parcel/watcher", "esbuild", "sharp"]
+    "onlyBuiltDependencies": [
+      "@parcel/watcher",
+      "esbuild",
+      "sharp"
+    ]
   },
   "dependencies": {
     "@astrojs/node": "^9.5.3",
@@ -24,8 +28,5 @@
     "tailwindcss": "^4.1.18",
     "vditor": "^3.11.2",
     "vue": "^3.5.28"
-  },
-  "devDependencies": {
-    "sass": "^1.97.3"
   }
 }
