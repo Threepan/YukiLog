@@ -150,6 +150,9 @@ const randomBackground =
     width: 100%;
     min-height: 100vh;
     background: var(--color-bg);
+    // 为两侧固定侧栏留出空间（侧栏宽度 ~280px + 边距 ~60px + 间隙 24px = ~364px 每侧）
+    padding-left: clamp(0px, calc(clamp(240px, 24vw, 280px) + clamp($spacing-md, 4vw, $spacing-xl * 2) + 24px), 370px);
+    padding-right: clamp(0px, calc(clamp(240px, 24vw, 280px) + clamp($spacing-md, 4vw, $spacing-xl * 2) + 24px), 370px);
   }
   
   // 固定侧栏（跟随导航栏显隐）
@@ -177,8 +180,13 @@ const randomBackground =
     right: clamp($spacing-md, 4vw, $spacing-xl * 2);
   }
   
-  // 响应式：移动端转为流式布局（断点 968px）
-  @media (max-width: 968px) {
+  // 响应式：小于 1400px 转为流式布局（侧栏与内容不再重叠）
+  @media (max-width: 1400px) {
+    .home-second-screen {
+      padding-left: 0;
+      padding-right: 0;
+    }
+
     .fixed-sidebar {
       position: static;
       top: auto;
@@ -231,7 +239,7 @@ const randomBackground =
     const getThreshold = () => window.innerHeight;
 
     function updateSidebars() {
-      const mobileLayout = window.innerWidth <= 968;
+      const mobileLayout = window.innerWidth <= 1400;
 
       const threshold = getThreshold();
       const shouldShow = window.scrollY >= threshold - 50;
