@@ -50,32 +50,32 @@ import { siteConfig } from '../../lib/config';
   </div>
 </AdminLayout>
 
-<style lang="scss">
+<style>
   .dashboard {
-    // 移除max-width限制，让内容充分利用admin-content空间
+    /* 移除max-width限制，让内容充分利用admin-content空间 */
     width: 100%;
   }
 
   .welcome {
-    margin-bottom: $spacing-xxl;
-    padding: $spacing-xl;
+    margin-bottom: var(--spacing-xxl);
+    padding: var(--spacing-xl);
     background: var(--color-white);
-    border-radius: $radius-lg;
-    box-shadow: $shadow-md;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
 
     h2 {
-      font-size: $font-size-2xl;
-      font-weight: $font-weight-bold;
-      background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
+      font-size: var(--font-size-2xl);
+      font-weight: var(--font-weight-bold);
+      background: linear-gradient(135deg, var(--color-blue) 0%, var(--color-pink) 100%);
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
-      margin: 0 0 $spacing-sm;
+      margin: 0 0 var(--spacing-sm);
     }
 
     p {
-      font-size: $font-size-base;
-      color: $lian-text-light;
+      font-size: var(--font-size-base);
+      color: var(--color-text-light);
       margin: 0;
     }
   }
@@ -83,19 +83,19 @@ import { siteConfig } from '../../lib/config';
   .quick-links {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: $spacing-lg;
+    gap: var(--spacing-lg);
   }
 
   .quick-link-card {
-    padding: $spacing-xl;
+    padding: var(--spacing-xl);
     background: var(--color-white);
-    border-radius: $radius-lg;
-    box-shadow: $shadow-blue;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-blue);
     text-decoration: none;
     display: block;
     position: relative;
     overflow: hidden;
-    transition: all $transition-base $ease-gentle;
+    transition: all var(--transition-base) var(--ease-gentle);
 
     &::before {
       content: '';
@@ -104,14 +104,14 @@ import { siteConfig } from '../../lib/config';
       left: 0;
       right: 0;
       height: 4px;
-      background: linear-gradient(90deg, $lian-blue 0%, $lian-pink 100%);
+      background: linear-gradient(90deg, var(--color-blue) 0%, var(--color-pink) 100%);
       transform: scaleX(0);
       transform-origin: left;
-      transition: transform $transition-base $ease-gentle;
+      transition: transform var(--transition-base) var(--ease-gentle);
     }
 
     &:hover {
-      box-shadow: $shadow-blue-hover;
+      box-shadow: var(--shadow-blue-offset-hover);
       transform: translateY(-8px);
 
       &::before {
@@ -125,35 +125,35 @@ import { siteConfig } from '../../lib/config';
 
     .card-icon {
       font-size: 2.5rem;
-      margin-bottom: $spacing-md;
-      transition: transform $transition-base $ease-gentle;
+      margin-bottom: var(--spacing-md);
+      transition: transform var(--transition-base) var(--ease-gentle);
       display: inline-block;
     }
 
     h3 {
-      font-size: $font-size-lg;
-      font-weight: $font-weight-semibold;
-      color: $lian-blue;
-      margin: 0 0 $spacing-xs;
-      transition: color $transition-fast $ease-gentle;
+      font-size: var(--font-size-lg);
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-blue);
+      margin: 0 0 var(--spacing-xs);
+      transition: color var(--transition-fast) var(--ease-gentle);
     }
 
     p {
-      font-size: $font-size-sm;
-      color: $lian-text-light;
+      font-size: var(--font-size-sm);
+      color: var(--color-text-light);
       margin: 0;
       line-height: 1.6;
     }
 
     &:hover h3 {
-      background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
+      background: linear-gradient(135deg, var(--color-blue) 0%, var(--color-pink) 100%);
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
     }
   }
 
-  @media (max-width: $container-sm) {
+  @media (max-width: 640px) {
     .quick-links {
       grid-template-columns: 1fr;
     }

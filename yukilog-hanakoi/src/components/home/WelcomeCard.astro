@@ -77,10 +77,10 @@ const quoteText = contentConfig.components.welcomeCard.quoteText;
   </div>
 </div>
 
-<style lang="scss">
-// ==================
-// 容器
-// ==================
+<style>
+/* ================== */
+/* 容器 */
+/* ================== */
 .welcome-card {
   width: min(580px, 70vw);
   display: flex;
@@ -92,22 +92,22 @@ const quoteText = contentConfig.components.welcomeCard.quoteText;
   z-index: 10;
 }
 
-// ==================
-// AA: 欢迎大字
-// ==================
+/* ================== */
+/* AA: 欢迎大字 */
+/* ================== */
 .welcome-title {
   display: flex;
   justify-content: center;
   align-items: center;
   flex-wrap: wrap;
-  padding: $spacing-md 0;
+  padding: var(--spacing-md) 0;
 }
 
 .welcome-char {
   display: inline-block;
   font-size: 3.0rem;
   font-weight: 900;
-  color: $lian-white;
+  color: var(--color-white);
   opacity: 0;
   transform: translateY(12px);
   animation: char-appear 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) var(--char-delay) forwards;
@@ -127,40 +127,40 @@ const quoteText = contentConfig.components.welcomeCard.quoteText;
   }
 }
 
-// ==================
-// AB: 下半部分
-// ==================
+/* ================== */
+/* AB: 下半部分 */
+/* ================== */
 .welcome-sub {
   display: flex;
   flex-direction: column;
 }
 
-// ABA: 间距
+/* ABA: 间距 */
 .welcome-spacer {
   height: 20%;
   min-height: 12px;
 }
 
-// ABB: 半透明信息卡
+/* ABB: 半透明信息卡 */
 .welcome-info-card {
   background: rgba(0, 0, 0, 0.6);
-  border-radius: $radius-lg;
-  padding: $spacing-xs $spacing-lg;
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xs) var(--spacing-lg);
   display: flex;
   flex-direction: column;
   gap: 0;
 }
 
-// ==================
-// ABBA: 引用文字
-// ==================
+/* ================== */
+/* ABBA: 引用文字 */
+/* ================== */
 .welcome-quote {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: $spacing-sm;
-  padding-top: $spacing-md;
-  padding-bottom: $spacing-xs;
+  gap: var(--spacing-sm);
+  padding-top: var(--spacing-md);
+  padding-bottom: var(--spacing-xs);
 }
 
 .quote-icon {
@@ -175,22 +175,22 @@ const quoteText = contentConfig.components.welcomeCard.quoteText;
 }
 
 .quote-text {
-  font-size: $font-size-base;
-  font-weight: $font-weight-bold;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
   color: rgba(255, 255, 255, 0.85);
   line-height: 1.6;
   text-align: center;
 }
 
-// ==================
-// ABBB: 社交图标
-// ==================
+/* ================== */
+/* ABBB: 社交图标 */
+/* ================== */
 .welcome-social {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: $spacing-md;
-  padding-top: $spacing-sm;
+  gap: var(--spacing-md);
+  padding-top: var(--spacing-sm);
 }
 
 .social-icon-btn {
@@ -222,12 +222,12 @@ const quoteText = contentConfig.components.welcomeCard.quoteText;
   }
 }
 
-// ==================
-// 响应式
-// ==================
-@media (max-width: $container-md) {
+/* ================== */
+/* 响应式 */
+/* ================== */
+@media (max-width: 768px) {
   .welcome-title {
-    padding: $spacing-md 0;
+    padding: var(--spacing-md) 0;
   }
   
   .welcome-char {
@@ -235,11 +235,11 @@ const quoteText = contentConfig.components.welcomeCard.quoteText;
   }
   
   .welcome-info-card {
-    padding: $spacing-xs $spacing-md;
+    padding: var(--spacing-xs) var(--spacing-md);
   }
   
   .quote-text {
-    font-size: $font-size-sm;
+    font-size: var(--font-size-sm);
   }
   
   .social-icon-btn {

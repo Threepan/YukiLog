@@ -142,20 +142,20 @@ const totalPosts = archiveData.reduce((sum, y) => sum + y.posts.length, 0);
   });
 </script>
 
-<style lang="scss">
+<style>
   .archive-page {
     max-width: 860px;
     margin: 0 auto;
-    padding: $spacing-xl $spacing-lg $spacing-xxl * 2;
+    padding: var(--spacing-xl) var(--spacing-lg) var(--spacing-xxl) * 2;
   }
 
-  // ================================
-  // 居中时间轴
-  // ================================
+  /* ================================ */
+  /* 居中时间轴 */
+  /* ================================ */
   .timeline {
     position: relative;
 
-    // 中央竖线
+    /* 中央竖线 */
     &::before {
       content: '';
       position: absolute;
@@ -166,25 +166,25 @@ const totalPosts = archiveData.reduce((sum, y) => sum + y.posts.length, 0);
       width: 2px;
       background: linear-gradient(
         to bottom,
-        $lian-blue,
-        $lian-pink 60%,
+        var(--color-blue),
+        var(--color-pink) 60%,
         transparent
       );
       border-radius: 1px;
     }
   }
 
-  // ================================
-  // 年份分组
-  // ================================
+  /* ================================ */
+  /* 年份分组 */
+  /* ================================ */
   .year-group {
     position: relative;
-    margin-bottom: $spacing-xl;
+    margin-bottom: var(--spacing-xl);
     opacity: 0;
     transform: translateY(20px);
     transition:
-      opacity 600ms $ease-gentle,
-      transform 600ms $ease-gentle;
+      opacity 600ms var(--ease-gentle),
+      transform 600ms var(--ease-gentle);
 
     &.visible {
       opacity: 1;
@@ -197,13 +197,13 @@ const totalPosts = archiveData.reduce((sum, y) => sum + y.posts.length, 0);
     }
   }
 
-  // 年份标记 —— 居中显示
+  /* 年份标记 —— 居中显示 */
   .year-marker {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: $spacing-sm;
-    margin-bottom: $spacing-lg;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
     position: relative;
   }
 
@@ -215,60 +215,60 @@ const totalPosts = archiveData.reduce((sum, y) => sum + y.posts.length, 0);
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    background: $lian-blue;
+    background: var(--color-blue);
     border: 3px solid var(--color-surface, #fff);
-    box-shadow: $shadow-sm;
+    box-shadow: var(--shadow-sm);
     z-index: 2;
   }
 
   .year-label {
-    font-size: $font-size-2xl;
-    font-weight: $font-weight-bold;
-    color: $lian-text;
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
     margin: 0;
     letter-spacing: 0.04em;
-    background: $lian-bg;
-    padding: 0 $spacing-md;
+    background: var(--color-bg);
+    padding: 0 var(--spacing-md);
     position: relative;
     z-index: 3;
   }
 
   .year-count {
-    font-size: $font-size-xs;
-    color: $lian-text-muted;
-    background: rgba($lian-blue, 0.08);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    background: rgba(126, 182, 217, 0.08);
     padding: 2px 10px;
     border-radius: 12px;
     position: relative;
     z-index: 3;
   }
 
-  // ================================
-  // 文章容器
-  // ================================
+  /* ================================ */
+  /* 文章容器 */
+  /* ================================ */
   .posts-container {
     display: flex;
     flex-direction: column;
-    gap: $spacing-sm;
+    gap: var(--spacing-sm);
   }
 
-  // ================================
-  // 文章条目 —— 左右交替
-  // ================================
+  /* ================================ */
+  /* 文章条目 —— 左右交替 */
+  /* ================================ */
   .post-item {
     display: flex;
     align-items: center;
     position: relative;
     width: 100%;
 
-    // 入场动画
+    /* 入场动画 */
     opacity: 0;
     transition:
-      opacity 500ms $ease-gentle,
-      transform 500ms $ease-gentle;
+      opacity 500ms var(--ease-gentle),
+      transform 500ms var(--ease-gentle);
     transition-delay: calc(var(--pi) * 60ms + 200ms);
 
-    // 时间轴节点 —— 居中
+    /* 时间轴节点 —— 居中 */
     .post-dot {
       position: absolute;
       left: 50%;
@@ -277,12 +277,12 @@ const totalPosts = archiveData.reduce((sum, y) => sum + y.posts.length, 0);
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: $lian-pink;
+      background: var(--color-pink);
       z-index: 2;
       flex-shrink: 0;
     }
 
-    // 左侧（单数月份）
+    /* 左侧（单数月份） */
     &.left {
       justify-content: flex-end;
       padding-right: calc(50% + 24px);
@@ -294,7 +294,7 @@ const totalPosts = archiveData.reduce((sum, y) => sum + y.posts.length, 0);
       }
     }
 
-    // 右侧（双数月份）
+    /* 右侧（双数月份） */
     &.right {
       justify-content: flex-start;
       padding-left: calc(50% + 24px);
@@ -306,58 +306,58 @@ const totalPosts = archiveData.reduce((sum, y) => sum + y.posts.length, 0);
     }
   }
 
-  // 文章卡片
+  /* 文章卡片 */
   .post-card {
     display: flex;
     align-items: center;
-    gap: $spacing-sm;
-    padding: $spacing-xs $spacing-md;
-    border-radius: $radius-sm;
-    transition: background $transition-fast $ease-gentle;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: var(--radius-sm);
+    transition: background var(--transition-fast) var(--ease-gentle);
 
     &:hover {
-      background: rgba($lian-blue, 0.04);
+      background: rgba(126, 182, 217, 0.04);
     }
   }
 
   .post-date {
-    font-size: $font-size-sm;
-    color: $lian-text-muted;
-    font-family: $font-family-code;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    font-family: var(--font-family-code);
     flex-shrink: 0;
     white-space: nowrap;
   }
 
   .post-title {
-    font-size: $font-size-base;
-    color: $lian-text;
+    font-size: var(--font-size-base);
+    color: var(--color-text);
     text-decoration: none;
-    line-height: $line-height-base;
-    transition: color $transition-fast $ease-gentle;
+    line-height: var(--line-height-base);
+    transition: color var(--transition-fast) var(--ease-gentle);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 
     &:hover {
-      color: $lian-blue;
+      color: var(--color-blue);
     }
   }
 
-  // ================================
-  // 时间轴终点 —— 居中
-  // ================================
+  /* ================================ */
+  /* 时间轴终点 —— 居中 */
+  /* ================================ */
   .timeline-end {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: $spacing-sm;
+    gap: var(--spacing-sm);
     position: relative;
-    padding-top: $spacing-md;
+    padding-top: var(--spacing-md);
     opacity: 0;
     transform: translateY(12px);
     transition:
-      opacity 600ms $ease-gentle 200ms,
-      transform 600ms $ease-gentle 200ms;
+      opacity 600ms var(--ease-gentle) 200ms,
+      transform 600ms var(--ease-gentle) 200ms;
 
     &.visible {
       opacity: 1;
@@ -373,26 +373,26 @@ const totalPosts = archiveData.reduce((sum, y) => sum + y.posts.length, 0);
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    background: $lian-pink;
+    background: var(--color-pink);
     border: 2px solid var(--color-surface, #fff);
-    box-shadow: $shadow-sm;
+    box-shadow: var(--shadow-sm);
     z-index: 2;
   }
 
   .end-text {
-    font-size: $font-size-sm;
-    color: $lian-text-muted;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
     font-style: italic;
-    background: $lian-bg;
-    padding: 0 $spacing-md;
+    background: var(--color-bg);
+    padding: 0 var(--spacing-md);
     position: relative;
     z-index: 3;
   }
 
-  // ================================
-  // 响应式 —— 小屏回退为单列
-  // ================================
-  @media (max-width: $container-md) {
+  /* ================================ */
+  /* 响应式 —— 小屏回退为单列 */
+  /* ================================ */
+  @media (max-width: 768px) {
     .timeline::before {
       left: 20px;
       transform: none;
@@ -449,21 +449,21 @@ const totalPosts = archiveData.reduce((sum, y) => sum + y.posts.length, 0);
     }
   }
 
-  @media (max-width: $container-sm) {
+  @media (max-width: 640px) {
     .archive-page {
-      padding: $spacing-lg $spacing-sm $spacing-xxl;
+      padding: var(--spacing-lg) var(--spacing-sm) var(--spacing-xxl);
     }
 
     .year-label {
-      font-size: $font-size-xl;
+      font-size: var(--font-size-xl);
     }
 
     .post-date {
-      font-size: $font-size-xs;
+      font-size: var(--font-size-xs);
     }
 
     .post-title {
-      font-size: $font-size-sm;
+      font-size: var(--font-size-sm);
     }
   }
 </style>

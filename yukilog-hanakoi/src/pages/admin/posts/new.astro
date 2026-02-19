@@ -348,7 +348,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
   init();
 </script>
 
-<style lang="scss">
+<style>
   @use 'sass:color';
 
   .post-form {
@@ -356,38 +356,38 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     margin: 0 auto;
   }
 
-  // 表单区块
+  /* 表单区块 */
   .form-section {
-    background: $lian-white;
-    border-radius: $radius-md;
-    padding: $spacing-lg;
-    margin-bottom: $spacing-lg;
-    box-shadow: $shadow-sm;
+    background: var(--color-white);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+    box-shadow: var(--shadow-sm);
 
     .section-title {
-      margin: 0 0 $spacing-md;
-      font-size: $font-size-lg;
-      font-weight: $font-weight-semibold;
-      color: $lian-text;
-      padding-bottom: $spacing-sm;
-      border-bottom: 2px solid $lian-divider;
+      margin: 0 0 var(--spacing-md);
+      font-size: var(--font-size-lg);
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-text);
+      padding-bottom: var(--spacing-sm);
+      border-bottom: 2px solid var(--color-divider);
     }
   }
 
-  // 表单行
+  /* 表单行 */
   .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: $spacing-md;
+    gap: var(--spacing-md);
 
     @media (max-width: 768px) {
       grid-template-columns: 1fr;
     }
   }
 
-  // 表单组
+  /* 表单组 */
   .form-group {
-    margin-bottom: $spacing-md;
+    margin-bottom: var(--spacing-md);
 
     &:last-child {
       margin-bottom: 0;
@@ -395,66 +395,66 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 
     label {
       display: block;
-      font-size: $font-size-sm;
-      font-weight: $font-weight-medium;
-      color: $lian-text;
-      margin-bottom: $spacing-xs;
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-medium);
+      color: var(--color-text);
+      margin-bottom: var(--spacing-xs);
     }
 
     input,
     select,
     textarea {
       width: 100%;
-      padding: $spacing-sm $spacing-md;
-      font-size: $font-size-base;
-      color: $lian-text;
-      background: $lian-white;
-      border: 1px solid $lian-border;
-      border-radius: $radius-sm;
-      font-family: $font-family-base;
-      transition: all $transition-fast $ease-gentle;
+      padding: var(--spacing-sm) var(--spacing-md);
+      font-size: var(--font-size-base);
+      color: var(--color-text);
+      background: var(--color-white);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-family-base);
+      transition: all var(--transition-fast) var(--ease-gentle);
 
       &:focus {
         outline: none;
-        border-color: $lian-blue;
+        border-color: var(--color-blue);
         box-shadow: 0 0 0 3px var(--color-primary-alpha-10);
       }
 
       &::placeholder {
-        color: $lian-text-muted;
+        color: var(--color-text-muted);
       }
     }
 
     textarea {
       resize: vertical;
       min-height: 80px;
-      line-height: $line-height-base;
+      line-height: var(--line-height-base);
     }
 
     .form-hint {
       display: block;
       margin-top: 4px;
-      font-size: $font-size-xs;
-      color: $lian-text-muted;
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
 
       .slug-preview {
-        color: $lian-blue;
-        font-family: $font-family-code;
-        font-weight: $font-weight-medium;
+        color: var(--color-blue);
+        font-family: var(--font-family-code);
+        font-weight: var(--font-weight-medium);
       }
     }
   }
 
-  // 标签选择器
+  /* 标签选择器 */
   .tag-selector {
     .tag-checkboxes {
       display: flex;
       flex-wrap: wrap;
-      gap: $spacing-xs;
-      padding: $spacing-sm;
-      background: $lian-bg;
-      border: 1px solid $lian-border;
-      border-radius: $radius-sm;
+      gap: var(--spacing-xs);
+      padding: var(--spacing-sm);
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
       max-height: 200px;
       overflow-y: auto;
     }
@@ -464,14 +464,14 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       align-items: center;
       gap: 4px;
       padding: 4px 10px;
-      background: $lian-white;
-      border: 1px solid $lian-border;
+      background: var(--color-white);
+      border: 1px solid var(--color-border);
       border-radius: 12px;
       cursor: pointer;
-      transition: all $transition-fast $ease-gentle;
+      transition: all var(--transition-fast) var(--ease-gentle);
 
       &:hover {
-        border-color: $lian-blue;
+        border-color: var(--color-blue);
         background: var(--bg-primary-subtle);
       }
 
@@ -482,27 +482,27 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       }
 
       .tag-name {
-        font-size: $font-size-xs;
-        color: $lian-text-light;
+        font-size: var(--font-size-xs);
+        color: var(--color-text-light);
         user-select: none;
       }
 
       &:has(input:checked) {
         background: var(--bg-secondary-subtle);
-        border-color: $lian-pink;
+        border-color: var(--color-pink);
 
         .tag-name {
-          color: $lian-pink;
-          font-weight: $font-weight-medium;
+          color: var(--color-pink);
+          font-weight: var(--font-weight-medium);
         }
       }
     }
   }
 
-  // Vditor 容器
+  /* Vditor 容器 */
   #vditor-editor {
-    border: 1px solid $lian-border;
-    border-radius: $radius-sm;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
     overflow: hidden;
 
     :global(.vditor) {
@@ -510,24 +510,24 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     }
   }
 
-  // 操作按钮
+  /* 操作按钮 */
   .form-actions {
     display: flex;
     justify-content: flex-end;
-    gap: $spacing-sm;
-    padding: $spacing-lg;
-    background: $lian-white;
-    border-radius: $radius-md;
-    box-shadow: $shadow-sm;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-lg);
+    background: var(--color-white);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
 
     button {
-      padding: $spacing-sm $spacing-xl;
-      font-size: $font-size-sm;
-      font-weight: $font-weight-medium;
+      padding: var(--spacing-sm) var(--spacing-xl);
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-medium);
       border: none;
-      border-radius: $radius-sm;
+      border-radius: var(--radius-sm);
       cursor: pointer;
-      transition: all $transition-fast $ease-gentle;
+      transition: all var(--transition-fast) var(--ease-gentle);
 
       &:disabled {
         opacity: 0.6;
@@ -536,16 +536,16 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     }
 
     .btn-secondary {
-      color: $lian-text-light;
-      background: $lian-bg;
+      color: var(--color-text-light);
+      background: var(--color-bg);
 
       &:hover:not(:disabled) {
-        background: color.adjust($lian-bg, $lightness: -5%);
+        background: var(--color-bg-d5);
       }
     }
 
     .btn-draft {
-      color: color.adjust($lian-warning, $lightness: -10%);
+      color: var(--color-warning-d10);
       background: var(--bg-warning-subtle);
 
       &:hover:not(:disabled) {
@@ -559,7 +559,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 
       &:hover:not(:disabled) {
         transform: translateY(-1px);
-        box-shadow: $shadow-blue;
+        box-shadow: var(--shadow-blue);
       }
     }
   }

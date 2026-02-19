@@ -124,23 +124,23 @@ const socialLinks = siteConfig.social;
   </article>
 </BlogLayout>
 
-<style lang="scss">
+<style>
   .about-page {
     max-width: 800px;
     margin: 0 auto;
-    padding: 0 $spacing-lg $spacing-xxl * 2;
+    padding: 0 var(--spacing-lg) var(--spacing-xxl) * 2;
     min-height: 100vh;
   }
 
-  // ====== 页头 ======
+  /* ====== 页头 ====== */
   .about-header {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: $spacing-sm;
+    gap: var(--spacing-sm);
     padding-top: 100px;
     opacity: 0;
-    animation: fade-down 700ms $ease-gentle 100ms forwards;
+    animation: fade-down 700ms var(--ease-gentle) 100ms forwards;
   }
 
   @keyframes fade-down {
@@ -155,8 +155,8 @@ const socialLinks = siteConfig.social;
   }
 
   .greeting {
-    font-size: $font-size-2xl;
-    font-weight: $font-weight-bold;
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
     color: var(--color-text);
     margin: 0;
     text-align: center;
@@ -166,12 +166,12 @@ const socialLinks = siteConfig.social;
     color: var(--color-pink);
   }
 
-  // ====== 正文 ======
+  /* ====== 正文 ====== */
   .about-body {
-    margin-top: $spacing-xxl;
+    margin-top: var(--spacing-xxl);
   }
 
-  // 引号装饰
+  /* 引号装饰 */
   .quote-mark {
     display: block;
     line-height: 0;
@@ -189,17 +189,17 @@ const socialLinks = siteConfig.social;
   .quote-open {
     color: var(--color-blue);
     opacity: 0.25;
-    margin-bottom: $spacing-sm;
+    margin-bottom: var(--spacing-sm);
   }
 
   .quote-close {
     color: var(--color-pink);
     opacity: 0.25;
-    margin-top: $spacing-sm;
+    margin-top: var(--spacing-sm);
     text-align: right;
   }
 
-  // 开头段落
+  /* 开头段落 */
   .about-opening {
     position: relative;
 
@@ -209,15 +209,15 @@ const socialLinks = siteConfig.social;
   }
 
   .about-paragraph {
-    font-size: $font-size-base;
+    font-size: var(--font-size-base);
     color: var(--color-text);
-    line-height: $line-height-relaxed;
-    margin: 0 0 $spacing-xl;
+    line-height: var(--line-height-relaxed);
+    margin: 0 0 var(--spacing-xl);
     
-    // 逐段淡入
+    /* 逐段淡入 */
     opacity: 0;
     transform: translateY(20px);
-    animation: paragraph-enter 600ms $ease-gentle forwards;
+    animation: paragraph-enter 600ms var(--ease-gentle) forwards;
     animation-delay: calc(var(--delay, 0) * 180ms + 400ms);
   }
 
@@ -228,12 +228,12 @@ const socialLinks = siteConfig.social;
     }
   }
 
-  // ====== 双栏对话 ======
+  /* ====== 双栏对话 ====== */
   .about-dialogue {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
-    gap: 0 $spacing-xl;
-    margin: $spacing-lg 0;
+    gap: 0 var(--spacing-xl);
+    margin: var(--spacing-lg) 0;
   }
 
   .dialogue-left {
@@ -253,13 +253,13 @@ const socialLinks = siteConfig.social;
   }
 
   .dialogue-label {
-    font-size: $font-size-xs;
-    font-weight: $font-weight-semibold;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    margin-bottom: $spacing-lg;
+    margin-bottom: var(--spacing-lg);
     opacity: 0;
-    animation: paragraph-enter 600ms $ease-gentle 500ms forwards;
+    animation: paragraph-enter 600ms var(--ease-gentle) 500ms forwards;
 
     &.blue-label {
       color: var(--color-blue);
@@ -270,11 +270,11 @@ const socialLinks = siteConfig.social;
     }
   }
 
-  // 中间分隔线
+  /* 中间分隔线 */
   .dialogue-divider {
     display: flex;
     justify-content: center;
-    padding-top: $spacing-xl;
+    padding-top: var(--spacing-xl);
   }
 
   .dialogue-line {
@@ -288,9 +288,9 @@ const socialLinks = siteConfig.social;
     opacity: 0.3;
   }
 
-  // 列表
+  /* 列表 */
   .about-list-section p {
-    margin: 0 0 $spacing-sm;
+    margin: 0 0 var(--spacing-sm);
   }
 
   .about-list {
@@ -299,13 +299,13 @@ const socialLinks = siteConfig.social;
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: $spacing-xs;
+    gap: var(--spacing-xs);
 
     li {
       position: relative;
-      padding-left: $spacing-md;
+      padding-left: var(--spacing-md);
       color: var(--color-text-light);
-      font-size: $font-size-sm;
+      font-size: var(--font-size-sm);
 
       &::before {
         content: "";
@@ -325,7 +325,7 @@ const socialLinks = siteConfig.social;
 
     &.pink-dots li {
       padding-left: 0;
-      padding-right: $spacing-md;
+      padding-right: var(--spacing-md);
 
       &::before {
         left: auto;
@@ -335,7 +335,7 @@ const socialLinks = siteConfig.social;
     }
   }
 
-  // 分隔线
+  /* 分隔线 */
   .about-divider-wrap {
     display: flex;
     justify-content: center;
@@ -348,36 +348,36 @@ const socialLinks = siteConfig.social;
     border-radius: 1px;
   }
 
-  // 结尾寄语
+  /* 结尾寄语 */
   .about-closing {
     position: relative;
     text-align: center;
-    font-size: $font-size-lg;
+    font-size: var(--font-size-lg);
     font-style: italic;
     color: var(--color-pink);
-    line-height: $line-height-relaxed;
+    line-height: var(--line-height-relaxed);
 
     p {
       margin: 0;
     }
   }
 
-  // ====== 社交链接 ======
+  /* ====== 社交链接 ====== */
   .about-footer {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: $spacing-md;
-    padding-top: $spacing-lg;
+    gap: var(--spacing-md);
+    padding-top: var(--spacing-lg);
 
     opacity: 0;
     transform: translateY(20px);
-    animation: paragraph-enter 600ms $ease-gentle forwards;
+    animation: paragraph-enter 600ms var(--ease-gentle) forwards;
     animation-delay: calc(var(--delay, 0) * 180ms + 400ms);
   }
 
   .footer-hint {
-    font-size: $font-size-sm;
+    font-size: var(--font-size-sm);
     color: var(--color-text-muted);
     margin: 0;
     letter-spacing: 0.1em;
@@ -387,20 +387,20 @@ const socialLinks = siteConfig.social;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: $spacing-xs $spacing-sm;
+    gap: var(--spacing-xs) var(--spacing-sm);
   }
 
   .social-link {
-    font-size: $font-size-sm;
+    font-size: var(--font-size-sm);
     color: var(--color-text-light);
     text-decoration: none;
     padding: 6px 14px;
-    border-radius: $radius-sm;
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
     transition:
-      color $transition-fast $ease-gentle,
-      border-color $transition-fast $ease-gentle,
-      background $transition-fast $ease-gentle;
+      color var(--transition-fast) var(--ease-gentle),
+      border-color var(--transition-fast) var(--ease-gentle),
+      background var(--transition-fast) var(--ease-gentle);
 
     &:hover {
       color: var(--brand-color, var(--color-blue));
@@ -409,10 +409,10 @@ const socialLinks = siteConfig.social;
     }
   }
 
-  // 响应式
-  @media (max-width: $container-sm) {
+  /* 响应式 */
+  @media (max-width: 640px) {
     .about-page {
-      padding: 0 $spacing-md $spacing-xxl;
+      padding: 0 var(--spacing-md) var(--spacing-xxl);
     }
 
     .about-header {
@@ -420,13 +420,13 @@ const socialLinks = siteConfig.social;
     }
 
     .greeting {
-      font-size: $font-size-xl;
+      font-size: var(--font-size-xl);
     }
 
-    // 小屏双栏变单栏
+    /* 小屏双栏变单栏 */
     .about-dialogue {
       grid-template-columns: 1fr;
-      gap: $spacing-lg 0;
+      gap: var(--spacing-lg) 0;
     }
 
     .dialogue-divider {
@@ -442,7 +442,7 @@ const socialLinks = siteConfig.social;
     }
 
     .about-list.pink-dots li {
-      padding-left: $spacing-md;
+      padding-left: var(--spacing-md);
       padding-right: 0;
 
       &::before {

@@ -317,10 +317,8 @@ const { id = 'reply-modal' } = Astro.props;
   document.addEventListener('astro:page-load', initReplyModal);
 </script>
 
-<style lang="scss">
-@use "sass:color";
-
-  .reply-modal {
+<style>
+.reply-modal {
     position: fixed;
     top: 0;
     left: 0;
@@ -337,11 +335,11 @@ const { id = 'reply-modal' } = Astro.props;
     
     &[aria-hidden="false"] {
       .modal-overlay {
-        animation: fadeIn 0.2s $ease-gentle;
+        animation: fadeIn 0.2s var(--ease-gentle);
       }
       
       .modal-container {
-        animation: modalFadeIn 0.2s $ease-gentle;
+        animation: modalFadeIn 0.2s var(--ease-gentle);
       }
     }
   }
@@ -352,7 +350,7 @@ const { id = 'reply-modal' } = Astro.props;
     left: 0;
     width: 100%;
     height: 100%;
-    background: $overlay-bg;
+    background: var(--overlay-bg);
     backdrop-filter: blur(4px);
     cursor: pointer;
   }
@@ -364,12 +362,12 @@ const { id = 'reply-modal' } = Astro.props;
     max-height: 80vh;
     background: var(--color-white);
     border-radius: 12px;
-    box-shadow: 0 8px 32px $overlay-light;
+    box-shadow: 0 8px 32px var(--overlay-light);
     overflow: hidden;
     display: flex;
     flex-direction: column;
     
-    // 默认居中位置（会被JS动态更新）
+    /* 默认居中位置（会被JS动态更新） */
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -380,20 +378,20 @@ const { id = 'reply-modal' } = Astro.props;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: $spacing-md $spacing-lg;
-    border-bottom: 1px solid $lian-divider;
-    background: linear-gradient(135deg, rgba($lian-pink, 0.05), rgba($lian-blue, 0.05));
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-bottom: 1px solid var(--color-divider);
+    background: linear-gradient(135deg, rgba(232, 164, 180, 0.05), rgba(126, 182, 217, 0.05));
   }
 
   .modal-title {
-    font-size: $font-size-lg;
-    font-weight: $font-weight-bold;
-    color: $lian-text;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
     margin: 0;
     
     .reply-to-nick {
-      color: $lian-pink;
-      font-weight: $font-weight-bold;
+      color: var(--color-pink);
+      font-weight: var(--font-weight-bold);
     }
   }
 
@@ -407,13 +405,13 @@ const { id = 'reply-modal' } = Astro.props;
     background: transparent;
     border: none;
     border-radius: 50%;
-    color: $lian-text-muted;
+    color: var(--color-text-muted);
     cursor: pointer;
-    transition: all $transition-fast $ease-gentle;
+    transition: all var(--transition-fast) var(--ease-gentle);
     
     &:hover {
-      background: rgba($lian-text, 0.08);
-      color: $lian-text;
+      background: rgba(44, 62, 80, 0.08);
+      color: var(--color-text);
     }
     
     &:active {
@@ -424,9 +422,9 @@ const { id = 'reply-modal' } = Astro.props;
   .modal-body {
     flex: 1;
     overflow-y: auto;
-    padding: $spacing-md;
+    padding: var(--spacing-md);
     
-    // 弹窗中的CommentForm不需要外层背景
+    /* 弹窗中的CommentForm不需要外层背景 */
     :global(.comment-form) {
       background: transparent;
       border: none;
@@ -434,26 +432,26 @@ const { id = 'reply-modal' } = Astro.props;
       border-radius: 0;
     }
     
-    // 滚动条样式
+    /* 滚动条样式 */
     &::-webkit-scrollbar {
       width: 6px;
     }
     
     &::-webkit-scrollbar-track {
-      background: rgba($lian-text, 0.05);
+      background: rgba(44, 62, 80, 0.05);
     }
     
     &::-webkit-scrollbar-thumb {
-      background: rgba($lian-pink, 0.3);
+      background: rgba(232, 164, 180, 0.3);
       border-radius: 3px;
       
       &:hover {
-        background: rgba($lian-pink, 0.5);
+        background: rgba(232, 164, 180, 0.5);
       }
     }
   }
 
-  // 动画
+  /* 动画 */
   @keyframes fadeIn {
     from {
       opacity: 0;
@@ -474,23 +472,23 @@ const { id = 'reply-modal' } = Astro.props;
     }
   }
 
-  // 响应式
-  @media (max-width: $container-sm) {
+  /* 响应式 */
+  @media (max-width: 640px) {
     .modal-container {
       width: 95%;
       max-height: 95vh;
     }
     
     .modal-header {
-      padding: $spacing-sm $spacing-md;
+      padding: var(--spacing-sm) var(--spacing-md);
     }
     
     .modal-title {
-      font-size: $font-size-base;
+      font-size: var(--font-size-base);
     }
     
     .modal-body {
-      padding: $spacing-sm;
+      padding: var(--spacing-sm);
     }
   }
 </style>

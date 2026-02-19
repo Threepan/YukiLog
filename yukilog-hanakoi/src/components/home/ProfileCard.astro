@@ -85,12 +85,12 @@ const systemLogText = `# system.log █\n> [${author.systemLog.timestamp}]  \n> 
   </div>
 </div>
 
-<style lang="scss">
+<style>
 .profile-card {
-  background: $lian-white;
-  border-radius: $radius-lg;
-  box-shadow: $shadow-pink;
-  padding: $spacing-xl $spacing-lg;
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-pink);
+  padding: var(--spacing-xl) var(--spacing-lg);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -107,22 +107,22 @@ const systemLogText = `# system.log █\n> [${author.systemLog.timestamp}]  \n> 
   }
 }
 
-// ==================
-// 头像
-// ==================
+/* ================== */
+/* 头像 */
+/* ================== */
 .profile-avatar {
   width: 96px;
   height: 96px;
   border-radius: 50%;
   overflow: hidden;
-  border: 3px solid $lian-border;
+  border: 3px solid var(--color-border);
   flex-shrink: 0;
   transition: transform 400ms cubic-bezier(0.22, 0.61, 0.36, 1),
-              border-color 400ms $ease-gentle;
+              border-color 400ms var(--ease-gentle);
   
   &:hover {
     transform: scale(1.06);
-    border-color: $lian-pink;
+    border-color: var(--color-pink);
   }
 }
 
@@ -133,31 +133,31 @@ const systemLogText = `# system.log █\n> [${author.systemLog.timestamp}]  \n> 
   display: block;
 }
 
-// ==================
-// 昵称
-// ==================
+/* ================== */
+/* 昵称 */
+/* ================== */
 .profile-nickname {
-  margin-top: $spacing-md;
-  font-size: $font-size-xl;
-  font-weight: $font-weight-bold;
-  color: $lian-pink;
+  margin-top: var(--spacing-md);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-pink);
   text-align: center;
 }
 
-// ==================
-// 个人签名
-// ==================
+/* ================== */
+/* 个人签名 */
+/* ================== */
 .profile-bio {
-  margin-top: $spacing-xs;
-  font-size: $font-size-sm;
-  color: $lian-text-light;
+  margin-top: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-light);
   text-align: center;
-  line-height: $line-height-relaxed;
+  line-height: var(--line-height-relaxed);
   max-width: 260px;
 }
 
 .profile-meta {
-  margin-top: $spacing-sm;
+  margin-top: var(--spacing-sm);
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -168,8 +168,8 @@ const systemLogText = `# system.log █\n> [${author.systemLog.timestamp}]  \n> 
   display: flex;
   align-items: center;
   gap: 8px;
-  color: $lian-text-muted;
-  font-size: $font-size-xs;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
   padding: 0 4px;
 }
 
@@ -179,7 +179,7 @@ const systemLogText = `# system.log █\n> [${author.systemLog.timestamp}]  \n> 
   display: flex;
   align-items: center;
   justify-content: center;
-  color: $lian-pink;
+  color: var(--color-pink);
 
   :global(svg) {
     width: 100%;
@@ -192,7 +192,7 @@ const systemLogText = `# system.log █\n> [${author.systemLog.timestamp}]  \n> 
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: $lian-blue;
+  background: var(--color-blue);
   opacity: 0.8;
 }
 
@@ -200,26 +200,26 @@ const systemLogText = `# system.log █\n> [${author.systemLog.timestamp}]  \n> 
   line-height: 1.2;
 }
 
-// ==================
-// 分隔线
-// ==================
+/* ================== */
+/* 分隔线 */
+/* ================== */
 .profile-divider {
   width: 40px;
   height: 2px;
-  background: $lian-divider;
-  margin: $spacing-md 0;
+  background: var(--color-divider);
+  margin: var(--spacing-md) 0;
   border-radius: 1px;
-  transition: width 400ms $ease-gentle, background 400ms $ease-gentle;
+  transition: width 400ms var(--ease-gentle), background 400ms var(--ease-gentle);
   
   .profile-card:hover & {
     width: 60px;
-    background: $lian-pink;
+    background: var(--color-pink);
   }
 }
 
-// ==================
-// 社交链接
-// ==================
+/* ================== */
+/* 社交链接 */
+/* ================== */
 .profile-social {
   display: flex;
   flex-direction: column;
@@ -230,13 +230,13 @@ const systemLogText = `# system.log █\n> [${author.systemLog.timestamp}]  \n> 
 .profile-social-btn {
   display: flex;
   align-items: center;
-  gap: $spacing-sm;
+  gap: var(--spacing-sm);
   padding: 8px 12px;
-  border-radius: $radius-sm;
-  color: $lian-text-light;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-light);
   text-decoration: none;
   cursor: pointer;
-  transition: all $transition-base cubic-bezier(0.22, 0.61, 0.36, 1);
+  transition: all var(--transition-base) cubic-bezier(0.22, 0.61, 0.36, 1);
   
   .social-svg {
     width: 20px;
@@ -246,7 +246,7 @@ const systemLogText = `# system.log █\n> [${author.systemLog.timestamp}]  \n> 
     justify-content: center;
     flex-shrink: 0;
     color: var(--icon-color);
-    transition: transform $transition-base cubic-bezier(0.22, 0.61, 0.36, 1);
+    transition: transform var(--transition-base) cubic-bezier(0.22, 0.61, 0.36, 1);
     
     :global(svg) {
       width: 100%;
@@ -256,13 +256,13 @@ const systemLogText = `# system.log █\n> [${author.systemLog.timestamp}]  \n> 
   }
   
   .social-name {
-    font-size: $font-size-sm;
-    font-weight: $font-weight-medium;
-    transition: color $transition-base $ease-gentle;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    transition: color var(--transition-base) var(--ease-gentle);
   }
   
   &:hover {
-    background: $lian-bg;
+    background: var(--color-bg);
     color: var(--icon-color);
     
     .social-svg {
@@ -277,28 +277,28 @@ const systemLogText = `# system.log █\n> [${author.systemLog.timestamp}]  \n> 
 
 .profile-log {
   width: 100%;
-  margin-top: $spacing-md;
+  margin-top: var(--spacing-md);
 
   pre {
     margin: 0;
-    padding: $spacing-sm;
-    border-radius: $radius-sm;
-    background: rgba($lian-text, 0.04);
-    border: 1px solid $lian-divider;
-    color: $lian-text-light;
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    background: rgba(44, 62, 80, 0.04);
+    border: 1px solid var(--color-divider);
+    color: var(--color-text-light);
     font-size: 11px;
     line-height: 1.5;
-    font-family: $font-family-code;
+    font-family: var(--font-family-code);
     white-space: pre-wrap;
   }
 }
 
-// ==================
-// 响应式
-// ==================
-@media (max-width: $container-md) {
+/* ================== */
+/* 响应式 */
+/* ================== */
+@media (max-width: 768px) {
   .profile-card {
-    padding: $spacing-lg $spacing-md;
+    padding: var(--spacing-lg) var(--spacing-md);
   }
   
   .profile-avatar {
@@ -307,7 +307,7 @@ const systemLogText = `# system.log █\n> [${author.systemLog.timestamp}]  \n> 
   }
   
   .profile-nickname {
-    font-size: $font-size-lg;
+    font-size: var(--font-size-lg);
   }
 }
 </style>

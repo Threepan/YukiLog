@@ -33,18 +33,18 @@ import { contentConfig } from '../../lib/config';
   </div>
 </div>
 
-<style lang="scss">
+<style>
 .hitokoto-card {
-  background: $lian-white;
-  border-radius: $radius-lg;
-  box-shadow: $shadow-pink;
-  padding: $spacing-lg;
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-pink);
+  padding: var(--spacing-lg);
   min-height: 180px;
   display: flex;
   flex-direction: column;
   gap: 0;
   
-  // 初始隐藏，等待动画触发
+  /* 初始隐藏，等待动画触发 */
   opacity: 0;
   transform: translateX(100px);
   transition: opacity 600ms cubic-bezier(0.22, 0.61, 0.36, 1),
@@ -56,20 +56,20 @@ import { contentConfig } from '../../lib/config';
   }
 }
 
-// ==================
-// 标题栏
-// ==================
+/* ================== */
+/* 标题栏 */
+/* ================== */
 .hitokoto-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: $spacing-md;
+  margin-bottom: var(--spacing-md);
 }
 
 .hitokoto-label {
-  font-size: $font-size-sm;
-  font-weight: $font-weight-semibold;
-  color: $lian-text-light;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-light);
   letter-spacing: 0.05em;
 }
 
@@ -81,26 +81,26 @@ import { contentConfig } from '../../lib/config';
   justify-content: center;
   border: none;
   background: none;
-  color: $lian-text-muted;
+  color: var(--color-text-muted);
   cursor: pointer;
-  border-radius: $radius-sm;
-  transition: color $transition-base $ease-gentle,
-              background $transition-base $ease-gentle;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-base) var(--ease-gentle),
+              background var(--transition-base) var(--ease-gentle);
   
   &:hover {
-    color: $lian-blue;
-    background: $lian-bg;
+    color: var(--color-blue);
+    background: var(--color-bg);
   }
 }
 
-// ==================
-// 引用内容
-// ==================
+/* ================== */
+/* 引用内容 */
+/* ================== */
 .hitokoto-body {
   display: flex;
   align-items: flex-start;
-  gap: $spacing-sm;
-  padding: 0 $spacing-xs;
+  gap: var(--spacing-sm);
+  padding: 0 var(--spacing-xs);
 }
 
 .hitokoto-quote-icon {
@@ -109,7 +109,7 @@ import { contentConfig } from '../../lib/config';
   flex-shrink: 0;
   margin-top: 4px;
   opacity: 0.3;
-  color: $lian-text;
+  color: var(--color-text);
   
   :global(svg) {
     width: 100%;
@@ -129,27 +129,27 @@ import { contentConfig } from '../../lib/config';
 }
 
 .hitokoto-text {
-  font-size: $font-size-base;
-  font-weight: $font-weight-medium;
-  color: $lian-text;
-  line-height: $line-height-relaxed;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text);
+  line-height: var(--line-height-relaxed);
   margin: 0;
   flex: 1;
   min-height: 1.6em;
-  transition: opacity 200ms $ease-gentle;
+  transition: opacity 200ms var(--ease-gentle);
   
   &.loading {
     opacity: 0;
   }
 }
 
-// ==================
-// 出处
-// ==================
+/* ================== */
+/* 出处 */
+/* ================== */
 .hitokoto-source {
-  margin-top: $spacing-md;
-  padding-top: $spacing-sm;
-  border-top: 1px solid $lian-divider;
+  margin-top: var(--spacing-md);
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--color-divider);
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -157,26 +157,26 @@ import { contentConfig } from '../../lib/config';
 }
 
 .hitokoto-from {
-  font-size: $font-size-sm;
-  color: $lian-text-light;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-light);
   font-style: italic;
-  transition: opacity 200ms $ease-gentle;
+  transition: opacity 200ms var(--ease-gentle);
   
   &.loading {
     opacity: 0;
   }
 }
 
-// ==================
-// 响应式
-// ==================
-@media (max-width: $container-md) {
+/* ================== */
+/* 响应式 */
+/* ================== */
+@media (max-width: 768px) {
   .hitokoto-card {
-    padding: $spacing-md;
+    padding: var(--spacing-md);
   }
   
   .hitokoto-text {
-    font-size: $font-size-sm;
+    font-size: var(--font-size-sm);
   }
 }
 </style>

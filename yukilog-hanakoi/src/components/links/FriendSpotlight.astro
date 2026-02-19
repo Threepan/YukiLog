@@ -67,18 +67,16 @@ const { name, description, avatar, url, message, friendSince, greeting, sinceLab
   </div>
 </section>
 
-<style lang="scss">
-@use "sass:color";
-
-  // ================================
-  // 信封展开式设计
-  // ================================
+<style>
+/* ================================ */
+  /* 信封展开式设计 */
+  /* ================================ */
   
   .friend-letter-section {
     display: flex;
     justify-content: center;
-    padding: $spacing-xxl 0 $spacing-xxl * 1.5;
-    perspective: 1000px; // 3D 视角
+    padding: var(--spacing-xxl) 0 var(--spacing-xxl) * 1.5;
+    perspective: 1000px; /* 3D 视角 */
   }
 
   .envelope-container {
@@ -87,9 +85,9 @@ const { name, description, avatar, url, message, friendSince, greeting, sinceLab
     min-height: 480px;
   }
 
-  // ================================
-  // 信封
-  // ================================
+  /* ================================ */
+  /* 信封 */
+  /* ================================ */
   .envelope {
     position: absolute;
     top: 0;
@@ -100,14 +98,14 @@ const { name, description, avatar, url, message, friendSince, greeting, sinceLab
     height: 280px;
     z-index: 1;
     opacity: 0;
-    animation: envelope-appear 500ms $ease-gentle 200ms forwards;
+    animation: envelope-appear 500ms var(--ease-gentle) 200ms forwards;
   }
 
   @keyframes envelope-appear {
     to { opacity: 1; }
   }
 
-  // 信封主体
+  /* 信封主体 */
   .envelope-body {
     position: absolute;
     bottom: 0;
@@ -115,16 +113,16 @@ const { name, description, avatar, url, message, friendSince, greeting, sinceLab
     right: 0;
     height: 200px;
     background: linear-gradient(135deg, 
-      color.adjust($lian-pink, $lightness: 15%) 0%,
-      color.adjust($lian-pink, $lightness: 10%) 100%
+      var(--color-pink-l15) 0%,
+      var(--color-pink-l10) 100%
     );
-    border-radius: 0 0 $radius-lg $radius-lg;
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
     box-shadow: 
-      0 4px 16px rgba($lian-pink, 0.2),
-      inset 0 -2px 8px rgba($lian-white, 0.3);
+      0 4px 16px rgba(232, 164, 180, 0.2),
+      inset 0 -2px 8px rgba(250, 250, 250, 0.3);
   }
 
-  // 信封盖（三角形）
+  /* 信封盖（三角形） */
   .envelope-flap {
     position: absolute;
     top: 0;
@@ -132,13 +130,13 @@ const { name, description, avatar, url, message, friendSince, greeting, sinceLab
     right: 0;
     height: 160px;
     background: linear-gradient(180deg,
-      color.adjust($lian-pink, $lightness: 12%) 0%,
-      color.adjust($lian-pink, $lightness: 8%) 100%
+      var(--color-pink-l12) 0%,
+      var(--color-pink-l8) 100%
     );
     clip-path: polygon(0 0, 50% 60%, 100% 0);
     transform-origin: top center;
-    box-shadow: 0 2px 12px rgba($lian-pink, 0.3);
-    animation: flap-open 600ms $ease-out 400ms forwards;
+    box-shadow: 0 2px 12px rgba(232, 164, 180, 0.3);
+    animation: flap-open 600ms var(--ease-out) 400ms forwards;
   }
 
   @keyframes flap-open {
@@ -150,9 +148,9 @@ const { name, description, avatar, url, message, friendSince, greeting, sinceLab
     }
   }
 
-  // ================================
-  // 信纸
-  // ================================
+  /* ================================ */
+  /* 信纸 */
+  /* ================================ */
   .letter-paper {
     position: relative;
     display: flex;
@@ -161,39 +159,39 @@ const { name, description, avatar, url, message, friendSince, greeting, sinceLab
     width: 100%;
     max-width: 480px;
     margin: 0 auto;
-    padding: $spacing-xxl $spacing-xl * 1.5 $spacing-xl;
+    padding: var(--spacing-xxl) var(--spacing-xl) * 1.5 var(--spacing-xl);
     background: 
       repeating-linear-gradient(
         transparent,
         transparent 31px,
-        rgba($lian-text-muted, 0.08) 31px,
-        rgba($lian-text-muted, 0.08) 32px
+        rgba(var(--color-text-muted), 0.08) 31px,
+        rgba(var(--color-text-muted), 0.08) 32px
       ),
       linear-gradient(to bottom,
-        $lian-paper-warm 0%,
-        $lian-paper-warm-light 100%
+        var(--color-white) 0%,
+        var(--color-white) 100%
       );
-    border-radius: $radius-lg;
+    border-radius: var(--radius-lg);
     box-shadow: 
-      0 8px 32px rgba($lian-text, 0.12),
-      0 2px 8px rgba($lian-pink, 0.08);
+      0 8px 32px rgba(44, 62, 80, 0.12),
+      0 2px 8px rgba(232, 164, 180, 0.08);
     text-decoration: none;
-    color: $lian-text;
+    color: var(--color-text);
     z-index: 2;
     
     transform: translateY(60px);
     opacity: 0;
-    animation: letter-slide-out 800ms $ease-out 600ms forwards;
+    animation: letter-slide-out 800ms var(--ease-out) 600ms forwards;
 
     transition: 
-      transform 400ms $ease-gentle,
-      box-shadow 400ms $ease-gentle;
+      transform 400ms var(--ease-gentle),
+      box-shadow 400ms var(--ease-gentle);
 
     &:hover {
       transform: translateY(-6px);
       box-shadow: 
-        0 12px 48px rgba($lian-text, 0.16),
-        0 4px 16px rgba($lian-pink, 0.2);
+        0 12px 48px rgba(44, 62, 80, 0.16),
+        0 4px 16px rgba(232, 164, 180, 0.2);
 
       .seal-avatar {
         transform: rotate(5deg) scale(1.05);
@@ -212,18 +210,18 @@ const { name, description, avatar, url, message, friendSince, greeting, sinceLab
     }
   }
 
-  // ================================
-  // 蜡封印章
-  // ================================
+  /* ================================ */
+  /* 蜡封印章 */
+  /* ================================ */
   .wax-seal {
     position: relative;
     width: 100px;
     height: 100px;
     margin-top: -50px;
-    margin-bottom: $spacing-md;
+    margin-bottom: var(--spacing-md);
     opacity: 0;
     transform: rotate(-10deg) scale(0.8);
-    animation: seal-appear 500ms $ease-out 1000ms forwards;
+    animation: seal-appear 500ms var(--ease-out) 1000ms forwards;
   }
 
   @keyframes seal-appear {
@@ -239,7 +237,7 @@ const { name, description, avatar, url, message, friendSince, greeting, sinceLab
     border-radius: 50%;
     background: radial-gradient(
       circle,
-      rgba($lian-pink, 0.4) 0%,
+      rgba(232, 164, 180, 0.4) 0%,
       transparent 70%
     );
     filter: blur(12px);
@@ -256,26 +254,26 @@ const { name, description, avatar, url, message, friendSince, greeting, sinceLab
     width: 100px;
     height: 100px;
     border-radius: 50%;
-    border: 4px solid color.adjust($lian-pink, $lightness: 5%);
+    border: 4px solid var(--color-pink-l5);
     box-shadow: 
-      0 0 0 3px rgba($lian-white, 0.5),
-      0 4px 16px rgba($lian-pink, 0.4),
-      inset 0 2px 8px rgba($lian-text, 0.1);
+      0 0 0 3px rgba(250, 250, 250, 0.5),
+      0 4px 16px rgba(232, 164, 180, 0.4),
+      inset 0 2px 8px rgba(44, 62, 80, 0.1);
     object-fit: cover;
-    transition: transform 400ms $ease-gentle;
+    transition: transform 400ms var(--ease-gentle);
   }
 
   .seal-decoration {
     position: absolute;
     inset: -6px;
     border-radius: 50%;
-    border: 2px dashed color.adjust($lian-pink, $lightness: -5%);
+    border: 2px dashed var(--color-pink-d5);
     opacity: 0.3;
   }
 
-  // ================================
-  // 信纸内容
-  // ================================
+  /* ================================ */
+  /* 信纸内容 */
+  /* ================================ */
   .letter-content {
     width: 100%;
     text-align: left;
@@ -286,19 +284,19 @@ const { name, description, avatar, url, message, friendSince, greeting, sinceLab
     }
 
     .letter-greeting {
-      animation: line-fade 400ms $ease-gentle 1200ms forwards;
+      animation: line-fade 400ms var(--ease-gentle) 1200ms forwards;
     }
     .letter-name {
-      animation: line-fade 400ms $ease-gentle 1300ms forwards;
+      animation: line-fade 400ms var(--ease-gentle) 1300ms forwards;
     }
     .letter-desc {
-      animation: line-fade 400ms $ease-gentle 1400ms forwards;
+      animation: line-fade 400ms var(--ease-gentle) 1400ms forwards;
     }
     .letter-message {
-      animation: line-fade 400ms $ease-gentle 1500ms forwards;
+      animation: line-fade 400ms var(--ease-gentle) 1500ms forwards;
     }
     .letter-meta {
-      animation: line-fade 400ms $ease-gentle 1600ms forwards;
+      animation: line-fade 400ms var(--ease-gentle) 1600ms forwards;
     }
   }
 
@@ -310,48 +308,48 @@ const { name, description, avatar, url, message, friendSince, greeting, sinceLab
   }
 
   .letter-greeting {
-    font-size: $font-size-sm;
-    color: $lian-text-light;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-light);
     font-style: italic;
-    margin: 0 0 $spacing-xs;
+    margin: 0 0 var(--spacing-xs);
   }
 
   .letter-name {
-    font-size: $font-size-2xl;
-    font-weight: $font-weight-bold;
-    color: $lian-pink;
-    margin: 0 0 $spacing-sm;
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-pink);
+    margin: 0 0 var(--spacing-sm);
     letter-spacing: 0.02em;
   }
 
   .letter-desc {
-    font-size: $font-size-base;
-    color: $lian-text-light;
-    line-height: $line-height-relaxed;
-    margin: 0 0 $spacing-lg;
+    font-size: var(--font-size-base);
+    color: var(--color-text-light);
+    line-height: var(--line-height-relaxed);
+    margin: 0 0 var(--spacing-lg);
   }
 
   .letter-message {
     position: relative;
-    padding: $spacing-md $spacing-lg;
-    background: rgba($lian-pink, 0.04);
-    border-left: 3px solid color.adjust($lian-pink, $lightness: 10%);
-    border-radius: 0 $radius-sm $radius-sm 0;
-    margin: 0 0 $spacing-lg;
-    font-size: $font-size-base;
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: rgba(232, 164, 180, 0.04);
+    border-left: 3px solid var(--color-pink-l10);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    margin: 0 0 var(--spacing-lg);
+    font-size: var(--font-size-base);
     font-style: italic;
     font-family: "KaiTi", "楷体", cursive, serif;
-    color: color.adjust($lian-pink, $lightness: -10%);
-    line-height: $line-height-relaxed;
+    color: var(--color-pink-d10);
+    line-height: var(--line-height-relaxed);
     letter-spacing: 0.03em;
 
     .quote-mark-left,
     .quote-mark-right {
-      font-size: $font-size-xl;
-      font-weight: $font-weight-bold;
+      font-size: var(--font-size-xl);
+      font-weight: var(--font-weight-bold);
       font-family: Georgia, serif;
       opacity: 0.4;
-      color: $lian-pink;
+      color: var(--color-pink);
     }
 
     .quote-mark-left {
@@ -366,12 +364,12 @@ const { name, description, avatar, url, message, friendSince, greeting, sinceLab
   .letter-meta {
     display: flex;
     justify-content: flex-end;
-    padding-right: $spacing-sm;
+    padding-right: var(--spacing-sm);
   }
 
   .letter-date {
-    font-size: $font-size-xs;
-    color: $lian-text-muted;
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
     font-style: italic;
     
     &::before {
@@ -379,50 +377,50 @@ const { name, description, avatar, url, message, friendSince, greeting, sinceLab
     }
   }
 
-  // ================================
-  // 访问按钮
-  // ================================
+  /* ================================ */
+  /* 访问按钮 */
+  /* ================================ */
   .letter-action {
-    margin-top: $spacing-lg;
+    margin-top: var(--spacing-lg);
     opacity: 0;
-    animation: line-fade 400ms $ease-gentle 1700ms forwards;
+    animation: line-fade 400ms var(--ease-gentle) 1700ms forwards;
   }
 
   .action-text {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: $spacing-sm $spacing-lg;
-    background: linear-gradient(135deg, $lian-pink, color.adjust($lian-pink, $lightness: 8%));
-    color: $lian-white;
-    font-size: $font-size-sm;
-    font-weight: $font-weight-medium;
-    border-radius: $radius-lg;
-    box-shadow: 0 2px 8px rgba($lian-pink, 0.3);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    background: linear-gradient(135deg, var(--color-pink), var(--color-pink-l8));
+    color: var(--color-white);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 2px 8px rgba(232, 164, 180, 0.3);
     transition: 
-      box-shadow $transition-fast $ease-gentle,
-      transform $transition-fast $ease-gentle;
+      box-shadow var(--transition-fast) var(--ease-gentle),
+      transform var(--transition-fast) var(--ease-gentle);
 
     svg {
-      transition: transform $transition-fast $ease-gentle;
+      transition: transform var(--transition-fast) var(--ease-gentle);
     }
   }
 
   .letter-paper:hover .action-text {
-    box-shadow: 0 4px 16px rgba($lian-pink, 0.4);
+    box-shadow: 0 4px 16px rgba(232, 164, 180, 0.4);
     transform: translateY(-2px);
   }
 
-  // ================================
-  // 响应式
-  // ================================
-  @media (max-width: $container-sm) {
+  /* ================================ */
+  /* 响应式 */
+  /* ================================ */
+  @media (max-width: 640px) {
     .envelope-container {
-      margin: 0 $spacing-md;
+      margin: 0 var(--spacing-md);
     }
 
     .letter-paper {
-      padding: $spacing-xl $spacing-lg $spacing-lg;
+      padding: var(--spacing-xl) var(--spacing-lg) var(--spacing-lg);
     }
 
     .wax-seal {
@@ -437,12 +435,12 @@ const { name, description, avatar, url, message, friendSince, greeting, sinceLab
     }
 
     .letter-name {
-      font-size: $font-size-xl;
+      font-size: var(--font-size-xl);
     }
 
     .letter-message {
-      padding: $spacing-sm $spacing-md;
-      font-size: $font-size-sm;
+      padding: var(--spacing-sm) var(--spacing-md);
+      font-size: var(--font-size-sm);
     }
   }
 </style>

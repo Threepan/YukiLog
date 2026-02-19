@@ -80,38 +80,38 @@ const menuItems = [
   document.getElementById('logout-btn')?.addEventListener('click', logout);
 </script>
 
-<style lang="scss">
+<style>
   .admin-layout {
     display: flex;
     min-height: 100vh;
-    background: $lian-bg;
+    background: var(--color-bg);
   }
 
-  // ============ 侧边栏 ============
+  /* ============ 侧边栏 ============ */
   .admin-sidebar {
     width: 260px;
     background: var(--color-white);
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
-    box-shadow: $shadow-md;
+    box-shadow: var(--shadow-md);
   }
 
   .sidebar-header {
-    padding: $spacing-xl $spacing-lg;
+    padding: var(--spacing-xl) var(--spacing-lg);
     background: var(--gradient-blue-pink);
   }
 
   .sidebar-logo {
-    font-size: $font-size-2xl;
-    font-weight: $font-weight-bold;
-    background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    background: linear-gradient(135deg, var(--color-blue) 0%, var(--color-pink) 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
     text-decoration: none;
     display: block;
-    transition: transform $transition-fast $ease-gentle;
+    transition: transform var(--transition-fast) var(--ease-gentle);
 
     &:hover {
       transform: scale(1.05);
@@ -119,28 +119,28 @@ const menuItems = [
   }
 
   .sidebar-subtitle {
-    font-size: $font-size-xs;
-    color: $lian-text-muted;
-    margin-top: $spacing-xs;
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    margin-top: var(--spacing-xs);
   }
 
   .sidebar-nav {
     flex: 1;
-    padding: $spacing-lg $spacing-md;
+    padding: var(--spacing-lg) var(--spacing-md);
     display: flex;
     flex-direction: column;
-    gap: $spacing-xs;
+    gap: var(--spacing-xs);
   }
 
   .nav-item {
     display: flex;
     align-items: center;
-    gap: $spacing-sm;
-    padding: $spacing-sm $spacing-md;
-    color: $lian-text-light;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    color: var(--color-text-light);
     text-decoration: none;
-    border-radius: $radius-sm;
-    transition: all $transition-base $ease-gentle;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-base) var(--ease-gentle);
     position: relative;
 
     &::before {
@@ -151,22 +151,22 @@ const menuItems = [
       transform: translateY(-50%);
       width: 3px;
       height: 0;
-      background: linear-gradient(180deg, $lian-blue, $lian-pink);
+      background: linear-gradient(180deg, var(--color-blue), var(--color-pink));
       border-radius: 0 2px 2px 0;
-      transition: height $transition-base $ease-gentle;
+      transition: height var(--transition-base) var(--ease-gentle);
     }
 
     &:hover {
       background: var(--gradient-blue-pink-8);
-      color: $lian-blue;
+      color: var(--color-blue);
       transform: translateX(4px);
     }
 
     &.active {
       background: var(--gradient-blue-pink-12);
-      color: $lian-blue;
-      font-weight: $font-weight-medium;
-      box-shadow: $shadow-sm;
+      color: var(--color-blue);
+      font-weight: var(--font-weight-medium);
+      box-shadow: var(--shadow-sm);
 
       &::before {
         height: 60%;
@@ -190,32 +190,32 @@ const menuItems = [
   }
 
   .nav-label {
-    font-size: $font-size-sm;
+    font-size: var(--font-size-sm);
   }
 
   .sidebar-footer {
-    padding: $spacing-md;
-    border-top: 1px solid $lian-divider;
+    padding: var(--spacing-md);
+    border-top: 1px solid var(--color-divider);
   }
 
   .back-to-site {
     display: block;
-    padding: $spacing-sm $spacing-md;
-    font-size: $font-size-sm;
-    color: $lian-text-muted;
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
     text-align: center;
     text-decoration: none;
-    border-radius: $radius-sm;
-    transition: all $transition-fast $ease-gentle;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast) var(--ease-gentle);
 
     &:hover {
       background: var(--gradient-blue-pink-8);
-      color: $lian-blue;
+      color: var(--color-blue);
       transform: translateX(-4px);
     }
   }
 
-  // ============ 主区域 ============
+  /* ============ 主区域 ============ */
   .admin-main {
     flex: 1;
     display: flex;
@@ -226,20 +226,20 @@ const menuItems = [
   .admin-header {
     height: 72px;
     background: var(--color-white);
-    padding: 0 $spacing-xl;
+    padding: 0 var(--spacing-xl);
     display: flex;
     align-items: center;
     justify-content: space-between;
     flex-shrink: 0;
-    box-shadow: $shadow-sm;
+    box-shadow: var(--shadow-sm);
     position: relative;
     z-index: 10;
   }
 
   .page-title {
-    font-size: $font-size-xl;
-    font-weight: $font-weight-semibold;
-    background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    background: linear-gradient(135deg, var(--color-blue) 0%, var(--color-pink) 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -249,26 +249,26 @@ const menuItems = [
   .header-actions {
     display: flex;
     align-items: center;
-    gap: $spacing-lg;
+    gap: var(--spacing-lg);
   }
 
   .admin-name {
-    font-size: $font-size-sm;
-    color: $lian-text-light;
-    padding: $spacing-xs $spacing-md;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-light);
+    padding: var(--spacing-xs) var(--spacing-md);
     background: var(--gradient-blue-pink);
-    border-radius: $radius-sm;
+    border-radius: var(--radius-sm);
   }
 
   .logout-btn {
-    padding: $spacing-xs $spacing-md;
-    font-size: $font-size-sm;
+    padding: var(--spacing-xs) var(--spacing-md);
+    font-size: var(--font-size-sm);
     color: var(--color-on-primary);
-    background: linear-gradient(135deg, rgba($lian-error, 0.8) 0%, rgba($lian-error, 0.6) 100%);
+    background: linear-gradient(135deg, rgba(var(--color-error), 0.8) 0%, rgba(var(--color-error), 0.6) 100%);
     border: none;
-    border-radius: $radius-sm;
+    border-radius: var(--radius-sm);
     cursor: pointer;
-    transition: all $transition-base $ease-gentle;
+    transition: all var(--transition-base) var(--ease-gentle);
     box-shadow: var(--shadow-error-md);
 
     &:hover {
@@ -284,33 +284,33 @@ const menuItems = [
   .admin-content {
     flex: 1;
     overflow-y: auto;
-    padding: $spacing-xl;
-    background: $lian-bg;
+    padding: var(--spacing-xl);
+    background: var(--color-bg);
   }
 
-  // ============ 响应式 ============
-  @media (max-width: $container-md) {
+  /* ============ 响应式 ============ */
+  @media (max-width: 768px) {
     .admin-sidebar {
       width: 200px;
     }
 
     .nav-label {
-      font-size: $font-size-xs;
+      font-size: var(--font-size-xs);
     }
 
     .admin-content {
-      padding: $spacing-lg;
+      padding: var(--spacing-lg);
     }
   }
 
-  @media (max-width: $container-sm) {
+  @media (max-width: 640px) {
     .admin-sidebar {
       position: fixed;
       left: -240px;
       top: 0;
       bottom: 0;
-      z-index: $z-modal;
-      transition: left $transition-base $ease-gentle;
+      z-index: var(--z-modal);
+      transition: left var(--transition-base) var(--ease-gentle);
 
       &.open {
         left: 0;
@@ -318,7 +318,7 @@ const menuItems = [
     }
 
     .admin-content {
-      padding: $spacing-md;
+      padding: var(--spacing-md);
     }
   }
 </style>

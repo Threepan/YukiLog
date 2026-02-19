@@ -33,21 +33,21 @@ const iconSvg = icon ? navIcons[icon] : null;
   <span class="nav-label">{label}</span>
 </a>
 
-<style lang="scss">
+<style>
 .nav-item {
   position: relative;
   display: flex;
   align-items: center;
-  gap: $spacing-xs;
-  padding: $spacing-sm $spacing-md;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
   color: var(--color-text);
-  font-weight: $font-weight-medium;
-  font-size: $font-size-base;
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-base);
   text-decoration: none;
   white-space: nowrap;
-  transition: color $transition-base $ease-gentle;
+  transition: color var(--transition-base) var(--ease-gentle);
   
-  // 下划线（从左到右，宽度缩短）
+  /* 下划线（从左到右，宽度缩短） */
   &::after {
     content: '';
     position: absolute;
@@ -56,7 +56,7 @@ const iconSvg = icon ? navIcons[icon] : null;
     width: 0;
     height: 2px;
     background: currentColor;
-    transition: width $transition-base $ease-gentle;
+    transition: width var(--transition-base) var(--ease-gentle);
   }
   
   &:hover {
@@ -98,7 +98,7 @@ const iconSvg = icon ? navIcons[icon] : null;
 
 @media (max-width: 968px) {
   .nav-item {
-    padding: $spacing-xs;
+    padding: var(--spacing-xs);
     gap: 0;
 
     &::after {

@@ -20,8 +20,8 @@ const scrollConfig = contentConfig.components.scrollProgress;
   <span class="btt-percent" id="btt-percent">0%</span>
 </button>
 
-<style lang="scss">
-  // 顶部进度条
+<style>
+  /* 顶部进度条 */
   .scroll-progress-bar {
     position: fixed;
     top: 0;
@@ -29,7 +29,7 @@ const scrollConfig = contentConfig.components.scrollProgress;
     width: 100%;
     height: 3px;
     background: transparent;
-    z-index: $z-modal + 1; // 在所有内容之上
+    z-index: var(--z-modal) + 1; /* 在所有内容之上 */
     pointer-events: none;
 
     &::after {
@@ -40,8 +40,8 @@ const scrollConfig = contentConfig.components.scrollProgress;
       background: linear-gradient(
         90deg,
         transparent,
-        $lian-pink 20%,
-        $lian-pink 80%,
+        var(--color-pink) 20%,
+        var(--color-pink) 80%,
         transparent
       );
       transform: scaleX(var(--p, 0));
@@ -49,12 +49,12 @@ const scrollConfig = contentConfig.components.scrollProgress;
     }
   }
 
-  // 回到顶部按钮
+  /* 回到顶部按钮 */
   .back-to-top {
     position: fixed;
-    bottom: $spacing-xl;
-    left: $spacing-xl;
-    z-index: $z-modal;
+    bottom: var(--spacing-xl);
+    left: var(--spacing-xl);
+    z-index: var(--z-modal);
     
     display: flex;
     flex-direction: column;
@@ -68,22 +68,22 @@ const scrollConfig = contentConfig.components.scrollProgress;
     
     background: var(--white-alpha-85);
     backdrop-filter: blur(12px);
-    border: 1px solid $lian-border;
-    border-radius: $radius-sm;
-    box-shadow: $shadow-pink;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-pink);
     
-    color: $lian-text-light;
+    color: var(--color-text-light);
     cursor: pointer;
     
-    // 默认隐藏，滚动后显示
+    /* 默认隐藏，滚动后显示 */
     opacity: 0;
     transform: translateY(20px);
     pointer-events: none;
     transition:
-      opacity 300ms $ease-gentle,
-      transform 300ms $ease-gentle,
-      box-shadow 200ms $ease-gentle,
-      border-color 200ms $ease-gentle;
+      opacity 300ms var(--ease-gentle),
+      transform 300ms var(--ease-gentle),
+      box-shadow 200ms var(--ease-gentle),
+      border-color 200ms var(--ease-gentle);
 
     &.visible {
       opacity: 1;
@@ -92,9 +92,9 @@ const scrollConfig = contentConfig.components.scrollProgress;
     }
 
     &:hover {
-      box-shadow: $shadow-pink-hover;
-      border-color: $lian-pink;
-      color: $lian-pink;
+      box-shadow: var(--shadow-pink-offset-hover);
+      border-color: var(--color-pink);
+      color: var(--color-pink);
     }
 
     &:active {
@@ -116,7 +116,7 @@ const scrollConfig = contentConfig.components.scrollProgress;
 
   .btt-percent {
     font-size: 10px;
-    font-weight: $font-weight-medium;
+    font-weight: var(--font-weight-medium);
     line-height: 1;
     letter-spacing: -0.02em;
   }

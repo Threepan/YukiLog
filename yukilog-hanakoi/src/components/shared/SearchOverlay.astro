@@ -69,20 +69,20 @@ const sc = contentConfig.components.search;
   </div>
 </div>
 
-<style lang="scss">
-  // 遮罩层
+<style>
+  /* 遮罩层 */
   .search-overlay {
     position: fixed;
     inset: 0;
-    z-index: $z-modal;
+    z-index: var(--z-modal);
     display: flex;
     align-items: flex-start;
     justify-content: center;
     padding-top: 12vh;
     opacity: 0;
     visibility: hidden;
-    transition: opacity $transition-base $ease-gentle,
-                visibility $transition-base $ease-gentle;
+    transition: opacity var(--transition-base) var(--ease-gentle),
+                visibility var(--transition-base) var(--ease-gentle);
 
     &.active {
       opacity: 1;
@@ -100,7 +100,7 @@ const sc = contentConfig.components.search;
     inset: 0;
     background: var(--overlay-bg);
     backdrop-filter: blur(8px);
-    animation: fadeIn $transition-base $ease-gentle;
+    animation: fadeIn var(--transition-base) var(--ease-gentle);
   }
 
   @keyframes fadeIn {
@@ -108,14 +108,14 @@ const sc = contentConfig.components.search;
     to { opacity: 1; }
   }
 
-  // 搜索面板
+  /* 搜索面板 */
   .search-panel {
     position: relative;
     width: 90%;
     max-width: 680px;
     max-height: 70vh;
     background: var(--color-white);
-    border-radius: $radius-lg;
+    border-radius: var(--radius-lg);
     box-shadow: 0 20px 60px var(--shadow-2xl), 
                 0 0 0 1px var(--blue-alpha-10);
     display: flex;
@@ -123,13 +123,13 @@ const sc = contentConfig.components.search;
     overflow: hidden;
     transform: translateY(-20px) scale(0.95);
     opacity: 0;
-    transition: transform $transition-base $ease-gentle,
-                opacity $transition-base $ease-gentle;
+    transition: transform var(--transition-base) var(--ease-gentle),
+                opacity var(--transition-base) var(--ease-gentle);
   }
 
-  // 搜索输入区域
+  /* 搜索输入区域 */
   .search-header {
-    padding: $spacing-md $spacing-lg;
+    padding: var(--spacing-md) var(--spacing-lg);
     background: linear-gradient(135deg, var(--blue-alpha-02) 0%, var(--pink-alpha-02) 100%);
     border-bottom: 2px solid var(--blue-alpha-08);
     flex-shrink: 0;
@@ -138,15 +138,15 @@ const sc = contentConfig.components.search;
   .search-input-wrapper {
     display: flex;
     align-items: center;
-    gap: $spacing-sm;
-    padding: $spacing-xs $spacing-sm;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-xs) var(--spacing-sm);
     background: var(--color-white);
-    border: 2px solid $lian-border;
-    border-radius: $radius-sm;
-    transition: all $transition-base $ease-gentle;
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-base) var(--ease-gentle);
 
     &:focus-within {
-      border-color: $lian-blue;
+      border-color: var(--color-blue);
       box-shadow: 0 0 0 4px var(--blue-alpha-10);
       transform: translateY(-2px);
     }
@@ -156,7 +156,7 @@ const sc = contentConfig.components.search;
     flex-shrink: 0;
     width: 22px;
     height: 22px;
-    background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
+    background: linear-gradient(135deg, var(--color-blue) 0%, var(--color-pink) 100%);
     -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>');
     mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>');
     -webkit-mask-size: contain;
@@ -175,23 +175,23 @@ const sc = contentConfig.components.search;
     border: none;
     outline: none;
     background: none;
-    font-size: $font-size-base;
-    color: $lian-text;
-    font-family: $font-family-base;
+    font-size: var(--font-size-base);
+    color: var(--color-text);
+    font-family: var(--font-family-base);
     padding: 0;
 
     &::placeholder {
-      color: $lian-text-muted;
+      color: var(--color-text-muted);
     }
   }
 
   .search-kbd {
     flex-shrink: 0;
     padding: 3px 10px;
-    font-size: $font-size-xs;
-    font-family: $font-family-code;
-    font-weight: $font-weight-medium;
-    color: $lian-text;
+    font-size: var(--font-size-xs);
+    font-family: var(--font-family-code);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text);
     background: var(--gradient-blue-pink);
     border: 1px solid var(--blue-alpha-20);
     border-radius: 6px;
@@ -199,13 +199,13 @@ const sc = contentConfig.components.search;
     box-shadow: 0 1px 3px var(--shadow-xs);
   }
 
-  // 搜索结果区域
+  /* 搜索结果区域 */
   .search-body {
     flex: 1;
     overflow-y: auto;
-    padding: $spacing-sm $spacing-md $spacing-md;
+    padding: var(--spacing-sm) var(--spacing-md) var(--spacing-md);
 
-    // 自定义滚动条
+    /* 自定义滚动条 */
     &::-webkit-scrollbar {
       width: 4px;
     }
@@ -213,54 +213,54 @@ const sc = contentConfig.components.search;
       background: transparent;
     }
     &::-webkit-scrollbar-thumb {
-      background: $lian-border;
+      background: var(--color-border);
       border-radius: 2px;
     }
   }
 
-  // 初始提示
+  /* 初始提示 */
   .search-hint,
   .search-loading,
   .search-empty {
-    padding: $spacing-xl 0;
+    padding: var(--spacing-xl) 0;
     text-align: center;
-    color: $lian-text-muted;
+    color: var(--color-text-muted);
 
     p {
       margin: 0;
-      font-size: $font-size-sm;
+      font-size: var(--font-size-sm);
     }
   }
 
   .search-hint-shortcuts {
     display: flex;
     justify-content: center;
-    gap: $spacing-lg;
-    margin-top: $spacing-md;
-    font-size: $font-size-sm;
-    color: $lian-text;
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-md);
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
 
     kbd {
       padding: 3px 8px;
-      font-family: $font-family-code;
-      font-weight: $font-weight-medium;
+      font-family: var(--font-family-code);
+      font-weight: var(--font-weight-medium);
       background: var(--gradient-blue-pink);
       border: 1px solid var(--blue-alpha-20);
       border-radius: 4px;
-      font-size: $font-size-xs;
+      font-size: var(--font-size-xs);
       margin: 0 3px;
       box-shadow: 0 1px 3px var(--shadow-xs);
     }
   }
 
-  // 加载动画
+  /* 加载动画 */
   .search-spinner {
     width: 32px;
     height: 32px;
-    margin: 0 auto $spacing-md;
+    margin: 0 auto var(--spacing-md);
     border: 3px solid var(--border-alpha-30);
-    border-top-color: $lian-blue;
-    border-right-color: $lian-pink;
+    border-top-color: var(--color-blue);
+    border-right-color: var(--color-pink);
     border-radius: 50%;
     animation: search-spin 600ms linear infinite;
   }
@@ -269,21 +269,21 @@ const sc = contentConfig.components.search;
     to { transform: rotate(360deg); }
   }
 
-  // 结果列表
+  /* 结果列表 */
   .search-result-list {
     list-style: none;
     margin: 0;
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: $spacing-sm;
+    gap: var(--spacing-sm);
   }
 
   .search-result-item {
     background: var(--color-white);
-    border: 1px solid $lian-divider;
-    border-radius: $radius-sm;
-    transition: all $transition-base $ease-gentle;
+    border: 1px solid var(--color-divider);
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-base) var(--ease-gentle);
     box-shadow: 0 1px 3px var(--shadow-xs);
 
     &.active,
@@ -296,34 +296,34 @@ const sc = contentConfig.components.search;
 
     a {
       display: block;
-      padding: $spacing-md $spacing-lg;
+      padding: var(--spacing-md) var(--spacing-lg);
       text-decoration: none;
       color: inherit;
     }
   }
 
   .search-result-title {
-    font-size: $font-size-lg;
-    font-weight: $font-weight-bold;
-    color: $lian-text;
-    margin: 0 0 $spacing-sm;
-    line-height: $line-height-tight;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    margin: 0 0 var(--spacing-sm);
+    line-height: var(--line-height-tight);
 
     :global(mark) {
       background: linear-gradient(135deg, var(--blue-alpha-15) 0%, var(--pink-alpha-15) 100%);
-      color: $lian-blue;
+      color: var(--color-blue);
       padding: 2px 6px;
       border-radius: 4px;
-      font-weight: $font-weight-bold;
+      font-weight: var(--font-weight-bold);
       border: 1px solid var(--blue-alpha-20);
     }
   }
 
   .search-result-excerpt {
-    font-size: $font-size-sm;
-    color: $lian-text-light;
-    line-height: $line-height-relaxed;
-    margin: 0 0 $spacing-sm;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-light);
+    line-height: var(--line-height-relaxed);
+    margin: 0 0 var(--spacing-sm);
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -331,31 +331,31 @@ const sc = contentConfig.components.search;
 
     :global(mark) {
       background: linear-gradient(135deg, var(--pink-alpha-12) 0%, var(--pink-alpha-18) 100%);
-      color: $lian-pink;
+      color: var(--color-pink);
       padding: 1px 4px;
       border-radius: 3px;
-      font-weight: $font-weight-medium;
+      font-weight: var(--font-weight-medium);
     }
   }
 
   .search-result-meta {
     display: flex;
     align-items: center;
-    gap: $spacing-xs;
-    font-size: $font-size-xs;
-    color: $lian-text-muted;
+    gap: var(--spacing-xs);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
   }
 
   .search-result-tag {
     display: inline-block;
     padding: 2px 10px;
-    font-size: $font-size-xs;
-    font-weight: $font-weight-semibold;
-    color: $lian-pink;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-pink);
     background: linear-gradient(135deg, var(--pink-alpha-08) 0%, var(--pink-alpha-12) 100%);
     border: 1px solid var(--pink-alpha-20);
     border-radius: 12px;
-    transition: all $transition-fast $ease-gentle;
+    transition: all var(--transition-fast) var(--ease-gentle);
 
     &:hover {
       background: linear-gradient(135deg, var(--pink-alpha-15) 0%, var(--pink-alpha-20) 100%);
@@ -363,13 +363,13 @@ const sc = contentConfig.components.search;
     }
   }
 
-  // 分页
+  /* 分页 */
   .search-pagination {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: $spacing-xs;
-    padding-top: $spacing-sm;
+    gap: var(--spacing-xs);
+    padding-top: var(--spacing-sm);
 
     &:empty {
       display: none;
@@ -377,15 +377,15 @@ const sc = contentConfig.components.search;
   }
 
   .search-page-btn {
-    padding: $spacing-xs $spacing-md;
-    font-size: $font-size-sm;
-    font-weight: $font-weight-medium;
+    padding: var(--spacing-xs) var(--spacing-md);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
     color: var(--color-on-primary);
-    background: linear-gradient(135deg, $lian-blue 0%, $lian-pink 100%);
+    background: linear-gradient(135deg, var(--color-blue) 0%, var(--color-pink) 100%);
     border: none;
-    border-radius: $radius-sm;
+    border-radius: var(--radius-sm);
     cursor: pointer;
-    transition: all $transition-base $ease-gentle;
+    transition: all var(--transition-base) var(--ease-gentle);
     box-shadow: var(--shadow-blue-sm);
 
     &:hover:not(:disabled) {
@@ -405,17 +405,17 @@ const sc = contentConfig.components.search;
   }
 
   .search-page-info {
-    font-size: $font-size-sm;
-    color: $lian-text;
-    font-family: $font-family-code;
-    font-weight: $font-weight-medium;
-    padding: $spacing-xs $spacing-sm;
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
+    font-family: var(--font-family-code);
+    font-weight: var(--font-weight-medium);
+    padding: var(--spacing-xs) var(--spacing-sm);
     background: var(--gradient-blue-pink);
-    border-radius: $radius-sm;
+    border-radius: var(--radius-sm);
   }
 
-  // 响应式
-  @media (max-width: $container-sm) {
+  /* 响应式 */
+  @media (max-width: 640px) {
     .search-overlay {
       padding-top: 6vh;
     }
@@ -427,7 +427,7 @@ const sc = contentConfig.components.search;
 
     .search-hint-shortcuts {
       flex-direction: column;
-      gap: $spacing-xs;
+      gap: var(--spacing-xs);
     }
   }
 </style>

@@ -39,7 +39,7 @@ const heroBgSrc =
   </div>
 </div>
 
-<style lang="scss">
+<style>
   .page-hero {
     position: relative;
     height: 40vh;
@@ -51,7 +51,7 @@ const heroBgSrc =
     justify-content: center;
   }
 
-  // 背景图层
+  /* 背景图层 */
   .hero-bg {
     position: absolute;
     inset: 0;
@@ -64,7 +64,7 @@ const heroBgSrc =
       display: block;
     }
 
-    // 底部渐隐到页面背景色，柔和衔接下方内容
+    /* 底部渐隐到页面背景色，柔和衔接下方内容 */
     &::after {
       content: '';
       position: absolute;
@@ -77,16 +77,16 @@ const heroBgSrc =
     }
   }
 
-  // 内容层
+  /* 内容层 */
   .hero-content {
     position: relative;
     z-index: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: $spacing-sm;
+    gap: var(--spacing-sm);
     opacity: 0;
-    animation: hero-enter 700ms $ease-gentle 150ms forwards;
+    animation: hero-enter 700ms var(--ease-gentle) 150ms forwards;
   }
 
   @keyframes hero-enter {
@@ -100,7 +100,7 @@ const heroBgSrc =
     }
   }
 
-  // 大图标
+  /* 大图标 */
   .hero-icon {
     display: flex;
     align-items: center;
@@ -108,8 +108,8 @@ const heroBgSrc =
     width: 56px;
     height: 56px;
     background: var(--white-alpha-85);
-    border-radius: $radius-md;
-    box-shadow: $shadow-md;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
 
     :global(svg) {
       width: 28px;
@@ -118,27 +118,27 @@ const heroBgSrc =
     }
   }
 
-  // 标题
+  /* 标题 */
   .hero-title {
-    font-size: $font-size-3xl;
-    font-weight: $font-weight-semibold;
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-semibold);
     color: var(--color-on-primary);
     margin: 0;
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     letter-spacing: 0.08em;
   }
 
-  // 副标题
+  /* 副标题 */
   .hero-subtitle {
-    font-size: $font-size-base;
+    font-size: var(--font-size-base);
     color: var(--white-alpha-85);
     margin: 0;
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
     letter-spacing: 0.04em;
   }
 
-  // 响应式
-  @media (max-width: $container-sm) {
+  /* 响应式 */
+  @media (max-width: 640px) {
     .page-hero {
       min-height: 180px;
     }
@@ -154,7 +154,7 @@ const heroBgSrc =
     }
 
     .hero-title {
-      font-size: $font-size-2xl;
+      font-size: var(--font-size-2xl);
     }
   }
 </style>

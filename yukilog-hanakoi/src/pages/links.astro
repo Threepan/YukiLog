@@ -68,20 +68,20 @@ const friends = apiLinks.map((link) => ({
   </div>
 </BlogLayout>
 
-<style lang="scss">
+<style>
   .links-page {
     max-width: 800px;
     margin: 0 auto;
-    padding: 0 $spacing-lg;
+    padding: 0 var(--spacing-lg);
     min-height: 100vh;
   }
 
-  // 页头
+  /* 页头 */
   .links-header {
-    padding-top: 80px; // 给 sticky 导航栏留空间
+    padding-top: 80px; /* 给 sticky 导航栏留空间 */
     text-align: center;
     opacity: 0;
-    animation: header-enter 700ms $ease-gentle 100ms forwards;
+    animation: header-enter 700ms var(--ease-gentle) 100ms forwards;
   }
 
   @keyframes header-enter {
@@ -96,32 +96,32 @@ const friends = apiLinks.map((link) => ({
   }
 
   .links-greeting {
-    font-size: $font-size-lg;
-    color: $lian-text-light;
+    font-size: var(--font-size-lg);
+    color: var(--color-text-light);
     font-style: italic;
     margin: 0;
-    line-height: $line-height-relaxed;
+    line-height: var(--line-height-relaxed);
   }
 
   .links-divider {
     width: 60px;
     height: 2px;
-    background: linear-gradient(90deg, $lian-pink, $lian-blue);
-    margin: $spacing-lg auto 0;
+    background: linear-gradient(90deg, var(--color-pink), var(--color-blue));
+    margin: var(--spacing-lg) auto 0;
     border-radius: 1px;
   }
 
-  // 朋友们区域
+  /* 朋友们区域 */
   .friends-section {
-    padding-top: $spacing-xl;
+    padding-top: var(--spacing-xl);
   }
 
   .friends-title {
-    font-size: $font-size-base;
-    font-weight: $font-weight-medium;
-    color: $lian-text-muted;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-muted);
     text-align: center;
-    margin: 0 0 $spacing-xl;
+    margin: 0 0 var(--spacing-xl);
     letter-spacing: 0.15em;
   }
 
@@ -129,23 +129,30 @@ const friends = apiLinks.map((link) => ({
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: $spacing-lg;
-    padding: 0 $spacing-md;
+    gap: var(--spacing-lg);
+    padding: 0 var(--spacing-md);
 
-    // 给子元素批量设置入场延迟
+    /* 给子元素批量设置入场延迟 */
     :global(.friend-card) {
-      @for $i from 0 through 11 {
-        &:nth-child(#{$i + 1}) {
-          --i: #{$i};
-        }
-      }
+      &:nth-child(1) { --i: 0; }
+      &:nth-child(2) { --i: 1; }
+      &:nth-child(3) { --i: 2; }
+      &:nth-child(4) { --i: 3; }
+      &:nth-child(5) { --i: 4; }
+      &:nth-child(6) { --i: 5; }
+      &:nth-child(7) { --i: 6; }
+      &:nth-child(8) { --i: 7; }
+      &:nth-child(9) { --i: 8; }
+      &:nth-child(10) { --i: 9; }
+      &:nth-child(11) { --i: 10; }
+      &:nth-child(12) { --i: 11; }
     }
   }
 
-  // 响应式
-  @media (max-width: $container-sm) {
+  /* 响应式 */
+  @media (max-width: 640px) {
     .links-page {
-      padding: 0 $spacing-sm;
+      padding: 0 var(--spacing-sm);
     }
 
     .links-header {
@@ -153,7 +160,7 @@ const friends = apiLinks.map((link) => ({
     }
 
     .friends-grid {
-      gap: $spacing-md;
+      gap: var(--spacing-md);
       padding: 0;
     }
   }

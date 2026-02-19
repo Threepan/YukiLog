@@ -100,45 +100,43 @@ const cc = contentConfig.components.comments;
   </form>
 </div>
 
-<style lang="scss">
-@use "sass:color";
-
-  .comment-form {
-    background: $lian-white;
-    border: 1px solid rgba($lian-pink, 0.25);
-    border-radius: $radius-md;
-    padding: $spacing-md $spacing-lg;
-    box-shadow: 0 1px 3px rgba($lian-text, 0.04);
-    transition: box-shadow 300ms $ease-gentle;
+<style>
+.comment-form {
+    background: var(--color-white);
+    border: 1px solid rgba(232, 164, 180, 0.25);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md) var(--spacing-lg);
+    box-shadow: 0 1px 3px rgba(44, 62, 80, 0.04);
+    transition: box-shadow 300ms var(--ease-gentle);
     
     &.main-form {
-      margin-bottom: $spacing-lg;
+      margin-bottom: var(--spacing-lg);
     }
     
     &.expanded {
-      box-shadow: 0 2px 8px rgba($lian-blue, 0.08);
+      box-shadow: 0 2px 8px rgba(126, 182, 217, 0.08);
     }
   }
 
   .reply-target {
     display: flex;
     align-items: center;
-    gap: $spacing-xs;
-    margin-bottom: $spacing-sm;
-    padding: 6px $spacing-sm;
-    background: rgba($lian-blue, 0.06);
-    border-left: 2px solid $lian-blue;
+    gap: var(--spacing-xs);
+    margin-bottom: var(--spacing-sm);
+    padding: 6px var(--spacing-sm);
+    background: rgba(126, 182, 217, 0.06);
+    border-left: 2px solid var(--color-blue);
     border-radius: 4px;
-    font-size: $font-size-xs;
-    color: $lian-text-light;
+    font-size: var(--font-size-xs);
+    color: var(--color-text-light);
 
     .reply-icon {
-      font-size: $font-size-sm;
+      font-size: var(--font-size-sm);
     }
 
     strong {
-      color: $lian-blue;
-      font-weight: $font-weight-semibold;
+      color: var(--color-blue);
+      font-weight: var(--font-weight-semibold);
     }
   }
 
@@ -148,11 +146,11 @@ const cc = contentConfig.components.comments;
     textarea {
       border-radius: 8px;
       min-height: 64px;
-      font-size: $font-size-sm;
+      font-size: var(--font-size-sm);
       
       &::placeholder {
-        color: $lian-text-muted;
-        font-size: $font-size-sm;
+        color: var(--color-text-muted);
+        font-size: var(--font-size-sm);
       }
     }
   }
@@ -162,64 +160,64 @@ const cc = contentConfig.components.comments;
     opacity: 0;
     overflow: hidden;
     transition:
-      max-height 300ms $ease-gentle,
-      opacity 250ms $ease-gentle,
-      margin-top 300ms $ease-gentle;
+      max-height 300ms var(--ease-gentle),
+      opacity 250ms var(--ease-gentle),
+      margin-top 300ms var(--ease-gentle);
     
     &.expanded {
       max-height: 500px;
       opacity: 1;
-      margin-top: $spacing-md;
+      margin-top: var(--spacing-md);
     }
   }
 
   .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: $spacing-sm;
-    margin-bottom: $spacing-sm;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
   }
 
   .form-field {
     position: relative;
-    margin-bottom: $spacing-sm;
+    margin-bottom: var(--spacing-sm);
 
     label {
       display: block;
       margin-bottom: 4px;
-      font-size: $font-size-xs;
-      font-weight: $font-weight-medium;
-      color: $lian-text-light;
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-medium);
+      color: var(--color-text-light);
     }
 
     input,
     textarea {
       width: 100%;
-      padding: 8px $spacing-sm;
-      background: $lian-bg;
-      border: 1.5px solid color.adjust($lian-pink, $lightness: 28%);
+      padding: 8px var(--spacing-sm);
+      background: var(--color-bg);
+      border: 1.5px solid var(--color-pink-l28);
       border-radius: 6px;
-      font-size: $font-size-sm;
+      font-size: var(--font-size-sm);
       font-family: inherit;
-      color: $lian-text;
+      color: var(--color-text);
       transition:
-        border-color $transition-fast $ease-gentle,
-        background $transition-fast $ease-gentle;
+        border-color var(--transition-fast) var(--ease-gentle),
+        background var(--transition-fast) var(--ease-gentle);
 
       &::placeholder {
-        color: $lian-text-muted;
+        color: var(--color-text-muted);
       }
 
       &:focus {
         outline: none;
-        border-color: $lian-pink;
+        border-color: var(--color-pink);
         background: var(--color-white);
       }
     }
 
     textarea {
       resize: vertical;
-      line-height: $line-height-base;
+      line-height: var(--line-height-base);
       min-height: 70px;
     }
   }
@@ -229,52 +227,52 @@ const cc = contentConfig.components.comments;
     right: 8px;
     bottom: -18px;
     font-size: 11px;
-    color: $lian-text-muted;
+    color: var(--color-text-muted);
 
     .current {
-      color: $lian-text-light;
-      font-weight: $font-weight-medium;
+      color: var(--color-text-light);
+      font-weight: var(--font-weight-medium);
     }
   }
 
   .form-actions {
     display: flex;
     justify-content: flex-end;
-    gap: $spacing-xs;
-    margin-top: $spacing-sm;
+    gap: var(--spacing-xs);
+    margin-top: var(--spacing-sm);
   }
 
   .btn-cancel,
   .btn-submit {
-    padding: 7px $spacing-md;
+    padding: 7px var(--spacing-md);
     border: none;
     border-radius: 6px;
-    font-size: $font-size-xs;
-    font-weight: $font-weight-medium;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
     font-family: inherit;
     cursor: pointer;
     transition:
-      background $transition-fast $ease-gentle,
-      box-shadow $transition-fast $ease-gentle,
-      transform $transition-fast $ease-gentle;
+      background var(--transition-fast) var(--ease-gentle),
+      box-shadow var(--transition-fast) var(--ease-gentle),
+      transform var(--transition-fast) var(--ease-gentle);
   }
 
   .btn-cancel {
-    background: rgba($lian-text-muted, 0.1);
-    color: $lian-text-light;
+    background: rgba(var(--color-text-muted), 0.1);
+    color: var(--color-text-light);
 
     &:hover {
-      background: rgba($lian-text-muted, 0.15);
+      background: rgba(var(--color-text-muted), 0.15);
     }
   }
 
   .btn-submit {
-    background: linear-gradient(135deg, $lian-pink, color.adjust($lian-pink, $lightness: 8%));
+    background: linear-gradient(135deg, var(--color-pink), var(--color-pink-l8));
     color: white;
-    box-shadow: 0 1px 3px rgba($lian-pink, 0.3);
+    box-shadow: 0 1px 3px rgba(232, 164, 180, 0.3);
 
     &:hover {
-      box-shadow: 0 2px 6px rgba($lian-pink, 0.4);
+      box-shadow: 0 2px 6px rgba(232, 164, 180, 0.4);
       transform: translateY(-1px);
     }
 
@@ -290,14 +288,14 @@ const cc = contentConfig.components.comments;
   }
 
   .form-hint {
-    margin-top: $spacing-sm;
+    margin-top: var(--spacing-sm);
     font-size: 11px;
-    color: $lian-text-muted;
+    color: var(--color-text-muted);
     font-style: italic;
     text-align: center;
   }
 
-  @media (max-width: $container-sm) {
+  @media (max-width: 640px) {
     .form-row {
       grid-template-columns: 1fr;
     }

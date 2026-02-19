@@ -41,28 +41,26 @@ const { comments, totalCount } = Astro.props;
   )}
 </div>
 
-<style lang="scss">
-@use "sass:color";
-
-  .comment-list {
-    margin-top: $spacing-md;
+<style>
+.comment-list {
+    margin-top: var(--spacing-md);
   }
 
   .comment-list-header {
-    margin-bottom: $spacing-md;
-    padding-bottom: $spacing-xs;
-    border-bottom: 2px solid $lian-divider;
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-xs);
+    border-bottom: 2px solid var(--color-divider);
   }
 
   .comment-count {
-    font-size: $font-size-base;
-    font-weight: $font-weight-semibold;
-    color: $lian-text;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
     margin: 0;
     
     .count-number {
-      color: $lian-pink;
-      font-size: $font-size-lg;
+      color: var(--color-pink);
+      font-size: var(--font-size-lg);
     }
   }
 
@@ -75,14 +73,14 @@ const { comments, totalCount } = Astro.props;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: $spacing-xl $spacing-lg;
+    padding: var(--spacing-xl) var(--spacing-lg);
     text-align: center;
   }
 
   .empty-icon {
     font-size: 48px;
     opacity: 0.3;
-    margin-bottom: $spacing-sm;
+    margin-bottom: var(--spacing-sm);
     animation: float 3s ease-in-out infinite;
   }
 
@@ -96,8 +94,8 @@ const { comments, totalCount } = Astro.props;
   }
 
   .empty-text {
-    font-size: $font-size-sm;
-    color: $lian-text-muted;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
     font-style: italic;
     margin: 0;
   }

@@ -262,43 +262,41 @@ const totalCount = countTotalComments(comments);
   document.addEventListener('astro:page-load', initCommentReply);
 </script>
 
-<style lang="scss">
-@use "sass:color";
-
-  .comment-section {
+<style>
+.comment-section {
     max-width: 800px;
-    margin: $spacing-xl auto;
-    padding: 0 $spacing-md;
+    margin: var(--spacing-xl) auto;
+    padding: 0 var(--spacing-md);
   }
 
   .section-header {
     text-align: center;
-    margin-bottom: $spacing-md;
+    margin-bottom: var(--spacing-md);
   }
 
   .section-title {
-    font-size: $font-size-xl;
-    font-weight: $font-weight-bold;
-    color: $lian-text;
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
     margin: 0 0 4px;
   }
 
   .section-subtitle {
     font-size: 11px;
-    color: $lian-text-light;
+    color: var(--color-text-light);
     font-style: italic;
     margin: 0;
   }
 
-  // 动态生成的回复表单样式（全部使用扁平 global 选择器）
+  /* 动态生成的回复表单样式（全部使用扁平 global 选择器） */
   :global(.comment-form.reply-form) {
-    background: linear-gradient(135deg, rgba($lian-blue, 0.05), rgba($lian-pink, 0.03));
-    border: 1px solid color.adjust($lian-blue, $lightness: 24%);
+    background: linear-gradient(135deg, rgba(126, 182, 217, 0.05), rgba(232, 164, 180, 0.03));
+    border: 1px solid var(--color-blue-l24);
     border-radius: 8px;
-    padding: $spacing-sm $spacing-md;
-    box-shadow: 0 2px 8px rgba($lian-blue, 0.12);
-    margin-top: $spacing-sm;
-    animation: slideDown 0.2s $ease-gentle;
+    padding: var(--spacing-sm) var(--spacing-md);
+    box-shadow: 0 2px 8px rgba(126, 182, 217, 0.12);
+    margin-top: var(--spacing-sm);
+    animation: slideDown 0.2s var(--ease-gentle);
   }
 
   @keyframes slideDown {
@@ -315,15 +313,15 @@ const totalCount = countTotalComments(comments);
   :global(.comment-form.reply-form .reply-target) {
     display: flex;
     align-items: center;
-    gap: $spacing-xs;
-    margin-bottom: $spacing-xs;
-    padding: 5px $spacing-xs;
-    background: rgba($lian-blue, 0.1);
-    border-left: 3px solid $lian-blue;
+    gap: var(--spacing-xs);
+    margin-bottom: var(--spacing-xs);
+    padding: 5px var(--spacing-xs);
+    background: rgba(126, 182, 217, 0.1);
+    border-left: 3px solid var(--color-blue);
     border-radius: 4px;
     font-size: 11px;
-    font-weight: $font-weight-medium;
-    color: $lian-text-light;
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-light);
   }
 
   :global(.comment-form.reply-form .reply-target .reply-icon) {
@@ -331,8 +329,8 @@ const totalCount = countTotalComments(comments);
   }
 
   :global(.comment-form.reply-form .reply-target strong) {
-    color: $lian-blue;
-    font-weight: $font-weight-semibold;
+    color: var(--color-blue);
+    font-weight: var(--font-weight-semibold);
   }
 
   :global(.comment-form.reply-form .form-content) {
@@ -342,50 +340,50 @@ const totalCount = countTotalComments(comments);
   :global(.comment-form.reply-form .form-row) {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: $spacing-xs;
-    margin-bottom: $spacing-xs;
+    gap: var(--spacing-xs);
+    margin-bottom: var(--spacing-xs);
   }
 
   :global(.comment-form.reply-form .form-field) {
     position: relative;
-    margin-bottom: $spacing-xs;
+    margin-bottom: var(--spacing-xs);
   }
 
   :global(.comment-form.reply-form .form-field label) {
     display: block;
     margin-bottom: 4px;
     font-size: 11px;
-    font-weight: $font-weight-semibold;
-    color: $lian-text;
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
   }
 
   :global(.comment-form.reply-form .form-field input),
   :global(.comment-form.reply-form .form-field textarea) {
     width: 100%;
-    padding: 7px $spacing-sm;
+    padding: 7px var(--spacing-sm);
     background: var(--color-white);
-    border: 1.5px solid color.adjust($lian-blue, $lightness: 30%);
+    border: 1.5px solid var(--color-blue-l30);
     border-radius: 5px;
     font-size: 12px;
     font-family: inherit;
-    color: $lian-text;
+    color: var(--color-text);
     transition:
-      border-color $transition-fast $ease-gentle,
-      box-shadow $transition-fast $ease-gentle;
+      border-color var(--transition-fast) var(--ease-gentle),
+      box-shadow var(--transition-fast) var(--ease-gentle);
   }
 
   :global(.comment-form.reply-form .form-field input::placeholder),
   :global(.comment-form.reply-form .form-field textarea::placeholder) {
-    color: color.adjust($lian-text-muted, $lightness: 10%);
+    color: var(--color-text-muted-l10);
     font-size: 11px;
   }
 
   :global(.comment-form.reply-form .form-field input:focus),
   :global(.comment-form.reply-form .form-field textarea:focus) {
     outline: none;
-    border-color: $lian-blue;
-    box-shadow: 0 0 0 2px rgba($lian-blue, 0.12);
-    background: color.adjust($lian-blue, $lightness: 42%);
+    border-color: var(--color-blue);
+    box-shadow: 0 0 0 2px rgba(126, 182, 217, 0.12);
+    background: #FFFFFF;
   }
 
   :global(.comment-form.reply-form .form-field textarea) {
@@ -399,55 +397,55 @@ const totalCount = countTotalComments(comments);
     text-align: right;
     margin-top: 4px;
     font-size: 10px;
-    color: $lian-text-muted;
+    color: var(--color-text-muted);
   }
 
   :global(.comment-form.reply-form .char-count .current) {
-    color: $lian-text-light;
-    font-weight: $font-weight-medium;
+    color: var(--color-text-light);
+    font-weight: var(--font-weight-medium);
   }
 
   :global(.comment-form.reply-form .form-actions) {
     display: flex;
     justify-content: flex-end;
     gap: 6px;
-    margin-top: $spacing-sm;
+    margin-top: var(--spacing-sm);
   }
 
   :global(.comment-form.reply-form .btn-cancel),
   :global(.comment-form.reply-form .btn-submit) {
-    padding: 6px $spacing-md;
+    padding: 6px var(--spacing-md);
     border: none;
     border-radius: 5px;
     font-size: 12px;
-    font-weight: $font-weight-semibold;
+    font-weight: var(--font-weight-semibold);
     font-family: inherit;
     cursor: pointer;
     transition:
-      background $transition-fast $ease-gentle,
-      box-shadow $transition-fast $ease-gentle,
-      transform $transition-fast $ease-gentle;
+      background var(--transition-fast) var(--ease-gentle),
+      box-shadow var(--transition-fast) var(--ease-gentle),
+      transform var(--transition-fast) var(--ease-gentle);
   }
 
   :global(.comment-form.reply-form .btn-cancel) {
     background: var(--color-white);
-    color: $lian-text-light;
-    border: 1.5px solid color.adjust($lian-text-muted, $lightness: 20%);
+    color: var(--color-text-light);
+    border: 1.5px solid var(--color-text-muted-l20);
   }
 
   :global(.comment-form.reply-form .btn-cancel:hover) {
-    background: rgba($lian-text-muted, 0.05);
-    border-color: $lian-text-muted;
+    background: rgba(var(--color-text-muted), 0.05);
+    border-color: var(--color-text-muted);
   }
 
   :global(.comment-form.reply-form .btn-submit) {
-    background: linear-gradient(135deg, $lian-blue, color.adjust($lian-blue, $lightness: -8%));
+    background: linear-gradient(135deg, var(--color-blue), var(--color-blue-d8));
     color: var(--color-on-primary);
-    box-shadow: 0 2px 4px rgba($lian-blue, 0.3);
+    box-shadow: 0 2px 4px rgba(126, 182, 217, 0.3);
   }
 
   :global(.comment-form.reply-form .btn-submit:hover) {
-    box-shadow: 0 3px 8px rgba($lian-blue, 0.4);
+    box-shadow: 0 3px 8px rgba(126, 182, 217, 0.4);
     transform: translateY(-1px);
   }
 
@@ -464,14 +462,14 @@ const totalCount = countTotalComments(comments);
   :global(.comment-form.reply-form .form-hint) {
     margin-top: 6px;
     font-size: 10px;
-    color: $lian-text-muted;
+    color: var(--color-text-muted);
     font-style: italic;
     text-align: center;
   }
 
-  @media (max-width: $container-sm) {
+  @media (max-width: 640px) {
     .comment-section {
-      padding: 0 $spacing-md;
+      padding: 0 var(--spacing-md);
     }
 
     :global(.comment-form.reply-form .form-row) {
@@ -479,7 +477,7 @@ const totalCount = countTotalComments(comments);
     }
 
     :global(.comment-form.reply-form) {
-      padding: $spacing-sm;
+      padding: var(--spacing-sm);
     }
   }
 </style>

@@ -55,26 +55,26 @@ const sortOptions = [
   </div>
 </section>
 
-<style lang="scss">
+<style>
   .article-list-section {
     width: 100%;
-    padding-bottom: $spacing-xxl;
+    padding-bottom: var(--spacing-xxl);
   }
 
   .article-list-header {
     max-width: 800px;
     margin: 0 auto;
-    padding: calc(#{$spacing-xxl * 2} - 30px) $spacing-md 0;
+    padding: calc(8rem - 30px) var(--spacing-md) 0;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: $spacing-md;
+    gap: var(--spacing-md);
   }
 
   .article-list-title {
-    font-size: $font-size-lg;
-    font-weight: $font-weight-medium;
-    color: $lian-text-light;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-light);
     letter-spacing: 0.05em;
     white-space: nowrap;
   }
@@ -88,9 +88,9 @@ const sortOptions = [
   .sort-pill {
     padding: 4px 14px;
     border-radius: 20px;
-    font-size: $font-size-xs;
-    font-weight: $font-weight-medium;
-    color: $lian-text-muted;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-muted);
     background: transparent;
     border: 1.5px solid transparent;
     text-decoration: none;
@@ -99,53 +99,53 @@ const sortOptions = [
     cursor: pointer;
 
     &:hover {
-      color: $lian-blue;
+      color: var(--color-blue);
       background: var(--blue-alpha-06);
       border-color: var(--blue-alpha-15);
     }
 
     &.active {
-      color: $lian-pink;
+      color: var(--color-pink);
       background: var(--pink-alpha-08);
       border-color: var(--pink-alpha-20);
     }
   }
 
   .article-list-container {
-    // 居中，并避开两侧固定侧栏
-    // 侧栏宽度 280px + 间距 $spacing-xl(48px) 每侧 ≈ 328px
-    // 再加内容区与侧栏的间隙 24px
+    /* 居中，并避开两侧固定侧栏 */
+    /* 侧栏宽度 280px + 间距 var(--spacing-xl)(48px) 每侧 ≈ 328px */
+    /* 再加内容区与侧栏的间隙 24px */
     max-width: 800px;
     margin: 0 auto;
-    padding: $spacing-lg $spacing-md 0;
+    padding: var(--spacing-lg) var(--spacing-md) 0;
     display: flex;
     flex-direction: column;
-    gap: $spacing-xl;
+    gap: var(--spacing-xl);
   }
 
   .load-more {
     display: flex;
     justify-content: center;
-    padding: $spacing-xxl 0 $spacing-lg;
+    padding: var(--spacing-xxl) 0 var(--spacing-lg);
   }
 
   .load-more-text {
-    font-size: $font-size-sm;
-    color: $lian-text-muted;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
     letter-spacing: 0.1em;
   }
 
-  // 响应式：小屏无侧栏，全宽
-  @media (max-width: $container-lg) {
+  /* 响应式：小屏无侧栏，全宽 */
+  @media (max-width: 1024px) {
     .article-list-header {
       max-width: 100%;
-      padding: $spacing-lg $spacing-md 0;
+      padding: var(--spacing-lg) var(--spacing-md) 0;
       flex-wrap: wrap;
     }
 
     .article-list-container {
       max-width: 100%;
-      padding: $spacing-lg $spacing-md 0;
+      padding: var(--spacing-lg) var(--spacing-md) 0;
     }
   }
 </style>
