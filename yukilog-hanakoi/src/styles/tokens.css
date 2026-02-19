@@ -92,6 +92,13 @@
   --text-alpha-12: rgba(44, 62, 80, 0.12);
   --text-alpha-16: rgba(44, 62, 80, 0.16);
 
+  /* color-text-muted (#A8B4C6) 透明度预设 */
+  --muted-alpha-05: rgba(168, 180, 198, 0.05);
+  --muted-alpha-06: rgba(168, 180, 198, 0.06);
+  --muted-alpha-08: rgba(168, 180, 198, 0.08);
+  --muted-alpha-10: rgba(168, 180, 198, 0.10);
+  --muted-alpha-15: rgba(168, 180, 198, 0.15);
+
   --border-alpha-30: rgba(225, 232, 240, 0.30);
 
   /* ===== 阴影系统 ===== */
@@ -339,6 +346,13 @@
   --text-alpha-08: rgba(227, 232, 239, 0.15);
   --text-alpha-12: rgba(227, 232, 239, 0.20);
   --text-alpha-16: rgba(227, 232, 239, 0.25);
+
+  /* color-text-muted (#6B7785) 透明度预设 */
+  --muted-alpha-05: rgba(107, 119, 133, 0.08);
+  --muted-alpha-06: rgba(107, 119, 133, 0.10);
+  --muted-alpha-08: rgba(107, 119, 133, 0.12);
+  --muted-alpha-10: rgba(107, 119, 133, 0.15);
+  --muted-alpha-15: rgba(107, 119, 133, 0.22);
 
   --border-alpha-30: rgba(45, 51, 57, 0.50);
 
