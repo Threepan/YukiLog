@@ -113,31 +113,63 @@ if (apiError || !theme) {
       allCards.forEach((card) => observer.observe(card));
     }
 
+    let lastLayoutWidth = 0;
+
     function layoutCards() {
+      const currentWidth = window.innerWidth;
+      // 只在宽度变化时重新布局（忽略移动端地址栏导致的高度变化）
+      if (lastLayoutWidth === currentWidth) return;
+      lastLayoutWidth = currentWidth;
+
+      // 保存滚动位置，防止清空列时页面高度骤降导致滚动到顶
+      const savedScrollY = window.scrollY;
+
+      // 记录哪些卡片已经可见
+      const visibleSlugs = new Set<string>();
+      columns.forEach((col) => {
+        col.querySelectorAll<HTMLElement>('.post-list-card').forEach((c) => {
+          if (c.classList.contains('visible')) {
+            const slug = c.querySelector<HTMLElement>('[data-slug]')?.dataset.slug
+              ?? c.dataset.slug ?? '';
+            if (slug) visibleSlugs.add(slug);
+          }
+        });
+      });
+
       // 清空两列
       columns.forEach((col) => (col.innerHTML = ''));
 
-      const isMobile = window.innerWidth <= 768;
+      const isMobile = currentWidth <= 768;
+      const columnWidth = columns[0].getBoundingClientRect().width || columns[0].offsetWidth;
 
       if (isMobile) {
         cards.forEach((card) => {
-          columns[0].appendChild(card.cloneNode(true));
+          const clone = card.cloneNode(true) as HTMLElement;
+          if (card.classList.contains('visible')) clone.classList.add('visible');
+          columns[0].appendChild(clone);
         });
       } else {
         const columnHeights = [0, 0];
         cards.forEach((card) => {
-          const clone = card.cloneNode(true) as HTMLElement;
-          clone.style.visibility = 'hidden';
-          clone.style.position = 'absolute';
-          document.body.appendChild(clone);
-          const cardHeight = clone.offsetHeight;
-          document.body.removeChild(clone);
+          // 用实际列宽测量高度，确保换行计算准确
+          const probe = card.cloneNode(true) as HTMLElement;
+          probe.style.visibility = 'hidden';
+          probe.style.position = 'absolute';
+          probe.style.width = `${columnWidth}px`;
+          document.body.appendChild(probe);
+          const cardHeight = probe.offsetHeight;
+          document.body.removeChild(probe);
 
           const targetColumn = columnHeights[0] <= columnHeights[1] ? 0 : 1;
-          columns[targetColumn].appendChild(card.cloneNode(true));
+          const clone = card.cloneNode(true) as HTMLElement;
+          if (card.classList.contains('visible')) clone.classList.add('visible');
+          columns[targetColumn].appendChild(clone);
           columnHeights[targetColumn] += cardHeight + 20;
         });
       }
+
+      // 恢复滚动位置
+      window.scrollTo({ top: savedScrollY, behavior: 'instant' });
 
       bindObserver();
     }
