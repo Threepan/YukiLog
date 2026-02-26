@@ -19,7 +19,7 @@ const { posts, currentSort = 'created_at' } = Astro.props;
 const placeholderPosts = posts as PostCardData[];
 
 const sortOptions = [
-  { key: 'created_at' as const, label: '精选' },
+  { key: 'created_at' as const, label: '最新' },
   { key: 'view_count' as const, label: '最热' },
   { key: 'updated_at' as const, label: '最近更新' },
 ];
@@ -28,7 +28,7 @@ const sortOptions = [
 <section class="article-list-section" id="article-list">
   <div class="article-list-header">
     <h2 class="article-list-title">
-      {currentSort === 'view_count' ? '最热' : currentSort === 'updated_at' ? '最近更新' : '精选'}
+      精选 · {currentSort === 'view_count' ? '最热' : currentSort === 'updated_at' ? '最近更新' : '最新'}
       {' '}{placeholderPosts.length} 篇博客
     </h2>
     <div class="sort-pills">
