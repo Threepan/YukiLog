@@ -54,6 +54,8 @@ pub struct CreatePostRequest {
     pub theme_slug: Option<String>,
     /// 标签 slug 列表
     pub tag_slugs: Vec<String>,
+    /// 是否精选
+    pub is_featured: Option<bool>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -74,6 +76,8 @@ pub struct UpdatePostRequest {
     pub theme_slug: Option<Option<String>>,
     /// 标签 slug 列表
     pub tag_slugs: Option<Vec<String>>,
+    /// 是否精选
+    pub is_featured: Option<bool>,
 }
 
 // ================================
@@ -137,6 +141,7 @@ pub async fn list_posts(
         sort_by: params.sort,
         count: Some(page_size),
         page: Some(page),
+        is_featured: None,
     };
 
     // 获取文章列表（含关联数据）
@@ -201,6 +206,7 @@ pub async fn create_post(
         status: req.status,
         theme_slug: req.theme_slug,
         tag_slugs: req.tag_slugs,
+        is_featured: req.is_featured.unwrap_or(false),
     };
 
     let post = service::posts::create_post(&state.db, input).await?;
@@ -254,6 +260,7 @@ pub async fn update_post(
         status: req.status,
         theme_slug: req.theme_slug,
         tag_slugs: req.tag_slugs,
+        is_featured: req.is_featured,
     };
 
     let post = service::posts::update_post(&state.db, &slug, input).await?;
