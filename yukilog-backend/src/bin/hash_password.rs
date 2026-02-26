@@ -48,19 +48,13 @@ fn main() {
     // 生成密码哈希
     match argon2.hash_password(password.as_bytes(), &salt) {
         Ok(password_hash) => {
-            println!();
-            println!("✅ 密码哈希生成成功!");
-            println!();
-            println!("将以下内容添加到 .env 文件:");
-            println!("─────────────────────────────────────────────────────");
-            println!("ADMIN_PASSWORD_HASH={}", password_hash);
-            println!("─────────────────────────────────────────────────────");
-            println!();
-            println!("💡 提示:");
-            println!("  • 请妥善保管此哈希值");
-            println!("  • 不要将 .env 文件提交到版本控制系统");
-            println!("  • 默认使用 Argon2id 算法（推荐）");
-            println!();
+            // stdout 只输出纯哈希，供脚本直接捕获
+            println!("{}", password_hash);
+            // 装饰信息输出到 stderr，不干扰脚本捕获
+            eprintln!();
+            eprintln!("✅ 密码哈希生成成功");
+            eprintln!("将以下内容添加到 .env 文件:");
+            eprintln!("ADMIN_PASSWORD_HASH={}", password_hash);
         }
         Err(e) => {
             eprintln!("❌ 生成密码哈希失败: {}", e);
