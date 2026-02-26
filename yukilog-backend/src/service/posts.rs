@@ -21,6 +21,7 @@ pub struct Post {
     pub content: String,
     pub cover_image: Option<String>,
     pub status: PostStatus,
+    pub is_featured: bool,
     pub theme_id: Option<i64>,
     pub view_count: i64,
     pub created_at: DateTime<FixedOffset>,
@@ -37,6 +38,7 @@ impl From<repo::posts::PostDto> for Post {
             content: dto.content,
             cover_image: dto.cover_image,
             status: dto.status.unwrap_or(PostStatus::Draft),
+            is_featured: dto.is_featured,
             theme_id: dto.theme_id,
             view_count: dto.view_count.unwrap_or(0),
             created_at: dto.created_at.unwrap_or_else(|| chrono::Utc::now().into()),
@@ -62,6 +64,7 @@ pub struct CreatePostInput {
     pub theme_slug: Option<String>,
     pub tag_slugs: Vec<String>,
     pub status: PostStatus,
+    pub is_featured: bool,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -74,6 +77,7 @@ pub struct UpdatePostInput {
     pub theme_slug: Option<Option<String>>,
     pub tag_slugs: Option<Vec<String>>,
     pub status: Option<PostStatus>,
+    pub is_featured: Option<bool>,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -81,6 +85,7 @@ pub struct PostFilter {
     pub theme_slugs: Option<Vec<String>>,
     pub tag_slugs: Option<Vec<String>>,  // AND 逻辑
     pub status: Option<PostStatus>,
+    pub is_featured: Option<bool>,
     pub sort_by: Option<PostSortBy>,
     pub count: Option<u64>,
     pub page: Option<u64>,
@@ -147,6 +152,7 @@ pub async fn create_post(
         cover_image: input.cover_image,
         status: Some(input.status.as_str().to_string()),
         theme_id,
+        is_featured: input.is_featured,
     };
     let post_dto = repo::posts::create_post(&txn, create_input).await?;
 
@@ -310,7 +316,7 @@ pub async fn list_posts(
     };
 
     let dtos = repo::posts::list_posts_filtered(
-        db, theme_ids, post_ids, status_str, sort_by, filter.count, filter.page,
+        db, theme_ids, post_ids, status_str, filter.is_featured, sort_by, filter.count, filter.page,
     ).await?;
 
     Ok(dtos.into_iter().map(Into::into).collect())
@@ -442,6 +448,7 @@ pub async fn update_post(
         cover_image: input.cover_image,
         status: input.status.map(Some),
         theme_id: input.theme_slug.map(|opt| opt.map(|_| new_theme_id).flatten()),
+        is_featured: input.is_featured,
     };
     let updated_post = repo::posts::update_post(&txn, current_post.id, update_input).await?;
 
@@ -526,7 +533,7 @@ pub async fn count_posts(
     };
 
     let status_str = filter.status.as_ref().map(|s| s.as_str());
-    let count = repo::posts::count_posts(db, theme_ids, post_ids, status_str).await?;
+    let count = repo::posts::count_posts(db, theme_ids, post_ids, status_str, filter.is_featured).await?;
     Ok(count)
 }
 
