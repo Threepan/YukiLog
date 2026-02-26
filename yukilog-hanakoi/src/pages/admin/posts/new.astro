@@ -58,6 +58,14 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
         </div>
         <span class="form-hint">已选择 <span id="selected-tag-count">0</span> 个标签</span>
       </div>
+
+      <div class="form-group">
+        <label class="featured-toggle-label">
+          <input type="checkbox" id="is_featured" />
+          <span>设为精选文章</span>
+        </label>
+        <span class="form-hint">精选文章将显示在主页文章列表中</span>
+      </div>
     </div>
 
     <!-- 文章内容 -->
@@ -97,6 +105,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
   const themeSelect = document.getElementById('theme_slug') as HTMLSelectElement;
   const tagCheckboxesDiv = document.getElementById('tag-checkboxes')!;
   const selectedTagCount = document.getElementById('selected-tag-count')!;
+  const isFeaturedCheckbox = document.getElementById('is_featured') as HTMLInputElement;
   
   const cancelBtn = document.getElementById('cancel-btn')!;
   const saveDraftBtn = document.getElementById('save-draft') as HTMLButtonElement;
@@ -326,7 +335,8 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
         cover_image,
         theme_slug,
         tag_slugs,
-        status
+        status,
+        is_featured: isFeaturedCheckbox.checked,
       });
 
       alert(`文章「${post.title}」${status === 'published' ? '发布' : '保存草稿'}成功！`);
@@ -496,6 +506,24 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
           font-weight: var(--font-weight-medium);
         }
       }
+    }
+  }
+
+  /* 精选开关 */
+  .featured-toggle-label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    cursor: pointer;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text);
+
+    input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      accent-color: var(--color-pink);
     }
   }
 

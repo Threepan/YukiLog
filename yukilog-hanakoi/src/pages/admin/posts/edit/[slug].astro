@@ -63,6 +63,14 @@ import AdminLayout from '../../../../layouts/AdminLayout.astro';
         </div>
         <span class="form-hint">已选择 <span id="selected-tag-count">0</span> 个标签</span>
       </div>
+
+      <div class="form-group">
+        <label class="featured-toggle-label">
+          <input type="checkbox" id="is_featured" />
+          <span>设为精选文章</span>
+        </label>
+        <span class="form-hint">精选文章将显示在主页文章列表中</span>
+      </div>
     </div>
 
     <!-- 文章内容 -->
@@ -107,6 +115,7 @@ import AdminLayout from '../../../../layouts/AdminLayout.astro';
   const cancelBtn = document.getElementById('cancel-btn')!;
   const saveDraftBtn = document.getElementById('save-draft') as HTMLButtonElement;
   const publishBtn = document.getElementById('publish-btn') as HTMLButtonElement;
+  const isFeaturedCheckbox = document.getElementById('is_featured') as HTMLInputElement;
 
   // ===== 初始化 =====
   async function init() {
@@ -282,6 +291,9 @@ import AdminLayout from '../../../../layouts/AdminLayout.astro';
     updateSelectedTagCount();
     updateSlugPreview();
 
+    // 预填精选状态
+    isFeaturedCheckbox.checked = originalPost.post.is_featured ?? false;
+
     // 更新按钮文本
     if (originalPost.post.status === 'draft') {
       publishBtn.textContent = '发布文章';
@@ -385,6 +397,9 @@ import AdminLayout from '../../../../layouts/AdminLayout.astro';
     } else if (originalPost.theme && !themeValue) {
       data.theme_slug = null;
     }
+
+    // 精选状态
+    data.is_featured = isFeaturedCheckbox.checked;
 
     // 提交
     try {
@@ -581,6 +596,24 @@ import AdminLayout from '../../../../layouts/AdminLayout.astro';
           font-weight: var(--font-weight-medium);
         }
       }
+    }
+  }
+
+  /* 精选开关 */
+  .featured-toggle-label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    cursor: pointer;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text);
+
+    input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      accent-color: var(--color-pink);
     }
   }
 
