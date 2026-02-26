@@ -34,6 +34,8 @@ pub struct ListPostsQuery {
     pub theme_slugs: Option<String>,
     /// 筛选：标签 slug（多个标签用逗号分隔，AND 关系）
     pub tag_slugs: Option<String>,
+    /// 筛选：仅精选文章
+    pub is_featured: Option<bool>,
 }
 
 // ================================
@@ -106,6 +108,7 @@ pub async fn list_posts(
         sort_by: params.sort,
         count: Some(page_size),
         page: Some(page),
+        is_featured: params.is_featured,
     };
 
     // 获取文章列表（含关联数据）
