@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS posts (
     content TEXT NOT NULL,                  -- 内容
     cover_image VARCHAR(255),               -- 封面 (file:// 或 https://)
     status VARCHAR(20) DEFAULT 'draft',     -- 状态 (draft 或 published)
+    is_featured BOOLEAN NOT NULL DEFAULT FALSE, -- 是否精选（在首页展示）
 
     theme_id BIGINT REFERENCES themes(id) ON DELETE SET NULL,
 
@@ -105,6 +106,7 @@ CREATE INDEX IF NOT EXISTS idx_posts_status_created_at ON posts (status, created
 CREATE INDEX IF NOT EXISTS idx_posts_theme_id ON posts (theme_id);
 CREATE INDEX IF NOT EXISTS idx_posts_updated_at ON posts (updated_at DESC);
 CREATE INDEX IF NOT EXISTS idx_posts_view_count ON posts (view_count DESC);
+CREATE INDEX IF NOT EXISTS idx_posts_is_featured ON posts (is_featured);
 -- post_tags
 CREATE INDEX IF NOT EXISTS idx_post_tags_tag_id ON post_tags (tag_id);
 CREATE INDEX IF NOT EXISTS idx_post_tags_post_id ON post_tags (post_id);
