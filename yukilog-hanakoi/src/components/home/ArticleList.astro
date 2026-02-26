@@ -62,7 +62,7 @@ const sortOptions = [
   }
 
   .article-list-header {
-    max-width: 800px;
+    max-width: 900px;
     margin: 0 auto;
     padding: calc(8rem - 30px) var(--spacing-md) 0;
     display: flex;
@@ -112,10 +112,8 @@ const sortOptions = [
   }
 
   .article-list-container {
-    /* 居中，并避开两侧固定侧栏 */
-    /* 侧栏宽度 280px + 间距 var(--spacing-xl)(48px) 每侧 ≈ 328px */
-    /* 再加内容区与侧栏的间隙 24px */
-    max-width: 800px;
+    /* 在内容区内撑满，最大 900px，两侧留 24px 内边距 */
+    max-width: 900px;
     margin: 0 auto;
     padding: var(--spacing-lg) var(--spacing-md) 0;
     display: flex;
