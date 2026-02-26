@@ -64,6 +64,7 @@ export interface Post {
   content: string;
   cover_image: string | null;
   status: PostStatus;
+  is_featured: boolean;
   theme_id: number | null;
   view_count: number;
   created_at: string;
@@ -89,6 +90,7 @@ export interface CreatePostRequest {
   summary?: string | null;
   cover_image?: string | null;
   status: PostStatus;
+  is_featured?: boolean;
   theme_slug?: string | null;
   tag_slugs: string[];  // 必填，无标签时传空数组 []
 }
@@ -103,6 +105,7 @@ export interface UpdatePostRequest {
   summary?: string | null;
   cover_image?: string | null;
   status?: PostStatus;
+  is_featured?: boolean;
   theme_slug?: string | null;
   tag_slugs?: string[];
 }
