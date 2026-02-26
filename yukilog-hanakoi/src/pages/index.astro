@@ -30,6 +30,7 @@ try {
     page_size: 20,
     status: "published",
     sort: currentSort,
+    is_featured: true,
   });
   // 转换后端返回的数据结构为前端期望的扁平格式
   recentPosts = (response.items || []).map((item: any) => ({
