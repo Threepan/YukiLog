@@ -94,62 +94,60 @@ if (apiError || !theme) {
     const cards = Array.from(source.querySelectorAll<HTMLElement>('.post-list-card'));
     if (!cards.length) return;
 
-    // 检测是否为移动端
-    const isMobile = window.innerWidth <= 768;
-
-    if (isMobile) {
-      // 移动端：所有卡片放入第一栏
-      cards.forEach((card) => {
-        columns[0].appendChild(card.cloneNode(true));
-      });
-    } else {
-      // 桌面端：动态平衡分配
-      const columnHeights = [0, 0];
-
-      cards.forEach((card) => {
-        // 克隆卡片以获取其高度
-        const clone = card.cloneNode(true) as HTMLElement;
-        clone.style.visibility = 'hidden';
-        clone.style.position = 'absolute';
-        document.body.appendChild(clone);
-
-        const cardHeight = clone.offsetHeight;
-        document.body.removeChild(clone);
-
-        // 找到当前高度较小的栏
-        const targetColumn = columnHeights[0] <= columnHeights[1] ? 0 : 1;
-
-        // 将卡片添加到目标栏
-        columns[targetColumn].appendChild(card.cloneNode(true));
-        columnHeights[targetColumn] += cardHeight + 20; // 20 = margin-bottom
-      });
-    }
-
-    // 清理源容器
+    // 移除源容器，卡片数据保留在闭包中
     source.remove();
 
-    // 入场动画
-    const allCards = document.querySelectorAll<HTMLElement>('.post-list-card');
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.08 }
-    );
-    allCards.forEach((card) => observer.observe(card));
+    function bindObserver() {
+      const allCards = document.querySelectorAll<HTMLElement>('.post-list-card');
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.08 }
+      );
+      allCards.forEach((card) => observer.observe(card));
+    }
 
-    // 响应式处理：窗口大小变化时重新布局
+    function layoutCards() {
+      // 清空两列
+      columns.forEach((col) => (col.innerHTML = ''));
+
+      const isMobile = window.innerWidth <= 768;
+
+      if (isMobile) {
+        cards.forEach((card) => {
+          columns[0].appendChild(card.cloneNode(true));
+        });
+      } else {
+        const columnHeights = [0, 0];
+        cards.forEach((card) => {
+          const clone = card.cloneNode(true) as HTMLElement;
+          clone.style.visibility = 'hidden';
+          clone.style.position = 'absolute';
+          document.body.appendChild(clone);
+          const cardHeight = clone.offsetHeight;
+          document.body.removeChild(clone);
+
+          const targetColumn = columnHeights[0] <= columnHeights[1] ? 0 : 1;
+          columns[targetColumn].appendChild(card.cloneNode(true));
+          columnHeights[targetColumn] += cardHeight + 20;
+        });
+      }
+
+      bindObserver();
+    }
+
+    layoutCards();
+
     let resizeTimer: number;
     window.addEventListener('resize', () => {
       clearTimeout(resizeTimer);
-      resizeTimer = window.setTimeout(() => {
-        location.reload();
-      }, 500);
+      resizeTimer = window.setTimeout(layoutCards, 300);
     });
   });
 </script>
