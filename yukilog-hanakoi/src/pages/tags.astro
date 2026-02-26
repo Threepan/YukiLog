@@ -160,6 +160,45 @@ const tagSlugsWithPosts = Object.keys(tagPosts).filter(
     { threshold: 0.1 }
   );
 
+  function layoutTagGroup(target: HTMLElement) {
+    const source = target.querySelector<HTMLElement>('.tag-group-source');
+    const columns = target.querySelectorAll<HTMLElement>('.tag-group-column');
+    if (!source || columns.length !== 2) return;
+
+    const cards = Array.from(source.querySelectorAll<HTMLElement>('.post-list-card'));
+    const isMobile = window.innerWidth <= 768;
+
+    // 保存滚动位置，防止清空列时页面高度骤降导致滚动到顶
+    const savedScrollY = window.scrollY;
+
+    columns.forEach((col) => (col.innerHTML = ''));
+
+    const columnWidth = columns[0].getBoundingClientRect().width || columns[0].offsetWidth;
+
+    if (isMobile) {
+      cards.forEach((card) => {
+        columns[0].appendChild(card.cloneNode(true));
+      });
+    } else {
+      const columnHeights = [0, 0];
+      cards.forEach((card) => {
+        const probe = card.cloneNode(true) as HTMLElement;
+        probe.style.visibility = 'hidden';
+        probe.style.position = 'absolute';
+        probe.style.width = `${columnWidth}px`;
+        document.body.appendChild(probe);
+        const cardHeight = probe.offsetHeight;
+        document.body.removeChild(probe);
+
+        const targetColumn = columnHeights[0] <= columnHeights[1] ? 0 : 1;
+        columns[targetColumn].appendChild(card.cloneNode(true));
+        columnHeights[targetColumn] += cardHeight + 20;
+      });
+    }
+
+    window.scrollTo({ top: savedScrollY, behavior: 'instant' });
+  }
+
   function showTagGroup(slug: string) {
     // 隐藏所有标签组
     tagGroups.forEach((g) => g.classList.remove('active'));
@@ -169,48 +208,7 @@ const tagSlugsWithPosts = Object.keys(tagPosts).filter(
     const target = document.querySelector<HTMLElement>(`.tag-group[data-tag-group="${slug}"]`);
     if (target) {
       target.classList.add('active');
-
-      // 动态平衡双栏布局
-      const source = target.querySelector<HTMLElement>('.tag-group-source');
-      const columns = target.querySelectorAll<HTMLElement>('.tag-group-column');
-
-      if (source && columns.length === 2) {
-        const cards = Array.from(source.querySelectorAll<HTMLElement>('.post-list-card'));
-
-        // 检测是否为移动端
-        const isMobile = window.innerWidth <= 768;
-
-        // 清空栏位
-        columns.forEach((col) => col.innerHTML = '');
-
-        if (isMobile) {
-          // 移动端：所有卡片放入第一栏
-          cards.forEach((card) => {
-            columns[0].appendChild(card.cloneNode(true));
-          });
-        } else {
-          // 桌面端：动态平衡分配
-          const columnHeights = [0, 0];
-
-          cards.forEach((card) => {
-            // 克隆卡片以获取其高度
-            const clone = card.cloneNode(true) as HTMLElement;
-            clone.style.visibility = 'hidden';
-            clone.style.position = 'absolute';
-            document.body.appendChild(clone);
-
-            const cardHeight = clone.offsetHeight;
-            document.body.removeChild(clone);
-
-            // 找到当前高度较小的栏
-            const targetColumn = columnHeights[0] <= columnHeights[1] ? 0 : 1;
-
-            // 将卡片添加到目标栏
-            columns[targetColumn].appendChild(card.cloneNode(true));
-            columnHeights[targetColumn] += cardHeight + 20; // 20 = margin-bottom
-          });
-        }
-      }
+      layoutTagGroup(target);
 
       // 为卡片触发入场动画
       target.querySelectorAll<HTMLElement>('.post-list-card').forEach((card) => {
@@ -271,8 +269,6 @@ const tagSlugsWithPosts = Object.keys(tagPosts).filter(
 </script>
 
 <style>
-  @use "sass:color";
-
   .tags-page {
     max-width: 1000px;
     margin: 0 auto;
