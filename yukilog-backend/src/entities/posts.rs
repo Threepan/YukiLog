@@ -17,6 +17,7 @@ pub struct Model {
     pub content: String,
     pub cover_image: Option<String>,
     pub status: Option<String>,
+    pub is_featured: bool,
     pub theme_id: Option<i64>,
     pub view_count: Option<i64>,
     pub created_at: Option<DateTimeWithTimeZone>,
