@@ -18,6 +18,7 @@ pub struct PostDto {
     pub content: String,
     pub cover_image: Option<String>,
     pub status: Option<PostStatus>,
+    pub is_featured: bool,
     pub theme_id: Option<i64>,
     pub view_count: Option<i64>,
     pub created_at: Option<chrono::DateTime<chrono::FixedOffset>>,
@@ -41,6 +42,7 @@ impl TryFrom<posts::Model> for PostDto {
             content: model.content,
             cover_image: model.cover_image,
             status,
+            is_featured: model.is_featured,
             theme_id: model.theme_id,
             view_count: model.view_count,
             created_at: model.created_at,
@@ -58,6 +60,7 @@ pub struct CreatePost {
     pub cover_image: Option<String>,
     pub status: Option<String>,
     pub theme_id: Option<i64>,
+    pub is_featured: bool,
 }
 
 #[derive(Debug, Default, Clone)]
@@ -69,6 +72,7 @@ pub struct UpdatePost {
     pub cover_image: Option<Option<String>>,
     pub status: Option<Option<PostStatus>>,
     pub theme_id: Option<Option<i64>>,
+    pub is_featured: Option<bool>,
 }
 
 pub async fn create_post<C>(db: &C, input: CreatePost) -> RepoResult<PostDto>
@@ -83,6 +87,7 @@ where
         cover_image: Set(input.cover_image),
         status: Set(input.status),
         theme_id: Set(input.theme_id),
+        is_featured: Set(input.is_featured),
         ..Default::default()
     };
 
@@ -161,6 +166,9 @@ where
     if let Some(v) = patch.theme_id {
         active.theme_id = Set(v);
     }
+    if let Some(v) = patch.is_featured {
+        active.is_featured = Set(v);
+    }
 
     let updated = active.update(db).await?;
     PostDto::try_from(updated)
@@ -183,6 +191,7 @@ pub async fn count_posts<C>(
     theme_ids: Option<Vec<i64>>,
     post_ids: Option<Vec<i64>>,
     status: Option<&str>,
+    is_featured: Option<bool>,
 ) -> RepoResult<u64>
 where
     C: ConnectionTrait,
@@ -197,6 +206,9 @@ where
     }
     if let Some(s) = status {
         query = query.filter(posts::Column::Status.eq(s));
+    }
+    if let Some(h) = is_featured {
+        query = query.filter(posts::Column::IsFeatured.eq(h));
     }
 
     let count = query.count(db).await?;
@@ -224,6 +236,7 @@ pub async fn list_posts_filtered<C>(
     theme_ids: Option<Vec<i64>>,
     post_ids: Option<Vec<i64>>,
     status: Option<&str>,
+    is_featured: Option<bool>,
     sort_by: &str,
     count: Option<u64>,
     page: Option<u64>,
@@ -241,6 +254,9 @@ where
     }
     if let Some(s) = status {
         query = query.filter(posts::Column::Status.eq(s));
+    }
+    if let Some(h) = is_featured {
+        query = query.filter(posts::Column::IsFeatured.eq(h));
     }
 
     let (column, order) = match sort_by {
