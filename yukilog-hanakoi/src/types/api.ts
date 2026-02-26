@@ -117,6 +117,7 @@ export interface PostListParams {
   status?: PostStatus; // 仅管理端使用
   theme_slugs?: string;  // 逗号分隔
   tag_slugs?: string;    // 逗号分隔，AND 关系
+  is_featured?: boolean;
 }
 
 // ================================
