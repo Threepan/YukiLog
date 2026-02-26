@@ -151,39 +151,46 @@ const randomBackground =
     50% { translate: 0 10px; }
   }
   
+  /* 侧栏布局共享变量 — 所有计算从这里派生，保证侧栏与内容区永远对齐 */
+  :root {
+    --sidebar-width: clamp(240px, 24vw, 280px);
+    --sidebar-offset: clamp(16px, 3vw, 48px);
+    --sidebar-gap: 24px;
+    --sidebar-total: calc(var(--sidebar-width) + var(--sidebar-offset) + var(--sidebar-gap));
+  }
+
   /* 第二屏 */
   .home-second-screen {
     width: 100%;
     min-height: 100vh;
     background: var(--color-bg);
-    /* 为两侧固定侧栏留出空间（侧栏宽度 ~280px + 边距 ~60px + 间隙 24px = ~364px 每侧） */
-    padding-left: clamp(0px, calc(clamp(240px, 24vw, 280px) + clamp(var(--spacing-md), 4vw, calc(var(--spacing-xl) * 2)) + 24px), 370px);
-    padding-right: clamp(0px, calc(clamp(240px, 24vw, 280px) + clamp(var(--spacing-md), 4vw, calc(var(--spacing-xl) * 2)) + 24px), 370px);
+    padding-left: var(--sidebar-total);
+    padding-right: var(--sidebar-total);
   }
-  
+
   /* 固定侧栏（跟随导航栏显隐） */
   .fixed-sidebar {
     position: fixed;
     top: 70px;
-    width: clamp(240px, 24vw, 280px);
+    width: var(--sidebar-width);
     display: flex;
     flex-direction: column;
     gap: var(--spacing-lg);
     z-index: 99;
     pointer-events: none;
-    
+
     /* 子元素可交互 */
     :global(> *) {
       pointer-events: auto;
     }
   }
-  
+
   .fixed-sidebar-left {
-    left: clamp(var(--spacing-md), 4vw, calc(var(--spacing-xl) * 2));
+    left: var(--sidebar-offset);
   }
-  
+
   .fixed-sidebar-right {
-    right: clamp(var(--spacing-md), 4vw, calc(var(--spacing-xl) * 2));
+    right: var(--sidebar-offset);
   }
   
   /* 响应式：小于 1400px 转为流式布局（侧栏与内容不再重叠） */
