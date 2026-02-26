@@ -21,7 +21,7 @@ const arrowIcon = uiIcons.arrow;
 const url = new URL(Astro.request.url);
 const currentSort = (url.searchParams.get('sort') || 'created_at') as 'created_at' | 'updated_at' | 'view_count';
 
-// 从后端 API 获取最新 20 篇已发布文章
+// 从后端 API 获取精选已发布文章
 let recentPosts: any[] = [];
 let apiError = null;
 try {
