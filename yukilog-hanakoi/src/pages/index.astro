@@ -151,24 +151,28 @@ const randomBackground =
     50% { translate: 0 10px; }
   }
   
-  /* 侧栏布局共享变量 — 所有计算从这里派生，保证侧栏与内容区永远对齐 */
+  /* 侧栏布局共享变量 */
   :root {
     --sidebar-width: clamp(240px, 24vw, 280px);
     --sidebar-offset: clamp(24px, 5vw, 80px);
     --sidebar-gap: 24px;
     --sidebar-total: calc(var(--sidebar-width) + var(--sidebar-offset) + var(--sidebar-gap));
+    /* 三栏布局最大宽度：侧栏×2 + 内容区最大900px + offset×2 + gap×2 */
+    --layout-max-width: 1668px;
   }
 
-  /* 第二屏 */
+  /* 第二屏：加 max-width 让超宽屏整体居中 */
   .home-second-screen {
     width: 100%;
+    max-width: var(--layout-max-width);
     min-height: 100vh;
     background: var(--color-bg);
+    margin: 0 auto;
     padding-left: var(--sidebar-total);
     padding-right: var(--sidebar-total);
   }
 
-  /* 固定侧栏（跟随导航栏显隐） */
+  /* 固定侧栏：超过 max-width 后跟随容器居中，不再贴屏幕边缘 */
   .fixed-sidebar {
     position: fixed;
     top: 70px;
@@ -186,11 +190,12 @@ const randomBackground =
   }
 
   .fixed-sidebar-left {
-    left: var(--sidebar-offset);
+    /* 超过 max-width 后：容器左边距 = (100vw - max-width) / 2，侧栏再加 offset */
+    left: max(var(--sidebar-offset), calc((100vw - var(--layout-max-width)) / 2 + var(--sidebar-offset)));
   }
 
   .fixed-sidebar-right {
-    right: var(--sidebar-offset);
+    right: max(var(--sidebar-offset), calc((100vw - var(--layout-max-width)) / 2 + var(--sidebar-offset)));
   }
   
   /* 响应式：小于 1400px 转为流式布局（侧栏与内容不再重叠） */
