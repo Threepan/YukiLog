@@ -19,6 +19,7 @@
 * [yukilog-backend/src/handler/admin/posts.rs](../src/handler/admin/posts.rs)
 * [yukilog-backend/src/handler/admin/comments.rs](../src/handler/admin/comments.rs)
 * [yukilog-backend/src/handler/admin/links.rs](../src/handler/admin/links.rs)
+* [yukilog-backend/src/handler/admin/notes.rs](../src/handler/admin/notes.rs)
 
 **⚠️ 权限要求:**  
 所有管理接口都需要 JWT 认证, 通过 `Extension<Claims>` 获取管理员身份
@@ -436,5 +437,88 @@ pub struct UpdateLinkRequest {
     pub description: Option<Option<String>>,
 }
 ```
+
+---
+
+## Notes 随记 - 4 个接口
+
+```bash
+GET     /api/admin/notes        - 随记列表 (含草稿/私密, 分页+筛选)
+POST    /api/admin/notes        - 创建随记
+PUT     /api/admin/notes/:id    - 更新随记
+DELETE  /api/admin/notes/:id    - 删除随记
+```
+
+#### 接口定义
+
+```rust
+/// 获取随记列表（含草稿/私密）
+pub async fn list_notes(
+    State(state): State<AppState>,
+    Extension(claims): Extension<Claims>,
+    Query(params): Query<AdminListNotesQuery>,
+) -> Result<Json<ApiResponse<PagedData<Note>>>, ServiceError>
+
+/// 创建随记
+pub async fn create_note(
+    State(state): State<AppState>,
+    Extension(claims): Extension<Claims>,
+    Json(req): Json<CreateNoteRequest>,
+) -> Result<Json<ApiResponse<Note>>, ServiceError>
+
+/// 更新随记
+pub async fn update_note(
+    State(state): State<AppState>,
+    Extension(claims): Extension<Claims>,
+    Path(id): Path<i64>,
+    Json(req): Json<UpdateNoteRequest>,
+) -> Result<Json<ApiResponse<Note>>, ServiceError>
+
+/// 删除随记
+pub async fn delete_note(
+    State(state): State<AppState>,
+    Extension(claims): Extension<Claims>,
+    Path(id): Path<i64>,
+) -> Result<Json<ApiResponse<()>>, ServiceError>
+```
+
+#### 接口 DTO
+
+```rust
+pub struct AdminListNotesQuery {
+    /// 分页：页码（从 1 开始）
+    pub page: Option<u64>,
+    /// 分页：每页数量（默认 10）
+    pub page_size: Option<u64>,
+    /// 筛选：状态（published / draft / private）
+    pub status: Option<String>,
+}
+
+pub struct CreateNoteRequest {
+    /// Markdown 内容
+    pub content: String,
+    /// 心情标记（可选）
+    pub mood: Option<String>,
+    /// 状态（可选，默认 published）
+    pub status: Option<String>,
+}
+
+pub struct UpdateNoteRequest {
+    /// Markdown 内容
+    pub content: Option<String>,
+    /// 心情标记（三态字段）
+    pub mood: Option<Option<String>>,
+    /// 状态
+    pub status: Option<String>,
+}
+```
+
+**mood 三态字段处理**：
+
+| 前端值 | JSON 序列化 | 后端 Rust 值 | 含义 |
+|--------|-------------|-------------|------|
+| `undefined` | 字段不存在 | `None` | 不修改心情 |
+| `null` | `"mood": null` | `Some(None)` | 清空心情 |
+| `"happy"` | `"mood": "happy"` | `Some(Some("happy"))` | 设置为快乐 |
 
 ---

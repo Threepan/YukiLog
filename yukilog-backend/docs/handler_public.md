@@ -78,6 +78,7 @@ pub fn generate_gravatar_url(email: &str) -> String
 * [yukilog-backend/src/handler/public/posts.rs](../src/handler/public/posts.rs)
 * [yukilog-backend/src/handler/public/comments.rs](../src/handler/public/comments.rs)
 * [yukilog-backend/src/handler/public/links.rs](../src/handler/public/links.rs)
+* [yukilog-backend/src/handler/public/notes.rs](../src/handler/public/notes.rs)
 
 ---
 
