@@ -6,3 +6,4 @@ pub mod tags;
 pub mod posts;
 pub mod comments;
 pub mod links;
+pub mod notes;

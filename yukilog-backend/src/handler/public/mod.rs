@@ -12,3 +12,6 @@ pub mod comments;
 
 /// 友链相关接口
 pub mod links;
+
+/// 随记相关接口
+pub mod notes;

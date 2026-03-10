@@ -65,6 +65,9 @@ pub fn public_routes() -> Router<AppState> {
         // Links (2个)
         .route("/api/public/links", get(public::links::list_links))
         .route("/api/public/links/submit", post(public::links::submit_link))
+        // Notes (2个)
+        .route("/api/public/notes", get(public::notes::list_notes))
+        .route("/api/public/notes/:id", get(public::notes::get_note))
 }
 
 /// 管理路由（后台，需要 JWT 认证）
@@ -99,6 +102,11 @@ pub fn admin_routes() -> Router<AppState> {
         .route("/api/admin/links/:id/broken", put(admin::links::mark_link_broken))
         .route("/api/admin/links/:id", put(admin::links::update_link))
         .route("/api/admin/links/:id", delete(admin::links::delete_link))
+        // Notes (4个)
+        .route("/api/admin/notes", get(admin::notes::list_notes))
+        .route("/api/admin/notes", post(admin::notes::create_note))
+        .route("/api/admin/notes/:id", put(admin::notes::update_note))
+        .route("/api/admin/notes/:id", delete(admin::notes::delete_note))
         // 应用 JWT 认证中间件 - 需要在 with_state 之后应用
 }
 
