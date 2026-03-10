@@ -32,6 +32,11 @@ import type {
   LoginRequest,
   LoginResponse,
   SiteStats,
+  Note,
+  NoteListParams,
+  AdminNoteListParams,
+  CreateNoteRequest,
+  UpdateNoteRequest,
 } from '../types';
 
 // API 基础地址（区分 SSR 和浏览器环境）
@@ -246,6 +251,30 @@ export const statsApi = {
    */
   async get(): Promise<SiteStats> {
     return fetchApi<SiteStats>('/api/public/stats');
+  },
+};
+
+// ================================
+// 随记 API
+// ================================
+
+export const notesApi = {
+  /**
+   * 获取随记列表（分页，仅已发布）
+   */
+  async list(params?: NoteListParams): Promise<PaginatedData<Note>> {
+    const query = new URLSearchParams();
+    if (params?.page) query.set('page', String(params.page));
+    if (params?.page_size) query.set('page_size', String(params.page_size));
+    const qs = query.toString();
+    return fetchApi<PaginatedData<Note>>(`/api/public/notes${qs ? `?${qs}` : ''}`);
+  },
+
+  /**
+   * 获取随记详情（仅已发布）
+   */
+  async getById(id: number): Promise<Note> {
+    return fetchApi<Note>(`/api/public/notes/${id}`);
   },
 };
 
@@ -484,6 +513,45 @@ export const adminApi = {
     async delete(id: number): Promise<void> {
       const headers = createAuthHeaders();
       await fetchApi<void>(`/api/admin/links/${id}`, {
+        method: 'DELETE',
+        headers,
+      });
+    },
+  },
+
+  // ===== 随记管理 =====
+  notes: {
+    async list(params?: AdminNoteListParams): Promise<PaginatedData<Note>> {
+      const query = new URLSearchParams();
+      if (params?.page) query.set('page', String(params.page));
+      if (params?.page_size) query.set('page_size', String(params.page_size));
+      if (params?.status) query.set('status', params.status);
+      const qs = query.toString();
+      const headers = createAuthHeaders();
+      return fetchApi<PaginatedData<Note>>(`/api/admin/notes${qs ? `?${qs}` : ''}`, { headers });
+    },
+
+    async create(data: CreateNoteRequest): Promise<Note> {
+      const headers = createAuthHeaders();
+      return fetchApi<Note>('/api/admin/notes', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(data),
+      });
+    },
+
+    async update(id: number, data: UpdateNoteRequest): Promise<Note> {
+      const headers = createAuthHeaders();
+      return fetchApi<Note>(`/api/admin/notes/${id}`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(data),
+      });
+    },
+
+    async delete(id: number): Promise<void> {
+      const headers = createAuthHeaders();
+      await fetchApi<void>(`/api/admin/notes/${id}`, {
         method: 'DELETE',
         headers,
       });
