@@ -4,6 +4,7 @@ pub mod prelude;
 
 pub mod comments;
 pub mod links;
+pub mod notes;
 pub mod post_tags;
 pub mod posts;
 pub mod tags;
