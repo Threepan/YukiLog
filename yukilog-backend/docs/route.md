@@ -85,11 +85,17 @@ GET     /api/public/links               -> public::links::list_links
 POST    /api/public/links/submit        -> public::links::submit_link
 ```
 
+**Notes 随记 (2个)**
+```rust
+GET     /api/public/notes               -> public::notes::list_notes
+GET     /api/public/notes/:id           -> public::notes::get_note
+```
+
 #### 3. 管理路由 `admin_routes()`
 
 后台接口, 需要 JWT 认证才能访问
 
-**总共 24 个接口:**
+**总共 28 个接口:**
 
 **Themes 主题 (3个)**
 ```rust
@@ -133,6 +139,14 @@ PUT     /api/admin/links/:id/approve -> admin::links::approve_link
 PUT     /api/admin/links/:id/broken  -> admin::links::mark_link_broken
 PUT     /api/admin/links/:id         -> admin::links::update_link
 DELETE  /api/admin/links/:id         -> admin::links::delete_link
+```
+
+**Notes 随记 (4个)**
+```rust
+GET     /api/admin/notes             -> admin::notes::list_notes
+POST    /api/admin/notes             -> admin::notes::create_note
+PUT     /api/admin/notes/:id         -> admin::notes::update_note
+DELETE  /api/admin/notes/:id         -> admin::notes::delete_note
 ```
 
 ---
@@ -192,9 +206,9 @@ pub fn app_routes(state: AppState) -> Router {
 把所有东西加起来, 一共有:
 
 * **认证接口**: 1 个
-* **公开接口**: 14 个
-* **管理接口**: 23 个
-* **总计**: 38 个网络接口~
+* **公开接口**: 18 个
+* **管理接口**: 28 个
+* **总计**: 47 个网络接口~
 
 ---
 
