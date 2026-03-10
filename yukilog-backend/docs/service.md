@@ -736,3 +736,113 @@ pub struct Link {
 | `delete_link` | 直接删除友链记录 |
 
 ---
+
+#### note - 随记
+
+源码: [yukilog-backend/src/service/notes.rs](../src/service/notes.rs)
+
+###### 接口定义
+
+```rust
+// src/service/notes.rs
+
+/// 1. 创建随记（管理后台）
+pub async fn create_note(
+    db: &DatabaseConnection,
+    input: CreateNoteInput,
+) -> ServiceResult<Note>
+
+/// 2. 获取已发布随记详情（前台）
+pub async fn get_published_note(
+    db: &DatabaseConnection,
+    id: i64,
+) -> ServiceResult<Note>
+
+/// 3. 获取随记详情（管理后台，不限状态）
+pub async fn get_note(
+    db: &DatabaseConnection,
+    id: i64,
+) -> ServiceResult<Note>
+
+/// 4. 公开端分页列表（仅 published，时间倒序）
+pub async fn list_public_notes(
+    db: &DatabaseConnection,
+    page: u64,
+    page_size: u64,
+) -> ServiceResult<(Vec<Note>, u64)>
+
+/// 5. 管理端分页列表（可按状态筛选）
+pub async fn list_all_notes(
+    db: &DatabaseConnection,
+    status: Option<NoteStatus>,
+    page: u64,
+    page_size: u64,
+) -> ServiceResult<(Vec<Note>, u64)>
+
+/// 6. 更新随记（管理后台）
+pub async fn update_note(
+    db: &DatabaseConnection,
+    id: i64,
+    input: UpdateNoteInput,
+) -> ServiceResult<Note>
+
+/// 7. 删除随记（管理后台）
+pub async fn delete_note(
+    db: &DatabaseConnection,
+    id: i64,
+) -> ServiceResult<()>
+
+/// 8. 统计公开随记总数
+pub async fn count_public_notes(
+    db: &DatabaseConnection,
+) -> ServiceResult<u64>
+
+/// 9. 统计随记总数（管理端，可按状态筛选）
+pub async fn count_all_notes(
+    db: &DatabaseConnection,
+    status: Option<NoteStatus>,
+) -> ServiceResult<u64>
+```
+
+###### DTO定义
+
+```rust
+// 输入
+pub struct CreateNoteInput {
+    pub content: String,
+    pub mood: Option<NoteMood>,
+    pub status: Option<NoteStatus>,      // 不传默认 published（DB 默认）
+}
+
+pub struct UpdateNoteInput {
+    pub content: Option<String>,
+    pub mood: Option<Option<NoteMood>>,  // None=不改, Some(None)=清空, Some(Some(x))=设置
+    pub status: Option<NoteStatus>,
+}
+
+// 输出
+pub struct Note {
+    pub id: i64,
+    pub content: String,
+    pub mood: Option<NoteMood>,
+    pub status: NoteStatus,              // Published | Draft | Private
+    pub created_at: DateTime<FixedOffset>,
+    pub updated_at: DateTime<FixedOffset>,
+}
+```
+
+###### 业务逻辑
+
+| 接口名 | 职责 |
+|-|-|
+| `create_note` | 校验 content 不为空白 <br> 调用 `repo::notes::create_note` |
+| `get_published_note` | 获取后校验 status = Published，否则返回 NotFound <br> 前台访问专用 |
+| `get_note` | 直接获取，不校验 status <br> 后台访问专用 |
+| `list_public_notes` | status 固定 published <br> 返回 `(Vec<Note>, total)` 元组 <br> 通过 `repo::notes::list_notes_filtered` + `count_notes` 执行 |
+| `list_all_notes` | status 可选筛选 <br> 返回 `(Vec<Note>, total)` 元组 <br> 通过 `repo::notes::list_notes_filtered` + `count_notes` 执行 |
+| `update_note` | 如果传了 content，校验不为空白 <br> 调用 `repo::notes::update_note` |
+| `delete_note` | 直接删除 |
+| `count_public_notes` | 通过 `repo::notes::count_notes` 统计 published 总数 |
+| `count_all_notes` | 通过 `repo::notes::count_notes` 统计，可按状态筛选 |
+
+---
