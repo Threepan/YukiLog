@@ -35,6 +35,13 @@ export type {
   LoginRequest,
   LoginResponse,
   SiteStats,
+  Note,
+  NoteStatus,
+  NoteMood,
+  NoteListParams,
+  AdminNoteListParams,
+  CreateNoteRequest,
+  UpdateNoteRequest,
 } from './api';
 
 // 博客类型

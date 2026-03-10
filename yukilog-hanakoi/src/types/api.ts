@@ -321,6 +321,58 @@ export interface MergeTagsRequest {
 }
 
 // ================================
+// 随记（Notes）
+// ================================
+
+export type NoteStatus = 'published' | 'draft' | 'private';
+
+export type NoteMood = 'happy' | 'thinking' | 'sad' | 'angry' | 'calm' | 'excited' | 'tired' | 'nostalgic';
+
+export interface Note {
+  id: number;
+  content: string;
+  mood: NoteMood | null;
+  status: NoteStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * 随记列表查询参数（前台）
+ */
+export interface NoteListParams {
+  page?: number;
+  page_size?: number;
+}
+
+/**
+ * 随记列表查询参数（管理端）
+ */
+export interface AdminNoteListParams {
+  page?: number;
+  page_size?: number;
+  status?: NoteStatus;
+}
+
+/**
+ * 创建随记请求体
+ */
+export interface CreateNoteRequest {
+  content: string;
+  mood?: string | null;
+  status?: string | null;
+}
+
+/**
+ * 更新随记请求体
+ */
+export interface UpdateNoteRequest {
+  content?: string;
+  mood?: string | null;
+  status?: string;
+}
+
+// ================================
 // 站点统计（Site Stats）
 // ================================
 

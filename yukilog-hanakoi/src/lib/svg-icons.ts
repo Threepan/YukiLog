@@ -23,6 +23,7 @@ import navArchive from "../assets/icon/nav/archive.svg?raw";
 import navTag from "../assets/icon/nav/tag.svg?raw";
 import navLinks from "../assets/icon/nav/links.svg?raw";
 import navAbout from "../assets/icon/nav/about.svg?raw";
+import navNotes from "../assets/icon/nav/notes.svg?raw";
 
 import socialGithub from "../assets/icon/social/github.svg?raw";
 import socialQq from "../assets/icon/social/qq.svg?raw";
@@ -59,6 +60,7 @@ export const navIcons = {
   tag: navTag,
   links: navLinks,
   about: navAbout,
+  notes: navNotes,
 } as const;
 
 export const socialIcons = {

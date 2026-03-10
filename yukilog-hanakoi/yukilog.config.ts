@@ -105,6 +105,7 @@ export const navItems = [
   { label: "归档", href: "/archive", icon: "archive" },
   { label: "标签", href: "/tags", icon: "tag" },
   { label: "友链", href: "/links", icon: "links" },
+  { label: "随记", href: "/notes", icon: "notes" },
   { label: "关于", href: "/about", icon: "about" },
 ] satisfies NavItem[];
 
@@ -270,6 +271,22 @@ export const contentConfig = {
       colorCycle: [0, 2, 1, 0, 1, 2, 1, 0, 2, 0, 1, 2, 0, 2, 1, 0, 1, 2],
       colorNames: ["pink", "blue", "white"],
     },
+    notes: {
+      heroSubtitle: "记录碎片化的想法与日常",
+      emptyText: "还没有随记，快去写一条吧~",
+      moodLabels: {
+        happy: "😊 开心",
+        thinking: "🤔 思考",
+        sad: "😢 难过",
+        angry: "😤 生气",
+        calm: "😌 平静",
+        excited: "🤩 兴奋",
+        tired: "😴 疲惫",
+        nostalgic: "🥹 怀旧",
+      },
+      loadMoreText: "—— 暂时只有这些了 ——",
+      loadingText: "加载中…",
+    },
     home: {
       articleList: {
         loadMoreText: "—— 暂时只有这些了 ——",
@@ -282,6 +299,7 @@ export const contentConfig = {
         themes: "🎨",
         tags: "🏷️",
         links: "🔗",
+        notes: "📓",
       },
     },
   },
