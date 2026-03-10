@@ -69,7 +69,7 @@ const formattedDate = new Date(note.created_at).toLocaleDateString("zh-CN", {
         {moodLabel && <span class="note-mood">{moodLabel}</span>}
       </header>
 
-      <div class="note-content markdown-content" set:html={markdownHtml} />
+      <div class="note-content markdown-body" set:html={markdownHtml} />
 
       {note.updated_at !== note.created_at && (
         <footer class="note-footer">
@@ -164,45 +164,7 @@ const formattedDate = new Date(note.created_at).toLocaleDateString("zh-CN", {
     color: var(--color-text-light);
   }
 
-  /* 正文 */
-  .note-content {
-    font-size: var(--font-size-base);
-    line-height: 1.85;
-    color: var(--color-text);
-
-    :global(p) {
-      margin: 0 0 var(--spacing-md);
-    }
-
-    :global(img) {
-      max-width: 100%;
-      border-radius: var(--radius-md);
-      margin: var(--spacing-md) 0;
-    }
-
-    :global(pre) {
-      border-radius: var(--radius-md);
-      margin: var(--spacing-md) 0;
-      overflow-x: auto;
-    }
-
-    :global(blockquote) {
-      border-left: 3px solid var(--color-blue);
-      padding-left: var(--spacing-md);
-      color: var(--color-text-light);
-      margin: var(--spacing-md) 0;
-    }
-
-    :global(a) {
-      color: var(--color-blue);
-      text-decoration: underline;
-      text-underline-offset: 2px;
-
-      &:hover {
-        color: var(--color-pink);
-      }
-    }
-  }
+  /* 正文（样式由全局 markdown.css 提供） */
 
   /* 底部 */
   .note-footer {
