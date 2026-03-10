@@ -20,13 +20,11 @@ const PAGE_SIZE = 10;
 
 // SSR: 获取第一页数据
 let firstPageNotes: any[] = [];
-let total = 0;
 let totalPages = 0;
 let apiError = null;
 
 try {
   const response = await notesApi.list({ page: 1, page_size: PAGE_SIZE });
-  total = response.total;
   totalPages = response.total_pages;
 
   // 服务端渲染 Markdown 摘要（取前 200 字符）
@@ -49,7 +47,7 @@ if (apiError) {
 }
 
 // 心情标签映射
-const moodLabels = notesPageConfig.moodLabels;
+const moodLabels: Record<string, string> = notesPageConfig.moodLabels;
 ---
 
 <BlogLayout title="随记" description="记录碎片化的想法与日常">
@@ -75,10 +73,10 @@ const moodLabels = notesPageConfig.moodLabels;
                 })
               }</time>
               {note.mood && (
-                <span class="note-mood">{(moodLabels as Record<string, string>)[note.mood] || note.mood}</span>
+                <span class="note-mood">{moodLabels[note.mood] || note.mood}</span>
               )}
             </div>
-            <div class="note-body markdown-content" set:html={note.renderedContent} />
+            <a class="note-body markdown-content" set:html={note.renderedContent} />
             <a href={`/notes/${note.id}`} class="note-read-more">阅读全文 →</a>
           </article>
         ))}
@@ -98,7 +96,7 @@ const moodLabels = notesPageConfig.moodLabels;
   </div>
 </BlogLayout>
 
-<script define:vars={{ totalPages, PAGE_SIZE }}>
+<script is:inline define:vars={{ totalPages, PAGE_SIZE }}>
   // 客户端分页加载
   let currentPage = 1;
   let isLoading = false;

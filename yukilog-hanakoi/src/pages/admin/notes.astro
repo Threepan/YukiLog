@@ -146,7 +146,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
   };
 
   document.addEventListener('astro:page-load', () => {
-    const notesList = document.getElementById('notes-list');
+    const notesList = document.getElementById('notes-list')!;
     if (!notesList) return;
 
     // DOM 元素
@@ -292,7 +292,6 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
         if (target.classList.contains('btn-edit')) {
           // 获取实际数据编辑
           try {
-            const response = await adminApi.notes.list({ page: 1, page_size: 1 });
             // 从当前列表中找
             const row = notesList.querySelector(`.note-row[data-id="${id}"]`);
             if (row) {
