@@ -14,8 +14,8 @@
 | --- | --- |
 | 通用 | [统一返回格式](#common) |
 | Auth | [管理员登录](#auth) |
-| Public | [前台接口](#public)<br>[Themes 主题](#public-themes) / [Tags 标签](#public-tags) / [Posts 文章](#public-posts) / [Stats 统计](#public-stats) / [Comments 评论](#public-comments) / [Links 友链](#public-links) |
-| Admin | [管理接口（JWT 保护）](#admin)<br>[Themes 主题](#admin-themes) / [Tags 标签](#admin-tags) / [Posts 文章](#admin-posts) / [Comments 评论](#admin-comments) / [Links 友链](#admin-links) |
+| Public | [前台接口](#public)<br>[Themes 主题](#public-themes) / [Tags 标签](#public-tags) / [Posts 文章](#public-posts) / [Stats 统计](#public-stats) / [Comments 评论](#public-comments) / [Links 友链](#public-links) / [Notes 随记](#public-notes) |
+| Admin | [管理接口（JWT 保护）](#admin)<br>[Themes 主题](#admin-themes) / [Tags 标签](#admin-tags) / [Posts 文章](#admin-posts) / [Comments 评论](#admin-comments) / [Links 友链](#admin-links) / [Notes 随记](#admin-notes) |
 
 <a id="common"></a>
 
@@ -686,6 +686,94 @@ POST /api/public/links/submit
 
 ---
 
+<a id="public-notes"></a>
+
+#### Notes 随记
+
+**说明：** 获取随记列表（分页，仅已发布）。
+
+```bash
+GET /api/public/notes
+```
+
+**请求（Query）**
+
+**字段说明：**
+* page：页码（从 1 开始，默认 1）
+* page_size：每页数量（默认 10，最大 20）
+
+```json
+{
+    "page": 1,
+    "page_size": 10
+}
+```
+
+**响应（分页）**
+
+```json
+{
+    "success": true,
+    "data": {
+        "items": [
+            {
+                "id": 1,
+                "content": "今天学了 Rust 的 lifetime...",
+                "mood": "thinking",
+                "status": "published",
+                "created_at": "2026-03-10T14:30:00+08:00",
+                "updated_at": "2026-03-10T14:30:00+08:00"
+            }
+        ],
+        "total": 42,
+        "page": 1,
+        "page_size": 10,
+        "total_pages": 5
+    },
+    "message": null
+}
+```
+
+**说明：** 获取随记详情（仅已发布）。
+
+```bash
+GET /api/public/notes/:id
+```
+
+**请求**
+
+```json
+{ "id": 1 }
+```
+
+**响应（data 为 Note）**
+
+```json
+{
+    "success": true,
+    "data": {
+        "id": 1,
+        "content": "今天学了 Rust 的 lifetime...",
+        "mood": "thinking",
+        "status": "published",
+        "created_at": "2026-03-10T14:30:00+08:00",
+        "updated_at": "2026-03-10T14:30:00+08:00"
+    },
+    "message": null
+}
+```
+
+> 与 `GET /api/public/notes` 的 data.items 数组元素结构一致
+
+**字段说明（Note）：**
+* id：随记 ID
+* content：Markdown 内容
+* mood：心情标记（可为空），可选值：happy / thinking / sad / angry / calm / excited / tired / nostalgic
+* status：状态（published / draft / private）
+* created_at / updated_at：创建/更新时间
+
+---
+
 <a id="admin"></a>
 ## Admin（管理接口，JWT 保护）
 
@@ -701,6 +789,7 @@ Authorization: Bearer <token>
 > - DELETE /api/admin/posts/:slug
 > - DELETE /api/admin/comments/:id
 > - DELETE /api/admin/links/:id
+> - DELETE /api/admin/notes/:id
 
 <a id="admin-themes"></a>
 #### Themes 主题
@@ -1486,6 +1575,156 @@ PUT /api/admin/links/:id
 
 ```bash
 DELETE /api/admin/links/:id
+```
+
+**请求**
+
+```json
+{ "id": 1 }
+```
+
+**响应（data 为 null）**
+
+```json
+{
+    "success": true,
+    "data": null,
+    "message": null
+}
+```
+
+<a id="admin-notes"></a>
+#### Notes 随记
+
+**说明：** 管理端随记列表（含草稿/私密，支持分页和状态筛选）。
+
+```bash
+GET /api/admin/notes
+```
+
+**请求（Query）**
+
+**字段说明：**
+* page：页码（从 1 开始，默认 1）
+* page_size：每页数量（默认 10）
+* status：状态筛选，可选值：`published` / `draft` / `private`
+
+```json
+{
+    "page": 1,
+    "page_size": 10,
+    "status": "draft"
+}
+```
+
+**响应（分页，items 为 Note）**
+
+```json
+{
+    "success": true,
+    "data": {
+        "items": [
+            {
+                "id": 1,
+                "content": "今天学了 Rust 的 lifetime...",
+                "mood": "thinking",
+                "status": "draft",
+                "created_at": "2026-03-10T14:30:00+08:00",
+                "updated_at": "2026-03-10T14:30:00+08:00"
+            }
+        ],
+        "total": 5,
+        "page": 1,
+        "page_size": 10,
+        "total_pages": 1
+    },
+    "message": null
+}
+```
+
+**说明：** 创建随记。
+
+```bash
+POST /api/admin/notes
+```
+
+**请求（JSON Body）**
+
+**字段说明：**
+* content：Markdown 内容（必填）
+* mood：心情标记（可选），可选值：happy / thinking / sad / angry / calm / excited / tired / nostalgic
+* status：状态（可选，默认 published），可选值：published / draft / private
+
+```json
+{
+    "content": "今天学了 Rust 的 lifetime...",
+    "mood": "thinking",
+    "status": "published"
+}
+```
+
+**响应（data 为 Note）**
+
+```json
+{
+    "success": true,
+    "data": {
+        "id": 1,
+        "content": "今天学了 Rust 的 lifetime...",
+        "mood": "thinking",
+        "status": "published",
+        "created_at": "2026-03-10T14:30:00+08:00",
+        "updated_at": "2026-03-10T14:30:00+08:00"
+    },
+    "message": null
+}
+```
+
+**说明：** 更新随记（按 id）。
+
+```bash
+PUT /api/admin/notes/:id
+```
+
+**请求**
+
+**字段说明：**
+* content：新内容（不传不修改）
+* mood：三态字段（不传=不改，null=清空，"happy"=设置）
+* status：新状态（不传不修改）
+
+```json
+{
+    "id": 1,
+    "body": {
+        "content": "修改后的内容",
+        "mood": "happy",
+        "status": "draft"
+    }
+}
+```
+
+**响应（data 为 Note）**
+
+```json
+{
+    "success": true,
+    "data": {
+        "id": 1,
+        "content": "修改后的内容",
+        "mood": "happy",
+        "status": "draft",
+        "created_at": "2026-03-10T14:30:00+08:00",
+        "updated_at": "2026-03-11T10:00:00+08:00"
+    },
+    "message": null
+}
+```
+
+**说明：** 删除随记（按 id）。
+
+```bash
+DELETE /api/admin/notes/:id
 ```
 
 **请求**

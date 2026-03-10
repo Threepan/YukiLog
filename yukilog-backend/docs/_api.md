@@ -96,6 +96,18 @@ pub async fn list_post_tags_by_post_id<C: ConnectionTrait>(db: &C, post_id: i64)
 pub async fn list_post_tags_by_tag_id<C: ConnectionTrait>(db: &C, tag_id: i64) -> RepoResult<Vec<PostTagDto>>
 ```
 
+### Notes
+
+```rust
+// src/repo/notes.rs
+
+/// 按 ID 获取单条随记
+pub async fn get_note_by_id<C: ConnectionTrait>(db: &C, id: i64) -> RepoResult<NoteDto>
+
+/// 获取随记总数（可按状态筛选）
+pub async fn count_notes<C: ConnectionTrait>(db: &C, status: Option<&str>) -> RepoResult<u64>
+```
+
 ---
 
 <a id="service"></a>
@@ -158,6 +170,26 @@ pub async fn get_link_by_id(db: &DatabaseConnection, id: i64) -> ServiceResult<L
 ```
 
 **用途**：管理端需要查看单条友链详情、或友链编辑前预加载数据时使用。
+
+### Notes
+
+```rust
+// src/service/notes.rs
+
+/// 获取随记详情（按 ID，管理端不限状态）
+pub async fn get_note(db: &DatabaseConnection, id: i64) -> ServiceResult<Note>
+
+/// 获取已发布随记数量
+pub async fn count_public_notes(db: &DatabaseConnection) -> ServiceResult<u64>
+
+/// 获取所有随记数量（含草稿/私密）
+pub async fn count_all_notes(db: &DatabaseConnection) -> ServiceResult<u64>
+```
+
+**用途**：
+- `get_note`：管理端查看单条随记详情（不限状态），或作为更新前的预加载
+- `count_public_notes`：站点统计可扩展为包含随记数量
+- `count_all_notes`：管理面板仪表盘展示总随记数
 
 ---
 
