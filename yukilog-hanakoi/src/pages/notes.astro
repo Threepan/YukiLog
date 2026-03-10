@@ -1,0 +1,355 @@
+---
+// ================================
+// 随记列表页
+// Hero + 随记卡片列表（按时间倒序）
+// SSR 首屏 + 客户端 IntersectionObserver 懒加载分页
+// ================================
+
+export const prerender = false;
+
+import BlogLayout from "../layouts/BlogLayout.astro";
+import PageHero from "../components/shared/PageHero.astro";
+import { contentConfig } from "../lib/config";
+import { navIcons } from "../lib/svg-icons";
+import { notesApi } from "../lib/api";
+import { renderMarkdown } from "../lib/markdown";
+
+const notesIcon = navIcons.notes;
+const notesPageConfig = contentConfig.pages.notes;
+const PAGE_SIZE = 10;
+
+// SSR: 获取第一页数据
+let firstPageNotes: any[] = [];
+let total = 0;
+let totalPages = 0;
+let apiError = null;
+
+try {
+  const response = await notesApi.list({ page: 1, page_size: PAGE_SIZE });
+  total = response.total;
+  totalPages = response.total_pages;
+
+  // 服务端渲染 Markdown 摘要（取前 200 字符）
+  firstPageNotes = await Promise.all(
+    response.items.map(async (note: any) => {
+      const truncated = note.content.length > 200
+        ? note.content.slice(0, 200) + "…"
+        : note.content;
+      const { html } = await renderMarkdown(truncated);
+      return { ...note, renderedContent: html };
+    })
+  );
+} catch (error) {
+  console.error("获取随记列表失败：", error);
+  apiError = error;
+}
+
+if (apiError) {
+  return Astro.redirect("/500");
+}
+
+// 心情标签映射
+const moodLabels = notesPageConfig.moodLabels;
+---
+
+<BlogLayout title="随记" description="记录碎片化的想法与日常">
+  <PageHero title="随记" subtitle={notesPageConfig.heroSubtitle} icon={notesIcon} />
+
+  <div class="notes-page">
+    {firstPageNotes.length === 0 ? (
+      <div class="notes-empty">
+        <p>{notesPageConfig.emptyText}</p>
+      </div>
+    ) : (
+      <div class="notes-list" id="notes-list">
+        {firstPageNotes.map((note, i) => (
+          <article class="note-card" data-index={i} style={`animation-delay: ${i * 60}ms`}>
+            <div class="note-meta">
+              <time class="note-time" data-iso={note.created_at}>{
+                new Date(note.created_at).toLocaleDateString("zh-CN", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              }</time>
+              {note.mood && (
+                <span class="note-mood">{(moodLabels as Record<string, string>)[note.mood] || note.mood}</span>
+              )}
+            </div>
+            <div class="note-body markdown-content" set:html={note.renderedContent} />
+            <a href={`/notes/${note.id}`} class="note-read-more">阅读全文 →</a>
+          </article>
+        ))}
+      </div>
+    )}
+
+    {totalPages > 1 && (
+      <div class="notes-loader" id="notes-loader">
+        <div class="loader-spinner" id="loader-spinner"></div>
+        <p class="loader-text" id="loader-text">{notesPageConfig.loadingText}</p>
+      </div>
+    )}
+
+    <div class="notes-end" id="notes-end" style={totalPages <= 1 ? "" : "display:none"}>
+      <p>{notesPageConfig.loadMoreText}</p>
+    </div>
+  </div>
+</BlogLayout>
+
+<script define:vars={{ totalPages, PAGE_SIZE }}>
+  // 客户端分页加载
+  let currentPage = 1;
+  let isLoading = false;
+
+  const notesList = document.getElementById("notes-list");
+  const loader = document.getElementById("notes-loader");
+  const loaderText = document.getElementById("loader-text");
+  const endMarker = document.getElementById("notes-end");
+
+  if (notesList && loader && totalPages > 1) {
+    const observer = new IntersectionObserver(
+      async (entries) => {
+        const entry = entries[0];
+        if (!entry.isIntersecting || isLoading || currentPage >= totalPages) return;
+
+        isLoading = true;
+        currentPage += 1;
+
+        try {
+          // 使用公网地址从客户端请求
+          const apiBase = window.location.origin;
+          const res = await fetch(
+            `${apiBase}/api/public/notes?page=${currentPage}&page_size=${PAGE_SIZE}`
+          );
+          const json = await res.json();
+
+          if (json.success && json.data?.items?.length > 0) {
+            for (const note of json.data.items) {
+              const card = createNoteCard(note);
+              notesList.appendChild(card);
+            }
+          }
+
+          if (currentPage >= totalPages) {
+            observer.disconnect();
+            loader.style.display = "none";
+            if (endMarker) endMarker.style.display = "";
+          }
+        } catch (err) {
+          console.error("加载随记失败:", err);
+          if (loaderText) loaderText.textContent = "加载失败，请刷新重试";
+        } finally {
+          isLoading = false;
+        }
+      },
+      { rootMargin: "200px" }
+    );
+
+    observer.observe(loader);
+  }
+
+  // 心情标签映射（客户端副本）
+  const moodMap = {
+    happy: "😊 开心",
+    thinking: "🤔 思考",
+    sad: "😢 难过",
+    angry: "😤 生气",
+    calm: "😌 平静",
+    excited: "🤩 兴奋",
+    tired: "😴 疲惫",
+    nostalgic: "🥹 怀旧",
+  };
+
+  function createNoteCard(note) {
+    const article = document.createElement("article");
+    article.className = "note-card note-card-enter";
+
+    const truncated = note.content.length > 200
+      ? note.content.slice(0, 200) + "…"
+      : note.content;
+
+    const time = new Date(note.created_at).toLocaleDateString("zh-CN", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    const moodHtml = note.mood
+      ? `<span class="note-mood">${moodMap[note.mood] || note.mood}</span>`
+      : "";
+
+    article.innerHTML = `
+      <div class="note-meta">
+        <time class="note-time">${time}</time>
+        ${moodHtml}
+      </div>
+      <div class="note-body markdown-content">${escapeForPreview(truncated)}</div>
+      <a href="/notes/${note.id}" class="note-read-more">阅读全文 →</a>
+    `;
+
+    // 触发入场动画
+    requestAnimationFrame(() => {
+      article.classList.remove("note-card-enter");
+    });
+
+    return article;
+  }
+
+  function escapeForPreview(text) {
+    // 客户端加载的摘要只做简单文本展示（无 Markdown 渲染）
+    const div = document.createElement("div");
+    div.textContent = text;
+    return `<p>${div.innerHTML}</p>`;
+  }
+</script>
+
+<style>
+  .notes-page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: var(--spacing-xl) var(--spacing-lg) var(--spacing-xxl);
+  }
+
+  /* 空状态 */
+  .notes-empty {
+    text-align: center;
+    padding: var(--spacing-xxl) 0;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-lg);
+  }
+
+  /* 随记卡片 */
+  .note-card {
+    background: var(--color-white);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg) var(--spacing-xl);
+    margin-bottom: var(--spacing-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border);
+    opacity: 0;
+    transform: translateY(12px);
+    animation: note-enter 400ms var(--ease-gentle) forwards;
+    transition: box-shadow 300ms var(--ease-gentle),
+                transform 300ms var(--ease-gentle);
+
+    &:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+  }
+
+  /* 动态加载的卡片入场 */
+  .note-card-enter {
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 400ms var(--ease-gentle),
+                transform 400ms var(--ease-gentle);
+  }
+
+  @keyframes note-enter {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* 元信息行 */
+  .note-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+    flex-wrap: wrap;
+  }
+
+  .note-time {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+  }
+
+  .note-mood {
+    font-size: var(--font-size-xs);
+    padding: 2px 8px;
+    background: linear-gradient(135deg, rgba(126, 182, 217, 0.1), rgba(232, 164, 180, 0.1));
+    border-radius: var(--radius-full);
+    color: var(--color-text-light);
+  }
+
+  /* 正文摘要 */
+  .note-body {
+    font-size: var(--font-size-base);
+    color: var(--color-text);
+    line-height: 1.75;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    -webkit-box-orient: vertical;
+
+    :global(p) {
+      margin: 0 0 var(--spacing-sm);
+    }
+
+    :global(pre) {
+      font-size: var(--font-size-sm);
+      max-height: 120px;
+      overflow: hidden;
+    }
+  }
+
+  /* 阅读全文链接 */
+  .note-read-more {
+    display: inline-block;
+    margin-top: var(--spacing-sm);
+    font-size: var(--font-size-sm);
+    color: var(--color-blue);
+    text-decoration: none;
+    transition: color 200ms var(--ease-gentle);
+
+    &:hover {
+      color: var(--color-pink);
+    }
+  }
+
+  /* 加载器 */
+  .notes-loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--spacing-xl) 0;
+    gap: var(--spacing-sm);
+  }
+
+  .loader-spinner {
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--color-border);
+    border-top-color: var(--color-blue);
+    border-radius: 50%;
+    animation: spin 800ms linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .loader-text {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+  }
+
+  /* 到底提示 */
+  .notes-end {
+    text-align: center;
+    padding: var(--spacing-xl) 0;
+
+    p {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      letter-spacing: 0.5px;
+    }
+  }
+</style>

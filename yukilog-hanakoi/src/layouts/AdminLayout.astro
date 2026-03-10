@@ -8,7 +8,7 @@ export const prerender = false;
 
 interface Props {
   title: string;
-  activeMenu?: 'posts' | 'comments' | 'themes' | 'tags' | 'links';
+  activeMenu?: 'posts' | 'comments' | 'themes' | 'tags' | 'links' | 'notes';
 }
 
 import BaseLayout from './BaseLayout.astro';
@@ -22,6 +22,7 @@ const menuItems = [
   { key: 'themes', label: '主题管理', href: '/admin/themes', icon: svgIcons.theme },
   { key: 'tags', label: '标签管理', href: '/admin/tags', icon: svgIcons.tag },
   { key: 'links', label: '友链管理', href: '/admin/links', icon: svgIcons.links },
+  { key: 'notes', label: '随记管理', href: '/admin/notes', icon: svgIcons.notes },
 ];
 ---
 
