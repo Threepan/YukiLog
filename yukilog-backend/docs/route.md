@@ -47,7 +47,7 @@ POST    /api/admin/login    -> auth::login
 
 前台接口, 任何人都可以访问, 不需要登录
 
-**总共 16 个接口:**
+**总共 18 个接口:**
 
 **Themes 主题 (3个)**
 ```rust
