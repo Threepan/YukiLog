@@ -479,7 +479,8 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     gap: var(--spacing-sm);
   }
 
-  .note-row {
+  /* 动态 innerHTML 生成的子元素需要 :global() */
+  .notes-list :global(.note-row) {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -495,12 +496,12 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     }
   }
 
-  .note-info {
+  .notes-list :global(.note-info) {
     flex: 1;
     min-width: 0;
   }
 
-  .note-preview {
+  .notes-list :global(.note-preview) {
     font-size: var(--font-size-base);
     color: var(--color-text);
     white-space: nowrap;
@@ -509,7 +510,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     margin-bottom: var(--spacing-xs);
   }
 
-  .note-row-meta {
+  .notes-list :global(.note-row-meta) {
     display: flex;
     align-items: center;
     gap: var(--spacing-sm);
@@ -517,29 +518,29 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     color: var(--color-text-muted);
   }
 
-  .note-row-mood {
+  .notes-list :global(.note-row-mood) {
     padding: 1px 6px;
     background: rgba(126, 182, 217, 0.1);
     border-radius: var(--radius-full);
   }
 
-  .note-status {
+  .notes-list :global(.note-status) {
     padding: 1px 8px;
     border-radius: var(--radius-full);
     font-size: 11px;
   }
-  .status-published { background: rgba(76, 175, 80, 0.12); color: #4caf50; }
-  .status-draft { background: rgba(255, 152, 0, 0.12); color: #ff9800; }
-  .status-private { background: rgba(156, 39, 176, 0.12); color: #9c27b0; }
+  .notes-list :global(.status-published) { background: rgba(76, 175, 80, 0.12); color: #4caf50; }
+  .notes-list :global(.status-draft) { background: rgba(255, 152, 0, 0.12); color: #ff9800; }
+  .notes-list :global(.status-private) { background: rgba(156, 39, 176, 0.12); color: #9c27b0; }
 
-  .note-actions {
+  .notes-list :global(.note-actions) {
     display: flex;
     gap: var(--spacing-xs);
     flex-shrink: 0;
     margin-left: var(--spacing-md);
   }
 
-  .btn-icon {
+  .notes-list :global(.btn-icon) {
     width: 32px;
     height: 32px;
     display: flex;
