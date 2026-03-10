@@ -205,6 +205,30 @@ Repo 会在 `Model -> Dto` 时执行 `TryFrom<&str>` 校验：
 
 ---
 
+## | notes
+
+源码：[yukilog-backend/src/repo/notes.rs](../src/repo/notes.rs)
+
+##### CRUD 模板
+
+* `create_note(db, CreateNote) -> RepoResult<NoteDto>`: (创建一条 note 记录)
+* `get_note_by_id(db, id) -> RepoResult<NoteDto>`: (用 id 获取 note 记录)
+* `update_note(db, id, UpdateNote) -> RepoResult<NoteDto>`: (更新一条 note 记录)
+* `delete_note(db, id) -> RepoResult<()>`: (删除一条 note 记录)
+
+##### 高级查询
+
+* `list_notes_filtered(db, status, count, page) -> RepoResult<Vec<NoteDto>>`: (按条件筛选随记列表，支持按状态筛选，时间倒序，分页)
+* `count_notes(db, status) -> RepoResult<u64>`: (按条件统计随记数量，SELECT COUNT(*))
+
+##### 数据结构
+
+* `NoteDto`：返回结构（包含 `status: Option<NoteStatus>`, `mood: Option<NoteMood>`）
+* `CreateNote`：创建输入（`content` 必填，`mood` 和 `status` 可选）
+* `UpdateNote`：更新 patch（`Option<T>` 表示是否更新该字段；`Option<Option<T>>` 表示可更新成 NULL）
+
+---
+
 ## | post_tags
 
 `post_tags` 是文章与标签的多对多关联表（复合主键：`(post_id, tag_id)`）。

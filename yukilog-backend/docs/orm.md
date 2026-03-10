@@ -33,7 +33,7 @@ ORM 是用 `sea-orm-cli` 做的, 目录在 [entities](../src/entities/)
 	* `Entity/Model/ActiveModel` + 关系定义
 
 * 领域类型层（枚举封装等）：[yukilog-backend/src/domain](../src/domain)
-	* 例如 [yukilog-backend/src/domain/status.rs](../src/domain/status.rs) 里定义了 `PostStatus`/`CommentStatus`/`LinkStatus`
+	* 例如 [yukilog-backend/src/domain/status.rs](../src/domain/status.rs) 里定义了 `PostStatus`/`CommentStatus`/`LinkStatus`/`NoteStatus`/`NoteMood`
 
 * Repo 层（对外 CRUD 原子接口）：[yukilog-backend/src/repo](../src/repo)
 	* 统一错误类型： [yukilog-backend/src/repo/error.rs](../src/repo/error.rs)
