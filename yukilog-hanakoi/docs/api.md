@@ -13,7 +13,7 @@
 | 模块 | 说明 |
 | --- | --- |
 | 基础 | [fetchApi 通用封装](#fetchapi) |
-| 公开 | [postsApi 文章](#postsapi) / [themesApi 主题](#themesapi) / [tagsApi 标签](#tagsapi) / [commentsApi 评论](#commentsapi) / [linksApi 友链](#linksapi) / [statsApi 统计](#statsapi) |
+| 公开 | [postsApi 文章](#postsapi) / [themesApi 主题](#themesapi) / [tagsApi 标签](#tagsapi) / [commentsApi 评论](#commentsapi) / [linksApi 友链](#linksapi) / [notesApi 随记](#notesapi) / [statsApi 统计](#statsapi) |
 | 认证 | [authApi 登录](#authapi) |
 | 管理 | [adminApi（JWT 保护）](#adminapi) |
 
@@ -177,6 +177,42 @@ interface CommentNode {
 
 ---
 
+<a id="notesapi"></a>
+
+## notesApi（随记）
+
+| 方法 | 说明 | 后端路由 |
+| --- | --- | --- |
+| `list(params?)` | 随记列表（分页） | `GET /api/public/notes` |
+| `getById(id)` | 随记详情 | `GET /api/public/notes/:id` |
+
+**NoteListParams 参数：**
+
+```typescript
+interface NoteListParams {
+  page?: number;
+  page_size?: number;
+}
+```
+
+**返回类型 Note：**
+
+```typescript
+interface Note {
+  id: number;
+  content: string;
+  mood: NoteMood | null;
+  status: NoteStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+type NoteStatus = 'published' | 'draft' | 'private';
+type NoteMood = 'happy' | 'thinking' | 'sad' | 'angry' | 'calm' | 'excited' | 'tired' | 'nostalgic';
+```
+
+---
+
 <a id="statsapi"></a>
 
 ## statsApi（统计）
@@ -283,6 +319,15 @@ interface LoginResponse {
 | `markBroken(id)` | PUT | `/api/admin/links/:id/broken` |
 | `update(id, data)` | PUT | `/api/admin/links/:id` |
 | `delete(id)` | DELETE | `/api/admin/links/:id` |
+
+### adminApi.notes
+
+| 方法 | HTTP | 路由 |
+| --- | --- | --- |
+| `list(params?)` | GET | `/api/admin/notes` |
+| `create(data)` | POST | `/api/admin/notes` |
+| `update(id, data)` | PUT | `/api/admin/notes/:id` |
+| `delete(id)` | DELETE | `/api/admin/notes/:id` |
 
 ---
 

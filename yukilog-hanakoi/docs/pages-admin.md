@@ -21,6 +21,7 @@
 | [主题管理](#themes) | `/admin/themes` | 主题 CRUD |
 | [标签管理](#tags) | `/admin/tags` | 标签 CRUD + 合并 |
 | [友链管理](#links) | `/admin/links` | 友链审核/CRUD |
+| [随记管理](#notes) | `/admin/notes` | 随记 CRUD |
 
 > 所有管理页面均标记 `export const prerender = false`（SSR）
 > 
@@ -188,6 +189,29 @@ adminApi.posts.create({
 
 ---
 
+<a id="notes"></a>
+
+## 随记管理 `/admin/notes`
+
+源码: [src/pages/admin/notes.astro](../src/pages/admin/notes.astro)
+
+**功能：** 随记的 CRUD 管理 + 状态筛选
+
+| 操作 | API 调用 |
+| --- | --- |
+| 列表 | `adminApi.notes.list(params)` |
+| 创建 | `adminApi.notes.create(data)` |
+| 编辑 | `adminApi.notes.update(id, data)` |
+| 删除 | `adminApi.notes.delete(id)` |
+
+**交互：**
+* 顶部 Tab 切换状态筛选（全部 / 已发布 / 草稿 / 私密）
+* 创建/编辑使用模态框（Markdown 文本域 + 心情选择 + 状态选择）
+* 删除需二次确认
+* 列表分页（每页 15 条）
+
+---
+
 ## AdminLayout 布局
 
 源码: [src/layouts/AdminLayout.astro](../src/layouts/AdminLayout.astro)
@@ -216,5 +240,6 @@ adminApi.posts.create({
 | themes | 主题管理 | `/admin/themes` | `theme` |
 | tags | 标签管理 | `/admin/tags` | `tag` |
 | links | 友链管理 | `/admin/links` | `links` |
+| notes | 随记管理 | `/admin/notes` | `notes` |
 
 底部有"← 返回前台"链接回到 `/`

@@ -19,6 +19,8 @@
 | [标签](#tags) | `/tags` | SSR |
 | [归档](#archive) | `/archive` | SSR |
 | [友链](#links) | `/links` | SSR |
+| [随记列表](#notes) | `/notes` | SSR |
+| [随记详情](#note-detail) | `/notes/:id` | SSR |
 | [关于](#about) | `/about` | SSG |
 | [404](#error-404) | `/404` | SSG |
 | [500](#error-500) | `/500` | SSG (fallback) |
@@ -219,6 +221,51 @@ linksApi.list()  // 过滤 status === 'active'
 | `FriendSpotlight` | 特别关注位（最好的朋友, 配置在 `contentConfig.pages.links.bestFriend`） |
 | `FriendCard` | 普通友链卡片 |
 | `ApplyLinkModal` | 申请友链弹窗（提交调用 `linksApi.submit()`） |
+
+---
+
+<a id="notes"></a>
+
+## 随记列表 `/notes`
+
+源码: [src/pages/notes.astro](../src/pages/notes.astro)
+
+**概述：** SSR 首屏 + 客户端 IntersectionObserver 无限滚动分页
+
+**数据来源：**
+
+```typescript
+notesApi.list({ page, page_size: 10 })  // 仅返回 published 状态
+```
+
+**交互：**
+* 首页由服务端渲染 Markdown 摘要（前 200 字符, 使用 `renderMarkdown`）
+* 后续分页由客户端 `IntersectionObserver` 触发, 通过 `fetch` 直接请求公开 API
+* 客户端加载的摘要做纯文本展示（`escapeForPreview` 防 XSS）
+* 每张卡片展示：时间、心情标签（来自 `contentConfig.pages.notes.moodLabels`）、正文摘要、阅读全文链接
+* 卡片入场动画（`animation-delay` 错开）
+
+---
+
+<a id="note-detail"></a>
+
+## 随记详情 `/notes/:id`
+
+源码: [src/pages/notes/[id].astro](../src/pages/notes/%5Bid%5D.astro)
+
+**概述：** 单篇随记全文, SSR 渲染完整 Markdown
+
+**数据来源：**
+
+```typescript
+notesApi.getById(id)  // 404 → 重定向 /404
+```
+
+**特性：**
+* 完整 Markdown 渲染（Shiki 代码高亮 + KaTeX 数学公式）
+* 显示心情标签 + 日期（含星期）
+* 若 `updated_at` 与 `created_at` 不同, 显示"最后编辑于"时间
+* 返回按钮回到 `/notes`
 
 ---
 
