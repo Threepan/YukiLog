@@ -39,7 +39,7 @@ import type {
   UpdateNoteRequest,
 } from '../types';
 
-import { getMockResponse } from './mock-data';
+import type { getMockResponse as GetMockResponseFn } from './mock-data';
 
 // API 基础地址（区分 SSR 和浏览器环境）
 // SSR: 内网地址 http://localhost:3639（前端服务器 → 后端服务器）
@@ -50,6 +50,16 @@ const API_BASE = import.meta.env.SSR
 
 // 是否启用 mock 模式（后端不可用时自动 fallback）
 let useMock = false;
+let _getMockResponse: typeof GetMockResponseFn | null = null;
+
+/** 按需加载 mock 模块 */
+async function loadMock(endpoint: string, options?: RequestInit) {
+  if (!_getMockResponse) {
+    const mod = await import('./mock-data');
+    _getMockResponse = mod.getMockResponse;
+  }
+  return _getMockResponse(endpoint, options);
+}
 
 /**
  * 通用 fetch 封装
@@ -60,7 +70,7 @@ async function fetchApi<T>(
 ): Promise<T> {
   // 如果已知后端不可用，直接走 mock
   if (useMock) {
-    const mock = getMockResponse(endpoint, options);
+    const mock = await loadMock(endpoint, options);
     if (mock !== undefined) return mock as T;
     throw new Error(`Mock: 没有匹配的路由 ${endpoint}`);
   }
@@ -90,7 +100,7 @@ async function fetchApi<T>(
     if (err?.cause?.code === 'ECONNREFUSED' || err?.message?.includes('fetch failed')) {
       console.warn(`[API] 后端不可用，自动切换 Mock 模式`);
       useMock = true;
-      const mock = getMockResponse(endpoint, options);
+      const mock = await loadMock(endpoint, options);
       if (mock !== undefined) return mock as T;
     }
     throw err;
