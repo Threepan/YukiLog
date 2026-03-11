@@ -10,14 +10,12 @@
 
   let { data } = $props();
 
-  // 随机选择一张背景图
-  const backgrounds = Object.values(
-    import.meta.glob('../assets/image/background/*.jpg', {
-      eager: true,
-      query: '?url',
-      import: 'default',
-    })
-  ) as string[];
+  // 随机选择一张背景图（static/ 目录，不经过 Vite 处理）
+  const backgrounds = [
+    '/images/background/wallhaven-3l2vm3.jpg',
+    '/images/background/wallhaven-858k3j.jpg',
+    '/images/background/wallhaven-yxoejx.jpg',
+  ];
   const randomBackground = backgrounds[Math.floor(Math.random() * backgrounds.length)];
 
   let cleanup: (() => void) | undefined;

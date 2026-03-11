@@ -10,15 +10,7 @@
   let { title, subtitle, icon }: Props = $props();
 
   const headerImageName = contentConfig.hero.headerGif;
-  const headerImageModules = import.meta.glob('../../assets/image/header/*', {
-    eager: true,
-    query: '?url',
-    import: 'default',
-  }) as Record<string, string>;
-  const heroBgSrc =
-    Object.entries(headerImageModules).find(([path]) =>
-      path.endsWith(`/${headerImageName}`)
-    )?.[1] ?? Object.values(headerImageModules)[0] ?? '';
+  const heroBgSrc = `/images/header/${headerImageName}`;
 </script>
 
 <div class="page-hero">
