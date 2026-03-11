@@ -571,7 +571,7 @@ run_migrations
 # ============================================================
 #  构建前端
 # ============================================================
-step "  构建前端 (Astro)"
+step "  构建前端 (SvelteKit)"
 
 if ! has_cmd node; then
     doing "Node.js 未安装，正在安装..."
@@ -591,12 +591,12 @@ else
 fi
 
 pushd "$FRONTEND_DIR" > /dev/null
-if [[ "$FORCE_REBUILD" == "true" ]] && [[ -d "dist" ]]; then
-    rm -rf dist
+if [[ "$FORCE_REBUILD" == "true" ]] && [[ -d "build" ]]; then
+    rm -rf build
     info "已清理旧前端构建"
 fi
 
-if [[ -d "dist" ]]; then
+if [[ -d "build" ]]; then
     info "前端已构建，跳过"
 else
     doing "正在安装前端依赖..."
@@ -654,7 +654,7 @@ else
     doing "正在创建前端 systemd 服务..."
     sudo tee "$FRONTEND_SERVICE" > /dev/null <<SVCEOF
 [Unit]
-Description=YukiLog Frontend (Astro/Node)
+Description=YukiLog Frontend (SvelteKit/Node)
 After=network.target
 
 [Service]
@@ -665,7 +665,8 @@ WorkingDirectory=${FRONTEND_DIR}
 EnvironmentFile=${FRONTEND_DIR}/.env
 Environment=HOST=127.0.0.1
 Environment=PORT=${FRONTEND_PORT}
-ExecStart=$(which node) ${FRONTEND_DIR}/dist/server/entry.mjs
+Environment=ORIGIN=https://${DOMAIN}
+ExecStart=$(which node) ${FRONTEND_DIR}/build/index.js
 Restart=on-failure
 RestartSec=5
 StandardOutput=journal
@@ -743,8 +744,8 @@ server {
         proxy_read_timeout    60s;
         proxy_send_timeout    60s;
     }
-    location /_astro/ {
-        proxy_pass http://yukilog_frontend/_astro/;
+    location /_app/ {
+        proxy_pass http://yukilog_frontend/_app/;
         proxy_http_version 1.1;
         proxy_set_header Connection "";
         expires 30d;

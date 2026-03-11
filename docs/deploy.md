@@ -109,7 +109,8 @@ RUST_LOG=info
 
 **前端 `.env` (yukilog-hanakoi/.env)**：
 ```bash
-PUBLIC_API_URL=https://your-domain.com/api
+API_BASE_URL=http://127.0.0.1:3639
+ORIGIN=https://your-domain.com
 ```
 
 > ⚠️ **重要**：`.env` 文件只在首次部署时生成，已存在则跳过（不会覆盖你的配置）
@@ -124,18 +125,18 @@ PUBLIC_API_URL=https://your-domain.com/api
 - 安装 Node.js + pnpm（如未安装）
 - 运行 `pnpm install` 安装依赖
 - 运行 `pnpm build` 构建生产版本
-- 生成 `dist/` 目录（包含 SSR 服务器）
+- 生成 `build/` 目录（包含 Node 服务器）
 
 #### 9️⃣ 注册系统服务 + Nginx + SSL
 
 **创建 systemd 服务**：
 - `yukilog-backend.service` — 后端 Rust 服务
-- `yukilog-hanakoi.service` — 前端 Astro/Node 服务
+- `yukilog-hanakoi.service` — 前端 SvelteKit/Node 服务
 
 **生成 Nginx 配置**：
 - `/api/*` → 反向代理到后端 `127.0.0.1:<后端端口>`
 - 其他请求 → 反向代理到前端 `127.0.0.1:<前端端口>`
-- 静态资源缓存优化 (`/_astro/*`)
+- 静态资源缓存优化 (`/_app/*`)
 - 安全头配置
 
 **SSL 证书申请**：
@@ -228,9 +229,14 @@ YukiLog/
 │   │   └── yukilog-backend         # 后端二进制
 │   └── ...
 ├── yukilog-hanakoi/
+  │   └── dist/                       # 前端构建产物
+```
+⚉ 注意∶排版旧文档的 `dist/` 已替换为 SvelteKit 的 `build/`，实际目录为：
+```
+├── yukilog-hanakoi/
 │   ├── .env                        # 前端配置（自动生成）
-│   ├── dist/                       # 前端构建产物
-│   │   └── server/entry.mjs        # SSR 入口
+│   ├── build/                      # 前端构建产物
+│   │   └── index.js                # Node 服务器入口
 │   └── ...
 └── yukilog-database/
     └── db/yukilog.sql              # 数据库表结构
@@ -261,7 +267,7 @@ Restart=on-failure
 **前端服务配置**：
 ```ini
 [Unit]
-Description=YukiLog Frontend (Astro/Node)
+Description=YukiLog Frontend (SvelteKit/Node)
 After=network.target
 
 [Service]
@@ -271,7 +277,8 @@ WorkingDirectory=<项目路径>/yukilog-hanakoi
 EnvironmentFile=<项目路径>/yukilog-hanakoi/.env
 Environment=HOST=127.0.0.1
 Environment=PORT=<自动检测的端口>
-ExecStart=/usr/bin/node <项目路径>/yukilog-hanakoi/dist/server/entry.mjs
+Environment=ORIGIN=https://<域名>
+ExecStart=/usr/bin/node <项目路径>/yukilog-hanakoi/build/index.js
 Restart=on-failure
 ```
 
@@ -289,14 +296,14 @@ location /api/ {
     proxy_pass http://127.0.0.1:<后端端口>/api/;
 }
 
-# 其他请求 → 前端 (Astro SSR)
+# 其他请求 → 前端 (SvelteKit SSR)
 location / {
     proxy_pass http://127.0.0.1:<前端端口>;
 }
 
 # 静态资源缓存
-location /_astro/ {
-    proxy_pass http://127.0.0.1:<前端端口>/_astro/;
+location /_app/ {
+    proxy_pass http://127.0.0.1:<前端端口>/_app/;
     expires 30d;
     add_header Cache-Control "public, immutable";
 }
