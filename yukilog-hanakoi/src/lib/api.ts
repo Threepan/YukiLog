@@ -39,12 +39,17 @@ import type {
   UpdateNoteRequest,
 } from '../types';
 
+import { getMockResponse } from './mock-data';
+
 // API 基础地址（区分 SSR 和浏览器环境）
 // SSR: 内网地址 http://localhost:3639（前端服务器 → 后端服务器）
 // 浏览器: 公网域名 https://blog.yeastar.xin（用户浏览器 → nginx → 后端）
 const API_BASE = import.meta.env.SSR
   ? (import.meta.env.PUBLIC_API_URL || 'http://localhost:3639')
   : (import.meta.env.PUBLIC_SITE_URL || 'https://blog.yeastar.xin');
+
+// 是否启用 mock 模式（后端不可用时自动 fallback）
+let useMock = false;
 
 /**
  * 通用 fetch 封装
@@ -53,25 +58,43 @@ async function fetchApi<T>(
   endpoint: string,
   options?: RequestInit
 ): Promise<T> {
-  const response = await fetch(`${API_BASE}${endpoint}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
-    ...options,
-  });
-
-  if (!response.ok) {
-    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+  // 如果已知后端不可用，直接走 mock
+  if (useMock) {
+    const mock = getMockResponse(endpoint, options);
+    if (mock !== undefined) return mock as T;
+    throw new Error(`Mock: 没有匹配的路由 ${endpoint}`);
   }
 
-  const result: ApiResponse<T> = await response.json();
+  try {
+    const response = await fetch(`${API_BASE}${endpoint}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...options?.headers,
+      },
+      ...options,
+    });
 
-  if (!result.success) {
-    throw new Error(result.message || 'API 请求失败');
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    }
+
+    const result: ApiResponse<T> = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.message || 'API 请求失败');
+    }
+
+    return result.data!;
+  } catch (err: any) {
+    // 连接被拒 → 自动切换 mock 模式
+    if (err?.cause?.code === 'ECONNREFUSED' || err?.message?.includes('fetch failed')) {
+      console.warn(`[API] 后端不可用，自动切换 Mock 模式`);
+      useMock = true;
+      const mock = getMockResponse(endpoint, options);
+      if (mock !== undefined) return mock as T;
+    }
+    throw err;
   }
-
-  return result.data!;
 }
 
 // ================================
