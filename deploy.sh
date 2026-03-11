@@ -591,6 +591,11 @@ else
 fi
 
 pushd "$FRONTEND_DIR" > /dev/null
+# 清理旧 Astro 构建产物（如有）
+if [[ -d "dist" ]]; then
+    rm -rf dist
+    info "已清理旧 Astro 构建产物 (dist/)"
+fi
 if [[ "$FORCE_REBUILD" == "true" ]] && [[ -d "build" ]]; then
     rm -rf build
     info "已清理旧前端构建"
@@ -646,13 +651,10 @@ SVCEOF
     info "后端 systemd 服务已创建"
 fi
 
-# ── systemd: 前端 ────────────────────────────────────────
+# ── systemd: 前端（总是重新生成，确保入口路径正确）────
 FRONTEND_SERVICE="/etc/systemd/system/yukilog-hanakoi.service"
-if [[ -f "$FRONTEND_SERVICE" ]]; then
-    info "前端 systemd 服务已存在，跳过创建"
-else
-    doing "正在创建前端 systemd 服务..."
-    sudo tee "$FRONTEND_SERVICE" > /dev/null <<SVCEOF
+doing "正在写入前端 systemd 服务..."
+sudo tee "$FRONTEND_SERVICE" > /dev/null <<SVCEOF
 [Unit]
 Description=YukiLog Frontend (SvelteKit/Node)
 After=network.target
@@ -675,8 +677,7 @@ StandardError=journal
 [Install]
 WantedBy=multi-user.target
 SVCEOF
-    info "前端 systemd 服务已创建"
-fi
+info "前端 systemd 服务已写入"
 
 sudo systemctl daemon-reload
 
