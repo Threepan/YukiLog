@@ -6,9 +6,8 @@
 
 	const PAGE_SIZE = 20;
 	const moodMap: Record<string, string> = {
-		happy: '😊 开心', sad: '😢 难过', angry: '😤 生气', excited: '🎉 兴奋',
-		calm: '😌 平静', anxious: '😰 焦虑', grateful: '🙏 感恩', inspired: '💡 灵感',
-		tired: '😴 疲惫', nostalgic: '🌅 怀旧',
+		happy: '😊 开心', thinking: '🤔 思考', sad: '😢 难过', angry: '😤 生气',
+		calm: '😌 平静', excited: '🎉 兴奋', tired: '😴 疲惫', nostalgic: '🌅 怀旧',
 	};
 
 	let notes: Note[] = $state([]);
