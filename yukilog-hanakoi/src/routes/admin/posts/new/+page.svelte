@@ -75,7 +75,19 @@
 
 	function initVditor() {
 		const Vditor = (window as any).Vditor;
-		if (!Vditor) return;
+		if (!Vditor) {
+			console.error('Vditor not loaded');
+			return;
+		}
+
+		const editorEl = document.getElementById('vditor-editor');
+		if (!editorEl) {
+			console.error('Failed to get element by id: vditor-editor');
+			// 延迟重试
+			setTimeout(initVditor, 100);
+			return;
+		}
+
 		editor = new Vditor('vditor-editor', {
 			mode: 'ir',
 			height: 600,
