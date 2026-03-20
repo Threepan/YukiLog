@@ -79,19 +79,32 @@
 
 <style>
   /* ================================ */
+  /* 布局变量（与主页保持一致） */
+  /* ================================ */
+  :root {
+    --sidebar-width: clamp(240px, 24vw, 280px);
+    --sidebar-offset: clamp(8px, 1.5vw, 20px);
+    --sidebar-gap: 24px;
+    --sidebar-total: calc(var(--sidebar-width) + var(--sidebar-offset) + var(--sidebar-gap));
+    --layout-max-width: 1668px;
+  }
+
+  /* ================================ */
   /* 文章页布局 */
   /* ================================ */
   .post-page {
     padding-top: calc(var(--spacing-xl) + 44px);
     padding-bottom: var(--spacing-xxl);
     min-height: 100vh;
+    padding-left: var(--sidebar-total);
+    padding-right: var(--spacing-md);
   }
 
   .post-author-fixed {
     position: fixed;
-    left: calc(var(--spacing-xl) * 2);
+    left: max(var(--sidebar-offset), calc((100vw - var(--layout-max-width)) / 2 + var(--sidebar-offset)));
     top: 88px;
-    width: 280px;
+    width: var(--sidebar-width);
     z-index: 99;
   }
 
@@ -108,7 +121,6 @@
     max-width: 1160px;
     margin: 0 auto;
     padding: 0 var(--spacing-md);
-    transform: translateX(130px);
   }
 
   .post-content {
@@ -190,6 +202,11 @@
   /* 响应式 */
   /* ================================ */
   @media (max-width: 1400px) {
+    .post-page {
+      padding-left: 0;
+      padding-right: 0;
+    }
+
     .post-author-fixed {
       display: none;
     }
@@ -198,7 +215,6 @@
       grid-template-columns: minmax(0, 1fr);
       max-width: 780px;
       padding: 0 var(--spacing-sm);
-      transform: none;
     }
 
     .post-toc {

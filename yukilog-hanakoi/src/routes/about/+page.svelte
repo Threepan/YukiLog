@@ -1,9 +1,8 @@
 <script lang="ts">
-  import { contentConfig, siteConfig } from '$lib/config';
+  import { contentConfig } from '$lib/config';
   import { svgIcons } from '$lib/svg-icons';
 
   const aboutConfig = contentConfig.pages.about;
-  const socialLinks = siteConfig.social;
 </script>
 
 <svelte:head>
@@ -102,24 +101,6 @@
     </div>
   </div>
 
-  <!-- 社交链接 -->
-  <footer class="about-footer" style="--delay: 6">
-    <p class="footer-hint">{aboutConfig.socialTitle}</p>
-    <div class="social-links">
-      {#each socialLinks as link}
-        <a
-          href={link.url}
-          target="_blank"
-          rel="noopener"
-          class="social-link"
-          title={link.name}
-          style="--brand-color: {link.color}"
-        >
-          {link.name}
-        </a>
-      {/each}
-    </div>
-  </footer>
 </article>
 
 <style>
@@ -357,53 +338,6 @@
 
     p {
       margin: 0;
-    }
-  }
-
-  /* 社交链接 */
-  .about-footer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--spacing-md);
-    padding-top: var(--spacing-lg);
-
-    opacity: 0;
-    transform: translateY(20px);
-    animation: paragraph-enter 600ms var(--ease-gentle) forwards;
-    animation-delay: calc(var(--delay, 0) * 180ms + 400ms);
-  }
-
-  .footer-hint {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-muted);
-    margin: 0;
-    letter-spacing: 0.1em;
-  }
-
-  .social-links {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: var(--spacing-xs) var(--spacing-sm);
-  }
-
-  .social-link {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-light);
-    text-decoration: none;
-    padding: 6px 14px;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--color-border);
-    transition:
-      color var(--transition-fast) var(--ease-gentle),
-      border-color var(--transition-fast) var(--ease-gentle),
-      background var(--transition-fast) var(--ease-gentle);
-
-    &:hover {
-      color: var(--brand-color, var(--color-blue));
-      border-color: var(--brand-color, var(--color-blue));
-      background: var(--text-alpha-04);
     }
   }
 

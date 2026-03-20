@@ -2,6 +2,7 @@
   import { contentConfig, navItems } from '$lib/config';
   import { svgIcons } from '$lib/svg-icons';
   import NavItem from './NavItem.svelte';
+  import { page } from '$app/state';
 
   interface Props {
     stickyOnly?: boolean;
@@ -11,6 +12,7 @@
 
   let navbar: HTMLElement | undefined = $state();
   let navbarFixed: HTMLElement | undefined = $state();
+  let menuOpen = $state(false);
 
   const brandText = contentConfig.components.navbar.brand;
   const searchIcon = svgIcons.search;
@@ -23,6 +25,22 @@
   }
 
   const searchIconFixed = deduplicateSvgIds(searchIcon, '_fixed');
+
+  function toggleMenu() { menuOpen = !menuOpen; }
+  function closeMenu() { menuOpen = false; }
+
+  // 路由切换时关闭菜单
+  $effect(() => {
+    page.url.pathname;
+    menuOpen = false;
+  });
+
+  // 菜单打开时锁定 body 滚动
+  $effect(() => {
+    if (typeof document !== 'undefined') {
+      document.body.style.overflow = menuOpen ? 'hidden' : '';
+    }
+  });
 
   // 使用 $effect 替代 onMount，当 stickyOnly 变化时自动重新绑定事件
   // 这样从非首页导航回首页时，navbar 能正确切换行为模式
@@ -87,6 +105,17 @@
       <button class="navbar-action-btn" aria-label="搜索">
         <span>{@html searchIcon}</span>
       </button>
+      <button class="navbar-action-btn navbar-hamburger" aria-label="菜单" onclick={toggleMenu}>
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          {#if menuOpen}
+            <path d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" />
+          {:else}
+            <rect x="2" y="4" width="16" height="2" rx="1" />
+            <rect x="2" y="9" width="16" height="2" rx="1" />
+            <rect x="2" y="14" width="16" height="2" rx="1" />
+          {/if}
+        </svg>
+      </button>
     </div>
   </div>
 </nav>
@@ -98,8 +127,52 @@
     <button class="navbar-action-btn" id="search-toggle" aria-label="搜索">
       <span>{@html searchIconFixed}</span>
     </button>
+    <button class="navbar-action-btn navbar-hamburger" aria-label="菜单" onclick={toggleMenu}>
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+        {#if menuOpen}
+          <path d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" />
+        {:else}
+          <rect x="2" y="4" width="16" height="2" rx="1" />
+          <rect x="2" y="9" width="16" height="2" rx="1" />
+          <rect x="2" y="14" width="16" height="2" rx="1" />
+        {/if}
+      </svg>
+    </button>
   </div>
 </div>
+
+<!-- 移动端菜单抽屉 -->
+{#if menuOpen}
+  <div
+    class="mobile-menu-overlay"
+    role="dialog"
+    aria-modal="true"
+    aria-label="导航菜单"
+    onclick={closeMenu}
+  >
+    <div class="mobile-menu" onclick={(e) => e.stopPropagation()}>
+      <div class="mobile-menu-header">
+        <span class="mobile-menu-brand">{brandText}</span>
+        <button class="navbar-action-btn" aria-label="关闭菜单" onclick={closeMenu}>
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" />
+          </svg>
+        </button>
+      </div>
+      <nav class="mobile-menu-nav">
+        {#each navItems as item}
+          {@const isActive = page.url.pathname === item.href}
+          <a
+            href={item.href}
+            class="mobile-nav-item"
+            class:active={isActive}
+            onclick={closeMenu}
+          >{item.label}</a>
+        {/each}
+      </nav>
+    </div>
+  </div>
+{/if}
 
 <style>
   .navbar {
@@ -296,6 +369,10 @@
     }
   }
 
+  .navbar-hamburger {
+    display: none;
+  }
+
   @media (max-width: 968px) {
     .navbar-container,
     .navbar-fixed-elements {
@@ -325,12 +402,87 @@
     }
 
     .navbar-container {
-      justify-content: center;
+      justify-content: space-between;
       gap: var(--spacing-xs);
     }
 
     .navbar-items {
-      max-width: calc(100vw - 96px);
+      display: none;
+    }
+
+    .navbar-hamburger {
+      display: flex;
+    }
+  }
+
+  /* ============================== */
+  /* 移动端菜单抽屉 */
+  /* ============================== */
+  :global(.mobile-menu-overlay) {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 200;
+    display: flex;
+    align-items: flex-end;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+
+  :global(.mobile-menu) {
+    background: var(--color-white);
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    width: 100%;
+    padding: var(--spacing-md) var(--spacing-lg) calc(var(--spacing-xl) + env(safe-area-inset-bottom));
+    box-shadow: var(--shadow-blue);
+    animation: mobile-menu-up 280ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  }
+
+  @keyframes mobile-menu-up {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+  }
+
+  :global(.mobile-menu-header) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  :global(.mobile-menu-brand) {
+    font-size: 1.25rem;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+  }
+
+  :global(.mobile-menu-nav) {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  :global(.mobile-nav-item) {
+    display: block;
+    padding: var(--spacing-sm) var(--spacing-md);
+    color: var(--color-text);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    transition: background var(--transition-fast) var(--ease-gentle),
+                color var(--transition-fast) var(--ease-gentle);
+
+    &:hover {
+      background: var(--color-bg);
+      color: var(--color-blue);
+    }
+
+    &.active {
+      color: var(--color-pink);
+      background: var(--color-bg);
     }
   }
 </style>
