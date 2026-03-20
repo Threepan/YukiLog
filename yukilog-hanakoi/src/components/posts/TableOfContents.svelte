@@ -222,9 +222,8 @@
     line-height: 1.5;
     text-decoration: none;
     transition: color 0.5s cubic-bezier(0.22, 0.61, 0.36, 1), transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;
+    overflow-wrap: break-word;
 
     &:hover {
       color: color-mix(in srgb, var(--color-blue) 80%, var(--color-black, #000)) !important;
