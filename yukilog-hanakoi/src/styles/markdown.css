@@ -352,6 +352,7 @@
       max-width: 100%;
       border-radius: var(--radius-md);
       box-shadow: var(--shadow-md);
+      cursor: zoom-in;
       display: inline-block;
     }
 

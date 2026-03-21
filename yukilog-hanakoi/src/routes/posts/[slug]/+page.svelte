@@ -11,6 +11,9 @@
     mermaid.initialize({ startOnLoad: false, theme: 'neutral' });
     await mermaid.run();
 
+    const { default: mediumZoom } = await import('medium-zoom');
+    mediumZoom('.markdown-body img', { margin: 24, background: 'rgba(0,0,0,0.7)' });
+
     document.querySelectorAll<HTMLButtonElement>('.code-block .copy-btn').forEach((btn) => {
       btn.addEventListener('click', async () => {
         const code = btn.closest('.code-block')?.querySelector('code')?.innerText ?? '';
