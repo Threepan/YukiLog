@@ -103,6 +103,10 @@ async function getMarkedInstance(): Promise<Marked> {
       // 代码块：shiki 语法高亮
       code({ text, lang }: { text: string; lang?: string }) {
         const language = lang || "text";
+        // Mermaid 图表：输出专用容器，由客户端渲染
+        if (language === "mermaid") {
+          return `<pre class="mermaid">${text}</pre>`;
+        }
         const loadedLangs = highlighter.getLoadedLanguages();
         if (loadedLangs.includes(language as any)) {
           const highlighted = highlighter.codeToHtml(text, {

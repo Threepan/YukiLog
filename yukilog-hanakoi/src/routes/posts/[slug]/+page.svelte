@@ -1,9 +1,16 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import { onMount } from 'svelte';
   import { contentConfig } from '$lib/config';
   import ProfileCard from '../../../components/home/ProfileCard.svelte';
   import TableOfContents from '../../../components/posts/TableOfContents.svelte';
   import CommentSection from '../../../components/comments/CommentSection.svelte';
+
+  onMount(async () => {
+    const mermaid = (await import('mermaid')).default;
+    mermaid.initialize({ startOnLoad: false, theme: 'neutral' });
+    await mermaid.run();
+  });
 
   const hp = contentConfig.markdown.headingPrefixes;
 

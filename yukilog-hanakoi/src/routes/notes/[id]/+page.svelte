@@ -1,6 +1,13 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { contentConfig } from '$lib/config';
   import ProfileCard from '../../../components/home/ProfileCard.svelte';
+
+  onMount(async () => {
+    const mermaid = (await import('mermaid')).default;
+    mermaid.initialize({ startOnLoad: false, theme: 'neutral' });
+    await mermaid.run();
+  });
 
   let { data } = $props();
 
