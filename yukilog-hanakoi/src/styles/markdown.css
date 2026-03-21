@@ -431,4 +431,40 @@
     border-radius: var(--radius-sm);
     margin: 1.25em 0;
   }
+
+  /* ---- Mermaid 图表 ---- */
+  & .mermaid {
+    margin: 1.5em 0;
+    text-align: center;
+    overflow-x: auto;
+    cursor: zoom-in;
+
+    & svg {
+      max-width: 100%;
+      height: auto;
+    }
+  }
+}
+
+/* ---- Mermaid 放大蒙层 ---- */
+.mermaid-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-out;
+  padding: 24px;
+
+  & svg {
+    max-width: 90vw;
+    max-height: 90vh;
+    height: auto;
+    background: #fff;
+    border-radius: var(--radius-md);
+    padding: 24px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+  }
 }

@@ -8,6 +8,22 @@
     mermaid.initialize({ startOnLoad: false, theme: 'neutral' });
     await mermaid.run();
 
+    // Mermaid 点击放大
+    document.querySelectorAll<HTMLElement>('.mermaid').forEach((el) => {
+      el.addEventListener('click', () => {
+        const svg = el.querySelector('svg');
+        if (!svg) return;
+        const overlay = document.createElement('div');
+        overlay.className = 'mermaid-overlay';
+        overlay.innerHTML = svg.outerHTML;
+        overlay.addEventListener('click', () => overlay.remove());
+        document.addEventListener('keydown', function onKey(e) {
+          if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', onKey); }
+        });
+        document.body.appendChild(overlay);
+      });
+    });
+
     const { default: mediumZoom } = await import('medium-zoom');
     mediumZoom('.markdown-body img', { margin: 24, background: 'rgba(0,0,0,0.7)' });
 
