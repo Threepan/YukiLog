@@ -113,13 +113,13 @@ async function getMarkedInstance(): Promise<Marked> {
             lang: language,
             theme: "github-light",
           });
-          return `<div class="code-block" data-lang="${language}">${highlighted}</div>`;
+          return `<div class="code-block" data-lang="${language}"><button class="copy-btn" aria-label="复制代码">复制</button>${highlighted}</div>`;
         }
         const escaped = text
           .replace(/&/g, "&amp;")
           .replace(/</g, "&lt;")
           .replace(/>/g, "&gt;");
-        return `<div class="code-block" data-lang="${language}"><pre class="shiki"><code>${escaped}</code></pre></div>`;
+        return `<div class="code-block" data-lang="${language}"><button class="copy-btn" aria-label="复制代码">复制</button><pre class="shiki"><code>${escaped}</code></pre></div>`;
       },
 
       // 链接：新标签页打开外部链接

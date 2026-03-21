@@ -127,6 +127,33 @@
     box-shadow: var(--shadow-sm);
     overflow: hidden;
 
+    & .copy-btn {
+      position: absolute;
+      top: 6px;
+      right: 52px;
+      padding: 2px 10px;
+      font-size: var(--font-size-xs);
+      font-family: var(--font-family-code);
+      color: var(--color-text-muted);
+      background: rgba(126, 182, 217, 0.08);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      user-select: none;
+      z-index: 2;
+      transition: background 0.15s, color 0.15s;
+
+      &:hover {
+        background: rgba(126, 182, 217, 0.2);
+        color: var(--color-blue);
+      }
+
+      &.copied {
+        color: var(--color-blue);
+        background: rgba(126, 182, 217, 0.2);
+      }
+    }
+
     &[data-lang]::before {
       content: attr(data-lang);
       position: absolute;

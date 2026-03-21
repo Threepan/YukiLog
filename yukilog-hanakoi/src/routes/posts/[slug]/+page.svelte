@@ -10,6 +10,19 @@
     const mermaid = (await import('mermaid')).default;
     mermaid.initialize({ startOnLoad: false, theme: 'neutral' });
     await mermaid.run();
+
+    document.querySelectorAll<HTMLButtonElement>('.code-block .copy-btn').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const code = btn.closest('.code-block')?.querySelector('code')?.innerText ?? '';
+        await navigator.clipboard.writeText(code);
+        btn.textContent = '已复制';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = '复制';
+          btn.classList.remove('copied');
+        }, 2000);
+      });
+    });
   });
 
   const hp = contentConfig.markdown.headingPrefixes;
