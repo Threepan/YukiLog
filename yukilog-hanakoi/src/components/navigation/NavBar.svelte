@@ -1,6 +1,6 @@
 <script lang="ts">
   import { contentConfig, navItems } from '$lib/config';
-  import { svgIcons } from '$lib/svg-icons';
+  import { svgIcons, navIcons } from '$lib/svg-icons';
   import NavItem from './NavItem.svelte';
   import { page } from '$app/state';
 
@@ -168,7 +168,10 @@
             class="mobile-nav-item"
             class:active={isActive}
             onclick={closeMenu}
-          >{item.label}</a>
+          >
+            <span class="mobile-nav-icon">{@html navIcons[item.icon as keyof typeof navIcons]}</span>
+            <span class="mobile-nav-label">{item.label}</span>
+          </a>
         {/each}
       </nav>
     </div>
@@ -460,30 +463,61 @@
   }
 
   :global(.mobile-menu-nav) {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-sm);
   }
 
   :global(.mobile-nav-item) {
-    display: block;
-    padding: var(--spacing-sm) var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-md) var(--spacing-sm);
     color: var(--color-text);
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     text-decoration: none;
     border-radius: var(--radius-md);
+    background: var(--color-bg);
+    border: 1px solid var(--color-divider);
     transition: background var(--transition-fast) var(--ease-gentle),
-                color var(--transition-fast) var(--ease-gentle);
+                color var(--transition-fast) var(--ease-gentle),
+                border-color var(--transition-fast) var(--ease-gentle),
+                box-shadow var(--transition-fast) var(--ease-gentle);
 
     &:hover {
-      background: var(--color-bg);
+      background: var(--color-white);
       color: var(--color-blue);
+      border-color: var(--color-blue);
+      box-shadow: var(--shadow-blue);
     }
 
     &.active {
       color: var(--color-pink);
-      background: var(--color-bg);
+      background: var(--color-white);
+      border-color: var(--color-pink);
+      box-shadow: var(--shadow-sm);
     }
+  }
+
+  :global(.mobile-nav-icon) {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  :global(.mobile-nav-icon) :global(svg) {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+  }
+
+  :global(.mobile-nav-label) {
+    line-height: 1;
   }
 </style>
