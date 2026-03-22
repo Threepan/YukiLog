@@ -10,6 +10,7 @@
 	const isLoginPage = $derived(page.url.pathname === '/admin/login');
 
 	const menuItems = [
+		{ key: 'home', label: '管理首页', href: '/admin', icon: svgIcons.home },
 		{ key: 'posts', label: '文章管理', href: '/admin/posts', icon: svgIcons.folderOpen },
 		{ key: 'comments', label: '评论管理', href: '/admin/comments', icon: svgIcons.envelope },
 		{ key: 'themes', label: '主题管理', href: '/admin/themes', icon: svgIcons.theme },
@@ -20,17 +21,23 @@
 
 	// 根据路径判断当前激活菜单
 	const activeMenu = $derived(
-		menuItems.find(item => page.url.pathname.startsWith(item.href))?.key ?? ''
+		menuItems.find(item =>
+			item.href === '/admin'
+				? page.url.pathname === '/admin'
+				: page.url.pathname.startsWith(item.href)
+		)?.key ?? ''
 	);
 
 	// 页面标题映射
 	const pageTitle = $derived(() => {
-		if (page.url.pathname === '/admin') return '管理后台';
-		const item = menuItems.find(m => page.url.pathname.startsWith(m.href));
-		if (item) return item.label;
 		if (page.url.pathname.includes('/posts/new')) return '新建文章';
 		if (page.url.pathname.includes('/posts/edit')) return '编辑文章';
-		return '管理后台';
+		const item = menuItems.find(m =>
+			m.href === '/admin'
+				? page.url.pathname === '/admin'
+				: page.url.pathname.startsWith(m.href)
+		);
+		return item?.label ?? '管理后台';
 	});
 
 	onMount(() => {
