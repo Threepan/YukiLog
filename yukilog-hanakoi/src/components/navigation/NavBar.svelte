@@ -148,6 +148,7 @@
     role="dialog"
     aria-modal="true"
     aria-label="导航菜单"
+    tabindex="-1"
     onclick={closeMenu}
   >
     <div class="mobile-menu" onclick={(e) => e.stopPropagation()}>

@@ -8,7 +8,8 @@
   const archivePageConfig = contentConfig.pages.archive;
 
   let { data } = $props();
-  const { archiveData, totalPosts } = data;
+  let archiveData = $derived(data.archiveData);
+  let totalPosts = $derived(data.totalPosts);
 
   onMount(() => {
     const yearGroups = document.querySelectorAll<HTMLElement>('.year-group');

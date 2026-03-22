@@ -8,7 +8,9 @@
   const themeIcon = navIcons.theme;
 
   let { data } = $props();
-  const { theme, posts, slug } = data;
+  let theme = $derived(data.theme);
+  let posts = $derived(data.posts);
+  let slug = $derived(data.slug);
 
   // 双栏布局数据
   let col0: typeof posts = $state([]);

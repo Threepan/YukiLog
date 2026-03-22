@@ -8,7 +8,7 @@
   const themesPageConfig = contentConfig.pages.themes;
 
   let { data } = $props();
-  const { themes } = data;
+  let themes = $derived(data.themes);
 
   // 确定性微旋转角度
   const rotations = [1.2, -1.8, 2.1, -0.9, 1.6, -2.3, 0.7, -1.4];

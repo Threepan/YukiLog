@@ -10,14 +10,15 @@
   const tagsPageConfig = contentConfig.pages.tags;
 
   let { data } = $props();
-  const { tags, tagPosts } = data;
+  let tags = $derived(data.tags);
+  let tagPosts = $derived(data.tagPosts);
 
   // 计算标签云大小
-  const maxCount = Math.max(...tags.map((t: any) => t.post_count), 1);
-  const tagCloud = tags.map((tag: any) => ({
+  let maxCount = $derived(Math.max(...tags.map((t: any) => t.post_count), 1));
+  let tagCloud = $derived(tags.map((tag: any) => ({
     ...tag,
     size: Math.max(1, Math.min(5, Math.ceil((tag.post_count / maxCount) * 5))),
-  }));
+  })));
 
   const colorCycle = tagsPageConfig.colorCycle;
   const colorNames = tagsPageConfig.colorNames;

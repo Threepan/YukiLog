@@ -11,13 +11,14 @@
   const maxDepth = 4;
 
   let { node, depth = 0 }: { node: CommentNode; depth?: number } = $props();
-  const { comment, children } = node;
+  let comment = $derived(node.comment);
+  let children = $derived(node.children);
 
   marked.setOptions({ breaks: true, gfm: true });
-  const renderedContent = marked.parse(comment.content) as string;
-  const relativeTime = getRelativeTime(comment.created_at);
-  const avatarUrl = getCommentAvatar(comment.guest_website, comment.guest_email);
-  const isMaxDepth = depth >= maxDepth;
+  let renderedContent = $derived(marked.parse(comment.content) as string);
+  let relativeTime = $derived(getRelativeTime(comment.created_at));
+  let avatarUrl = $derived(getCommentAvatar(comment.guest_website, comment.guest_email));
+  let isMaxDepth = $derived(depth >= maxDepth);
 
   let showReplyForm = $state(false);
 

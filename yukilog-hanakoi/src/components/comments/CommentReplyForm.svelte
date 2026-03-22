@@ -24,7 +24,7 @@
   let isSubmitting = $state(false);
 
   const charCount = $derived(content.length);
-  const storageKey = `comment-reply-${commentId}`;
+  let storageKey = $derived(`comment-reply-${commentId}`);
 
   // 从 localStorage 恢复
   if (typeof window !== 'undefined') {
@@ -87,23 +87,23 @@
   <form class="form-content" onsubmit={handleSubmit} oninput={saveToStorage}>
     <div class="form-row">
       <div class="form-field">
-        <label>昵称 *</label>
-        <input type="text" bind:value={nickname} placeholder={cc.form.nickPlaceholder} required maxlength={20} />
+        <label for="reply-nickname">昵称 *</label>
+        <input id="reply-nickname" type="text" bind:value={nickname} placeholder={cc.form.nickPlaceholder} required maxlength={20} />
       </div>
       <div class="form-field">
-        <label>邮箱 *</label>
-        <input type="email" bind:value={email} placeholder={cc.form.emailPlaceholder} required />
+        <label for="reply-email">邮箱 *</label>
+        <input id="reply-email" type="email" bind:value={email} placeholder={cc.form.emailPlaceholder} required />
       </div>
     </div>
 
     <div class="form-field">
-      <label>{cc.form.websiteLabel}</label>
-      <input type="url" bind:value={website} placeholder={cc.form.websitePlaceholder} />
+      <label for="reply-website">{cc.form.websiteLabel}</label>
+      <input id="reply-website" type="url" bind:value={website} placeholder={cc.form.websitePlaceholder} />
     </div>
 
     <div class="form-field">
-      <label>回复内容 *</label>
-      <textarea bind:value={content} placeholder="支持 Markdown 格式：**粗体** *斜体* [链接](url)..." required rows={4} maxlength={500}></textarea>
+      <label for="reply-content">回复内容 *</label>
+      <textarea id="reply-content" bind:value={content} placeholder="支持 Markdown 格式：**粗体** *斜体* [链接](url)..." required rows={4} maxlength={500}></textarea>
       <div class="char-count"><span class="current">{charCount}</span> / 500</div>
     </div>
 
