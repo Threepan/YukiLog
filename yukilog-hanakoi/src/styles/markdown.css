@@ -130,7 +130,7 @@
     & .copy-btn {
       position: absolute;
       bottom: 8px;
-      left: 12px;
+      right: 12px;
       padding: 2px 10px;
       font-size: var(--font-size-xs);
       font-family: var(--font-family-code);
