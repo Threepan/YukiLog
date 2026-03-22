@@ -2,7 +2,7 @@ use sea_orm::DatabaseConnection;
 use chrono::{DateTime, FixedOffset};
 use serde::{Deserialize, Serialize};
 
-use crate::domain::status::{NoteMood, NoteStatus};
+use crate::domain::status::NoteStatus;
 use crate::repo;
 use crate::repo::notes::{CreateNote as RepoCreateNote, UpdateNote as RepoUpdateNote};
 use crate::service::error::{ServiceError, ServiceResult};
@@ -15,7 +15,7 @@ use crate::service::error::{ServiceError, ServiceResult};
 pub struct Note {
     pub id: i64,
     pub content: String,
-    pub mood: Option<NoteMood>,
+    pub mood: Option<String>,
     pub status: NoteStatus,
     pub created_at: DateTime<FixedOffset>,
     pub updated_at: DateTime<FixedOffset>,
@@ -37,14 +37,14 @@ impl From<repo::notes::NoteDto> for Note {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateNoteInput {
     pub content: String,
-    pub mood: Option<NoteMood>,
+    pub mood: Option<String>,
     pub status: Option<NoteStatus>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct UpdateNoteInput {
     pub content: Option<String>,
-    pub mood: Option<Option<NoteMood>>,
+    pub mood: Option<Option<String>>,
     pub status: Option<NoteStatus>,
 }
 

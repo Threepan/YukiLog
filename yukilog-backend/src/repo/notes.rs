@@ -4,7 +4,7 @@ use sea_orm::{
 };
 
 use crate::{
-    domain::status::{NoteMood, NoteStatus},
+    domain::status::NoteStatus,
     entities::notes,
     repo::error::{RepoError, RepoResult},
 };
@@ -13,7 +13,7 @@ use crate::{
 pub struct NoteDto {
     pub id: i64,
     pub content: String,
-    pub mood: Option<NoteMood>,
+    pub mood: Option<String>,
     pub status: Option<NoteStatus>,
     pub created_at: Option<chrono::DateTime<chrono::FixedOffset>>,
     pub updated_at: Option<chrono::DateTime<chrono::FixedOffset>>,
@@ -28,15 +28,10 @@ impl TryFrom<notes::Model> for NoteDto {
             Some(s) => Some(NoteStatus::try_from(s)?),
         };
 
-        let mood = match model.mood.as_deref() {
-            None => None,
-            Some(s) => Some(NoteMood::try_from(s)?),
-        };
-
         Ok(Self {
             id: model.id,
             content: model.content,
-            mood,
+            mood: model.mood,
             status,
             created_at: model.created_at,
             updated_at: model.updated_at,
@@ -47,14 +42,14 @@ impl TryFrom<notes::Model> for NoteDto {
 #[derive(Debug, Clone)]
 pub struct CreateNote {
     pub content: String,
-    pub mood: Option<NoteMood>,
+    pub mood: Option<String>,
     pub status: Option<NoteStatus>,
 }
 
 #[derive(Debug, Default, Clone)]
 pub struct UpdateNote {
     pub content: Option<String>,
-    pub mood: Option<Option<NoteMood>>,
+    pub mood: Option<Option<String>>,
     pub status: Option<NoteStatus>,
 }
 
@@ -68,7 +63,7 @@ where
     };
 
     if let Some(mood) = input.mood {
-        active.mood = Set(Some(mood.as_str().to_string()));
+        active.mood = Set(Some(mood));
     }
     if let Some(status) = input.status {
         active.status = Set(Some(status.as_str().to_string()));
@@ -105,7 +100,7 @@ where
         active.content = Set(v);
     }
     if let Some(v) = patch.mood {
-        active.mood = Set(v.map(|m| m.as_str().to_string()));
+        active.mood = Set(v);
     }
     if let Some(v) = patch.status {
         active.status = Set(Some(v.as_str().to_string()));

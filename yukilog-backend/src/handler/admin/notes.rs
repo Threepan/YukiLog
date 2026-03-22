@@ -4,7 +4,7 @@ use axum::{
 };
 use serde::Deserialize;
 
-use crate::domain::status::{NoteMood, NoteStatus};
+use crate::domain::status::NoteStatus;
 use crate::handler::{
     auth::Claims,
     response::{no_content, ok, paged, ApiResponse, PagedData},
@@ -58,15 +58,6 @@ fn parse_note_status(s: &str) -> Result<NoteStatus, ServiceError> {
     NoteStatus::try_from(s).map_err(|_| {
         ServiceError::InvalidInput(format!(
             "invalid status: '{}', expected: published / draft / private",
-            s
-        ))
-    })
-}
-
-fn parse_note_mood(s: &str) -> Result<NoteMood, ServiceError> {
-    NoteMood::try_from(s).map_err(|_| {
-        ServiceError::InvalidInput(format!(
-            "invalid mood: '{}', expected: happy / thinking / sad / angry / calm / excited / tired / nostalgic",
             s
         ))
     })
@@ -156,12 +147,11 @@ pub async fn create_note(
 ) -> Result<Json<ApiResponse<Note>>, ServiceError> {
     tracing::info!("Admin {} creating note", claims.sub);
 
-    let mood = req.mood.as_deref().map(parse_note_mood).transpose()?;
     let status = req.status.as_deref().map(parse_note_status).transpose()?;
 
     let input = CreateNoteInput {
         content: req.content,
-        mood,
+        mood: req.mood,
         status,
     };
 
@@ -211,17 +201,9 @@ pub async fn update_note(
 
     let status = req.status.as_deref().map(parse_note_status).transpose()?;
 
-    // mood: Option<Option<String>> → Option<Option<NoteMood>>
-    // None → 不改, Some(None) → 清空, Some(Some("happy")) → 设置
-    let mood = match req.mood {
-        None => None,
-        Some(None) => Some(None),
-        Some(Some(ref s)) => Some(Some(parse_note_mood(s)?)),
-    };
-
     let input = UpdateNoteInput {
         content: req.content,
-        mood,
+        mood: req.mood,
         status,
     };
 
