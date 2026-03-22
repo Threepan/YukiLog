@@ -810,13 +810,13 @@ pub async fn count_all_notes(
 // 输入
 pub struct CreateNoteInput {
     pub content: String,
-    pub mood: Option<NoteMood>,
+    pub mood: Option<String>,            // 自由文本，后端不做枚举校验
     pub status: Option<NoteStatus>,      // 不传默认 published（DB 默认）
 }
 
 pub struct UpdateNoteInput {
     pub content: Option<String>,
-    pub mood: Option<Option<NoteMood>>,  // None=不改, Some(None)=清空, Some(Some(x))=设置
+    pub mood: Option<Option<String>>,    // None=不改, Some(None)=清空, Some(Some(x))=设置
     pub status: Option<NoteStatus>,
 }
 
@@ -824,7 +824,7 @@ pub struct UpdateNoteInput {
 pub struct Note {
     pub id: i64,
     pub content: String,
-    pub mood: Option<NoteMood>,
+    pub mood: Option<String>,            // 自由文本，前端 config 维护预设查询表
     pub status: NoteStatus,              // Published | Draft | Private
     pub created_at: DateTime<FixedOffset>,
     pub updated_at: DateTime<FixedOffset>,

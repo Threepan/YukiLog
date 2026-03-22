@@ -768,7 +768,7 @@ GET /api/public/notes/:id
 **字段说明（Note）：**
 * id：随记 ID
 * content：Markdown 内容
-* mood：心情标记（可为空），可选值：happy / thinking / sad / angry / calm / excited / tired / nostalgic
+* mood：心情标记（可为空），自由文本字符串（如 `happy`、`drifting`、`lucid`），前端 config 维护预设查询表，后端不做枚举校验
 * status：状态（published / draft / private）
 * created_at / updated_at：创建/更新时间
 
@@ -1652,7 +1652,7 @@ POST /api/admin/notes
 
 **字段说明：**
 * content：Markdown 内容（必填）
-* mood：心情标记（可选），可选值：happy / thinking / sad / angry / calm / excited / tired / nostalgic
+* mood：心情标记（可选），自由文本字符串（如 `happy`、`drifting`、`lucid`），前端 config 维护预设查询表，后端不做枚举校验
 * status：状态（可选，默认 published），可选值：published / draft / private
 
 ```json

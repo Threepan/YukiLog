@@ -223,7 +223,7 @@ Repo 会在 `Model -> Dto` 时执行 `TryFrom<&str>` 校验：
 
 ##### 数据结构
 
-* `NoteDto`：返回结构（包含 `status: Option<NoteStatus>`, `mood: Option<NoteMood>`）
+* `NoteDto`：返回结构（包含 `status: Option<NoteStatus>`, `mood: Option<String>`，mood 为自由文本，不做枚举校验）
 * `CreateNote`：创建输入（`content` 必填，`mood` 和 `status` 可选）
 * `UpdateNote`：更新 patch（`Option<T>` 表示是否更新该字段；`Option<Option<T>>` 表示可更新成 NULL）
 
