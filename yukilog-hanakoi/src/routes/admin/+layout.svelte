@@ -9,6 +9,16 @@
 
 	const isLoginPage = $derived(page.url.pathname === '/admin/login');
 
+	let sidebarOpen = $state(false);
+	function toggleSidebar() { sidebarOpen = !sidebarOpen; }
+	function closeSidebar() { sidebarOpen = false; }
+
+	// 路由切换时关闭侧边栏
+	$effect(() => {
+		page.url.pathname;
+		sidebarOpen = false;
+	});
+
 	const menuItems = [
 		{ key: 'home', label: '管理首页', href: '/admin', icon: svgIcons.home },
 		{ key: 'posts', label: '文章管理', href: '/admin/posts', icon: svgIcons.folderOpen },
@@ -52,7 +62,7 @@
 {:else}
 	<div class="admin-layout">
 		<!-- 侧边栏 -->
-		<aside class="admin-sidebar">
+		<aside class="admin-sidebar" class:open={sidebarOpen}>
 			<div class="sidebar-header">
 				<a href="/" class="sidebar-logo">YukiLog</a>
 				<div class="sidebar-subtitle">管理后台</div>
@@ -76,11 +86,25 @@
 			</div>
 		</aside>
 
+		<!-- 移动端侧边栏遮罩 -->
+		{#if sidebarOpen}
+			<div class="sidebar-overlay" onclick={closeSidebar} aria-hidden="true"></div>
+		{/if}
+
 		<!-- 主区域 -->
 		<div class="admin-main">
 			<!-- 顶栏 -->
 			<header class="admin-header">
-				<h1 class="header-title">{pageTitle()}</h1>
+				<div class="header-left">
+					<button class="sidebar-toggle" aria-label="菜单" onclick={toggleSidebar}>
+						<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+							<rect x="2" y="4" width="16" height="2" rx="1" />
+							<rect x="2" y="9" width="16" height="2" rx="1" />
+							<rect x="2" y="14" width="16" height="2" rx="1" />
+						</svg>
+					</button>
+					<h1 class="header-title">{pageTitle()}</h1>
+				</div>
 				<div class="header-actions">
 					<span class="admin-name">管理员</span>
 					<button class="logout-btn" onclick={logout}>退出登录</button>
@@ -295,5 +319,73 @@
 		flex: 1;
 		padding: var(--spacing-xl);
 		overflow-y: auto;
+	}
+
+	/* ===== 移动端汉堡按钮（桌面隐藏）===== */
+	.sidebar-toggle {
+		display: none;
+		align-items: center;
+		justify-content: center;
+		width: 36px;
+		height: 36px;
+		padding: 0;
+		background: var(--gradient-blue-pink-8);
+		border-radius: var(--radius-sm);
+		color: var(--color-text);
+		cursor: pointer;
+		transition: background var(--transition-fast) var(--ease-gentle);
+		flex-shrink: 0;
+	}
+
+	.sidebar-toggle:hover {
+		background: var(--gradient-blue-pink-12);
+	}
+
+	.header-left {
+		display: flex;
+		align-items: center;
+		gap: var(--spacing-md);
+	}
+
+	/* ===== 响应式 ===== */
+	@media (max-width: 768px) {
+		.sidebar-toggle {
+			display: flex;
+		}
+
+		.admin-sidebar {
+			position: fixed;
+			top: 0;
+			left: 0;
+			height: 100dvh;
+			z-index: 200;
+			transform: translateX(-100%);
+			transition: transform 300ms cubic-bezier(0.22, 0.61, 0.36, 1);
+		}
+
+		.admin-sidebar.open {
+			transform: translateX(0);
+		}
+
+		.sidebar-overlay {
+			position: fixed;
+			inset: 0;
+			background: rgba(0, 0, 0, 0.35);
+			z-index: 199;
+			backdrop-filter: blur(2px);
+		}
+
+		.admin-header {
+			height: 60px;
+			padding: 0 var(--spacing-md);
+		}
+
+		.admin-content {
+			padding: var(--spacing-md);
+		}
+
+		.admin-name {
+			display: none;
+		}
 	}
 </style>

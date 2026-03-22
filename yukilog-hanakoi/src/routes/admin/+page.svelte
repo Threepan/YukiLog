@@ -63,6 +63,7 @@
 
 <style>
 	.dashboard {
+		width: 100%;
 		max-width: 1000px;
 	}
 
