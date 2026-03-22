@@ -27,8 +27,66 @@
       });
     });
 
-    const { default: mediumZoom } = await import('medium-zoom');
-    mediumZoom('.markdown-body img', { margin: 24, background: 'rgba(0,0,0,0.7)' });
+    document.querySelectorAll<HTMLImageElement>('.markdown-body img').forEach((img) => {
+      img.style.cursor = 'zoom-in';
+      img.addEventListener('click', () => {
+        let scale = 1;
+        let tx = 0, ty = 0;
+        let dragging = false, ox = 0, oy = 0;
+
+        const overlay = document.createElement('div');
+        overlay.className = 'img-overlay';
+
+        const imgEl = document.createElement('img');
+        imgEl.src = img.src;
+        imgEl.alt = img.alt;
+        imgEl.className = 'img-overlay-img';
+        overlay.appendChild(imgEl);
+
+        const updateTransform = () => {
+          imgEl.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+        };
+
+        overlay.addEventListener('wheel', (e) => {
+          e.preventDefault();
+          scale = Math.min(5, Math.max(0.5, scale * (e.deltaY < 0 ? 1.12 : 0.9)));
+          updateTransform();
+        }, { passive: false });
+
+        imgEl.addEventListener('mousedown', (e) => {
+          if (scale <= 1) return;
+          dragging = true;
+          ox = e.clientX - tx;
+          oy = e.clientY - ty;
+          imgEl.style.cursor = 'grabbing';
+          e.stopPropagation();
+        });
+        const onMouseMove = (e: MouseEvent) => {
+          if (!dragging) return;
+          tx = e.clientX - ox;
+          ty = e.clientY - oy;
+          updateTransform();
+        };
+        const onMouseUp = () => {
+          dragging = false;
+          imgEl.style.cursor = scale > 1 ? 'grab' : 'zoom-out';
+        };
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+
+        const close = () => {
+          overlay.remove();
+          document.removeEventListener('mousemove', onMouseMove);
+          document.removeEventListener('mouseup', onMouseUp);
+          document.removeEventListener('keydown', onKey);
+        };
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') close(); };
+        document.addEventListener('keydown', onKey);
+
+        document.body.appendChild(overlay);
+      });
+    });
 
     document.querySelectorAll<HTMLButtonElement>('.code-block .copy-btn').forEach((btn) => {
       btn.addEventListener('click', async () => {
