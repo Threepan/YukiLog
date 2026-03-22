@@ -375,12 +375,21 @@
       font-size: var(--font-size-xl);
     }
 
+    .post-card {
+      max-width: 100%;
+      overflow: hidden;
+    }
+
     .post-date {
       font-size: var(--font-size-xs);
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
     .post-title {
       font-size: var(--font-size-sm);
+      white-space: normal;
+      word-break: break-all;
     }
   }
 </style>
