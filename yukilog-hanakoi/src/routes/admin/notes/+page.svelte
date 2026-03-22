@@ -2,13 +2,12 @@
 	import { onMount } from 'svelte';
 	import { adminApi } from '$lib/api';
 	import { formatDate } from '$lib/date';
+	import { contentConfig } from '$lib/config';
 	import type { Note } from '$types';
 
 	const PAGE_SIZE = 20;
-	const moodMap: Record<string, string> = {
-		happy: '😊 开心', thinking: '🤔 思考', sad: '😢 难过', angry: '😤 生气',
-		calm: '😌 平静', excited: '🎉 兴奋', tired: '😴 疲惫', nostalgic: '🌅 怀旧',
-	};
+	const moodMap: Record<string, string> = contentConfig.pages.notes.moodLabels as Record<string, string>;
+	const moodEntries = Object.entries(moodMap);
 
 	let notes: Note[] = $state([]);
 	let totalCount = $state(0);
@@ -24,6 +23,14 @@
 	let formMood = $state('');
 	let formStatus = $state<'published' | 'draft' | 'private'>('published');
 	let submitting = $state(false);
+
+	// mood combobox
+	let showMoodDropdown = $state(false);
+	const filteredMoods = $derived(
+		formMood.trim()
+			? moodEntries.filter(([k, v]) => k.includes(formMood.toLowerCase()) || v.includes(formMood))
+			: moodEntries
+	);
 
 	// 删除确认
 	let deleteTarget: Note | null = $state(null);
@@ -199,12 +206,28 @@
 			</div>
 			<div class="form-group">
 				<label for="note-mood">心情</label>
-				<select id="note-mood" bind:value={formMood}>
-					<option value="">无</option>
-					{#each Object.entries(moodMap) as [key, label]}
-						<option value={key}>{label}</option>
-					{/each}
-				</select>
+				<div class="mood-combobox">
+					<input
+						id="note-mood"
+						type="text"
+						bind:value={formMood}
+						placeholder="搜索或输入自定义心情…"
+						autocomplete="off"
+						onfocus={() => (showMoodDropdown = true)}
+						onblur={() => setTimeout(() => (showMoodDropdown = false), 150)}
+					/>
+					{#if showMoodDropdown}
+						<div class="mood-dropdown">
+							<button type="button" class="mood-option" onmousedown={() => { formMood = ''; showMoodDropdown = false; }}>无</button>
+							{#each filteredMoods as [key, label]}
+								<button type="button" class="mood-option" onmousedown={() => { formMood = key; showMoodDropdown = false; }}>{label}</button>
+							{/each}
+							{#if filteredMoods.length === 0}
+								<div class="mood-empty">按 Enter 使用自定义值</div>
+							{/if}
+						</div>
+					{/if}
+				</div>
 			</div>
 			<div class="form-group">
 				<label for="note-status">状态</label>
@@ -297,6 +320,55 @@
 	.note-mood {
 		font-size: 0.75rem;
 		color: var(--color-text-light);
+	}
+
+	.mood-combobox {
+		position: relative;
+	}
+
+	.mood-combobox input {
+		width: 100%;
+		box-sizing: border-box;
+	}
+
+	.mood-dropdown {
+		position: absolute;
+		top: calc(100% + 4px);
+		left: 0;
+		right: 0;
+		max-height: 220px;
+		overflow-y: auto;
+		background: var(--color-white);
+		border: 1px solid var(--color-divider);
+		border-radius: 10px;
+		box-shadow: var(--shadow-sm);
+		z-index: 100;
+		display: flex;
+		flex-direction: column;
+		padding: 4px;
+		gap: 2px;
+	}
+
+	.mood-option {
+		text-align: left;
+		background: none;
+		border: none;
+		border-radius: 6px;
+		padding: 0.4rem 0.6rem;
+		font-size: 0.875rem;
+		cursor: pointer;
+		color: var(--color-text);
+		transition: background 150ms;
+	}
+
+	.mood-option:hover {
+		background: var(--color-bg);
+	}
+
+	.mood-empty {
+		padding: 0.4rem 0.6rem;
+		font-size: 0.8125rem;
+		color: var(--color-text-muted);
 	}
 
 	.note-date {

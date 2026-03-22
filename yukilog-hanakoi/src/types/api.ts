@@ -326,12 +326,10 @@ export interface MergeTagsRequest {
 
 export type NoteStatus = 'published' | 'draft' | 'private';
 
-export type NoteMood = 'happy' | 'thinking' | 'sad' | 'angry' | 'calm' | 'excited' | 'tired' | 'nostalgic';
-
 export interface Note {
   id: number;
   content: string;
-  mood: NoteMood | null;
+  mood: string | null;
   status: NoteStatus;
   created_at: string;
   updated_at: string;
