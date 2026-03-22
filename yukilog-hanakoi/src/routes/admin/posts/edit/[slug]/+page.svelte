@@ -252,18 +252,20 @@
 			</div>
 
 			<div class="form-group">
-				<label>标签</label>
-				<div class="tag-selector">
-					<div class="tag-checkboxes">
-						{#each tags as tag}
-							<label class="tag-checkbox-label" class:checked={selectedTagSlugs.has(tag.slug)}>
-								<input type="checkbox" checked={selectedTagSlugs.has(tag.slug)} onchange={() => toggleTag(tag.slug)} />
-								<span class="tag-name">#{tag.name}</span>
-							</label>
-						{/each}
+				<fieldset class="tag-fieldset">
+					<legend>标签</legend>
+					<div class="tag-selector">
+						<div class="tag-checkboxes">
+							{#each tags as tag}
+								<label class="tag-checkbox-label" class:checked={selectedTagSlugs.has(tag.slug)}>
+									<input type="checkbox" checked={selectedTagSlugs.has(tag.slug)} onchange={() => toggleTag(tag.slug)} />
+									<span class="tag-name">#{tag.name}</span>
+								</label>
+							{/each}
+						</div>
 					</div>
-				</div>
-				<span class="form-hint">已选择 {selectedTagSlugs.size} 个标签</span>
+					<span class="form-hint">已选择 {selectedTagSlugs.size} 个标签</span>
+				</fieldset>
 			</div>
 
 			<div class="form-group">
