@@ -4,15 +4,15 @@
 // 说明：
 // 1) 这个文件放在项目根目录，便于前台/后台/脚本统一读取。
 // 2) src/lib/config.ts 仅作为兼容导出层，不再保存业务配置。
-// 3) 与样式强相关的 SCSS 变量仍保留在 src/styles/variables.scss，
-//    这里保留一份同值色板用于运行时组件（例如 JS 动态着色、管理后台配置编辑）。
+// 3) 样式 CSS 变量定义在 src/styles/tokens.css，这里的 designTokens 是
+//    运行时同步副本（用于 JS 动态着色等场景），两者需保持一致。
 
 import type { NavItem, SiteConfig } from "./src/types";
 
 /**
  * 设计色板（运行时）
  * - 用于组件脚本、后台配置面板等 JS/TS 场景
- * - SCSS 样式仍以 variables.scss 为准
+ * - CSS 变量定义在 src/styles/tokens.css，此处值需与之保持同步
  */
 export const designTokens = {
   colors: {
@@ -22,9 +22,9 @@ export const designTokens = {
     lianBg: "#F6F7F9",       // 页面背景
     lianText: "#2C3E50",     // 主文本
     lianTextLight: "#7F8EA3",// 次要文本
-    lianTextMuted: "#A8B3C1",// 弱文本
-    lianBorder: "#E1E8ED",   // 边框
-    lianDivider: "#F0F3F7",  // 分隔线
+    lianTextMuted: "#A8B4C6",// 弱文本（对应 tokens.css --color-text-muted）
+    lianBorder: "#E1E8F0",   // 边框（对应 tokens.css --color-border）
+    lianDivider: "#EFF2F7",  // 分隔线（对应 tokens.css --color-divider）
   },
 } as const;
 
@@ -34,6 +34,8 @@ export const designTokens = {
  */
 export const siteConfig = {
   name: "YukiLog",
+  lang: "zh-CN",
+  themeColor: "#E8A4B4",
   title: "恋的博客 - 一个温柔的技术日记本",
   description: "记录技术、思考、情绪与挣扎",
   welcomeText: "欢迎来看恋的博客",
@@ -126,6 +128,9 @@ export const contentConfig = {
       h5: "· ",
       h6: "— ",
     },
+  },
+  ui: {
+    tabHiddenTitle: "...你 ... 要走了吗?",
   },
   components: {
     navbar: {

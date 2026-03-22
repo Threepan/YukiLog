@@ -2,12 +2,12 @@
 	import '../styles/global.css';
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
-	import NavBar from '$lib/../components/navigation/NavBar.svelte';
-	import Footer from '$lib/../components/shared/Footer.svelte';
-	import ScrollProgress from '$lib/../components/shared/ScrollProgress.svelte';
-	import SearchOverlay from '$lib/../components/shared/SearchOverlay.svelte';
-	import MusicPlayer from '$lib/../components/shared/MusicPlayer.svelte';
-	import { siteConfig } from '$lib/config';
+	import NavBar from '$components/navigation/NavBar.svelte';
+	import Footer from '$components/shared/Footer.svelte';
+	import ScrollProgress from '$components/shared/ScrollProgress.svelte';
+	import SearchOverlay from '$components/shared/SearchOverlay.svelte';
+	import MusicPlayer from '$components/shared/MusicPlayer.svelte';
+	import { siteConfig, contentConfig, designTokens } from '$lib/config';
 
 	let { children } = $props();
 
@@ -21,7 +21,7 @@
 		const handler = () => {
 			if (document.hidden) {
 				originalTitle = document.title;
-				document.title = '...你 ... 要走了吗?';
+				document.title = contentConfig.ui.tabHiddenTitle;
 			} else {
 				document.title = originalTitle;
 			}
@@ -34,8 +34,8 @@
 
 <svelte:head>
 	<meta name="author" content={siteConfig.author.name} />
-	<meta property="og:locale" content="zh_CN" />
-	<meta name="theme-color" content="#E8A4B4" />
+	<meta property="og:locale" content={siteConfig.lang.replace('-', '_')} />
+	<meta name="theme-color" content={designTokens.colors.lianPink} />
 </svelte:head>
 
 {#if isAdmin}

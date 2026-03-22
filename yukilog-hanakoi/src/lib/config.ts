@@ -18,4 +18,4 @@ export {
 // 浏览器模式：使用公网域名（通过 nginx 代理）
 export const API_BASE_URL = import.meta.env.SSR
   ? (import.meta.env.PUBLIC_API_URL || "http://localhost:3639")
-  : (import.meta.env.PUBLIC_SITE_URL || "https://blog.yeastar.xin");
+  : (import.meta.env.PUBLIC_SITE_URL || "");

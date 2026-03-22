@@ -33,6 +33,8 @@ export interface SocialLink {
 export interface SiteConfig {
   // 基本信息
   name: string;
+  lang: string;        // BCP 47 语言标签，如 "zh-CN"
+  themeColor: string;  // PWA/浏览器主题色，如 "#E8A4B4"
   title: string;
   description: string;
   welcomeText: string;
