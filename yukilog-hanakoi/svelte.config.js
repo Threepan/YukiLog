@@ -7,7 +7,7 @@ const config = {
 	kit: {
 		adapter: adapter({
 			out: 'build',
-			precompress: false
+			precompress: true
 		}),
 		alias: {
 			'$types': 'src/types',

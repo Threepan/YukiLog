@@ -181,7 +181,6 @@
 <svelte:head>
   <title>随记 - YukiLog</title>
   <meta name="description" content="一条随记" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/katex.min.css" />
 </svelte:head>
 
 <section class="note-page">

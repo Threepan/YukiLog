@@ -173,7 +173,6 @@
   {#if postTags.length > 0}
     <meta name="keywords" content={postTags.map((t: any) => t.name).join(', ')} />
   {/if}
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/katex.min.css" />
 </svelte:head>
 
 <section class="post-page">
