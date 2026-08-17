@@ -11,6 +11,7 @@ tags: ["astro", "blog", "psql", "rust", "教程"]
 view_count: 579
 created_at: "2026-02-18 22:11:20"
 updated_at: "2026-08-17 15:50:13"
+comment_count: 1
 source: "https://blog.yeastar.xin/posts/yukilog-1-blog"
 ---
 

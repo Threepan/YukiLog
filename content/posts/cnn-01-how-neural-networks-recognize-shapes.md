@@ -11,6 +11,7 @@ tags: ["卷积", "池化", "ReLU", "CNN"]
 view_count: 357
 created_at: "2026-03-24 08:29:37"
 updated_at: "2026-08-17 13:54:12"
+comment_count: 1
 source: "https://blog.yeastar.xin/posts/cnn-01-how-neural-networks-recognize-shapes"
 ---
 

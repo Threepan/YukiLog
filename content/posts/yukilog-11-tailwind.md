@@ -11,6 +11,7 @@ tags: ["astro", "blog", "教程"]
 view_count: 341
 created_at: "2026-02-20 21:38:04"
 updated_at: "2026-08-16 15:30:10"
+comment_count: 1
 source: "https://blog.yeastar.xin/posts/yukilog-11-tailwind"
 ---
 
