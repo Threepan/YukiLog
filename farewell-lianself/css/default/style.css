@@ -1,0 +1,26 @@
+/* === 语法高亮 (Default Theme) === */
+.comment { color: #6272a4; font-style: italic; }
+.kw-storage { color: #bd93f9; } 
+.kw-def     { color: #ff79c6; } 
+.kw-access  { color: #ff5555; } 
+.type { color: #f1fa8c; }
+.string { color: #50fa7b; }
+.macro-error { color: #ff5555; font-weight: bold; }
+.attr { color: #8be9fd; }
+.paren { color: #8be9fd; } 
+.brace { color: #f1fa8c; } 
+.bracket-sq { color: #8be9fd; } 
+.semicolon { color: #d6d7e0; } 
+
+/* Git Diff 头部与符号 */
+.header-pre { color: #ffb86c; font-weight: bold; }
+.header-cur { color: #8be9fd; font-weight: bold; }
+.sep { color: #54576b; margin-right: 12px; opacity: 0.8; }
+
+.diff-add { color: #50fa7b; font-weight: bold; } 
+.diff-del { color: #ff5555; font-weight: bold; } 
+.diff-neutral { color: #6b7086; } 
+
+/* Self 关键字高亮 */
+.self-kw { color: #8be9fd; font-style: italic; }
+.self-prop { color: #bd93f9; }

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Lianself</title>
+    <link rel="icon" href="https://list.yeastar.xin/d/%E6%81%8B/avatar-modified.png" type="image/png">
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/default/style.css">
+    <link rel="stylesheet" href="css/aurora/style.css">
+    <link rel="stylesheet" href="css/vitrimura/style.css">
+    <link rel="stylesheet" href="css/nostofobia/style.css">
+    <script>
+        const originalTitle = document.title;
+        const hiddenTitle = "not for your eyes ...";
+
+        window.addEventListener("blur", () => {
+            document.title = hiddenTitle;
+        });
+
+        window.addEventListener("focus", () => {
+            document.title = originalTitle;
+        });
+    </script>
+</head>
+<body>
+
+    <div class="window">
+        <div class="title-bar">
+            <div class="buttons">
+                <div class="btn close"></div>
+                <div class="btn minimize"></div>
+                <div class="btn maximize"></div>
+            </div>
+            <div class="filename">lian.inc</div>
+        </div>
+        <div class="code-area">
+            <!-- Content will be populated by js/main.js -->
+        </div>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/vitrimura.js"></script>
+</body>
+</html>

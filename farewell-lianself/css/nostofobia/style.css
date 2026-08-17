@@ -1,0 +1,89 @@
+/* === State_Nostofobia (彻底崩坏模式) === */
+/* 
+    该模式对应点击绿色最大化按钮后的状态。
+    整体风格呈现出一种彻底的绝望、黑暗和混乱，象征着系统完全崩溃。
+*/
+
+/* --- 页面背景 --- */
+body.state-nostofobia {
+    /* 纯黑背景，吞噬一切 */
+    background: #000;
+    /* 全局黑白闪烁 - 只闪一次 */
+    animation: globalFlash 0.2s 1 steps(2);
+    overflow: hidden;
+}
+
+@keyframes globalFlash {
+    0% { background: #000; filter: invert(0); }
+    50% { background: #fff; filter: invert(1); }
+}
+
+/* --- 窗口样式 --- */
+body.state-nostofobia .window {
+    /* 移除所有窗口装饰，使其透明 */
+    box-shadow: none;
+    border: none;
+    background: transparent;
+}
+
+/* --- 标题栏 --- */
+body.state-nostofobia .title-bar {
+    /* 隐藏标题栏 */
+    display: none;
+}
+
+/* --- 行号样式 --- */
+body.state-nostofobia .line-num {
+    /* 颜色极暗 */
+    color: #222;
+    /* 注意：JS 会控制行号的随机显隐 (visibility: hidden/visible) */
+}
+
+/* --- 代码区域样式 --- */
+body.state-nostofobia .code-area {
+    /* 透明背景 */
+    background: transparent;
+}
+
+/* --- 代码字符样式 --- */
+body.state-nostofobia .code-line span {
+    display: inline-block;
+    /* 其他字符变暗 */
+    color: #333;
+    font-weight: bold;
+}
+
+/* --- 致命错误信息样式 (#error) --- */
+body.state-nostofobia .code-line .macro-error {
+    display: block;
+    /* 放大字体，极具压迫感 */
+    font-size: 1.5em;
+    /* 极粗字体 */
+    font-weight: 900;
+    /* 最恐怖刺眼的红色，配合发光效果 */
+    color: #FF0000;
+    /* 红色高光阴影，模拟霓虹灯过载或视网膜灼烧感 */
+    text-shadow: 0 0 5px #ff0000, 0 0 10px #ff0000, 0 0 20px #ff0000;
+    /* 应用脉冲动画，模拟心脏狂跳或警报闪烁 */
+    animation: pulseError 0.1s infinite;
+}
+
+/* 确保错误信息内部的字符继承红色 */
+body.state-nostofobia .code-line .macro-error span {
+    color: inherit;
+    text-shadow: inherit;
+}
+
+/* --- 错误信息脉冲动画定义 --- */
+@keyframes pulseError {
+    /* 只改变光影强度，不再进行剧烈的位移和旋转 */
+    0% { text-shadow: 0 0 5px #ff0000, 0 0 10px #ff0000, 0 0 20px #ff0000; opacity: 1; }
+    50% { text-shadow: 0 0 2px #ff0000, 0 0 5px #ff0000, 0 0 10px #ff0000; opacity: 0.8; }
+    100% { text-shadow: 0 0 5px #ff0000, 0 0 10px #ff0000, 0 0 20px #ff0000; opacity: 1; }
+}
+
+/* --- 右侧注释样式 --- */
+body.state-nostofobia .code-line::after {
+    /* 彻底隐藏注释，不再有任何解释或安慰 */
+    display: none;
+}
