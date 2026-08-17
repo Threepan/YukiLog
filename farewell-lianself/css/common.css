@@ -1,0 +1,124 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&display=swap');
+
+/* --- Content Delay Logic (for Vitrimura exit) --- */
+.code-area.content-delayed .code-line {
+    opacity: 0;
+    transition: opacity 1s ease;
+}
+.code-area:not(.content-delayed) .code-line {
+    opacity: 1;
+    transition: opacity 1s ease;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: radial-gradient(circle at 20% 20%, #2b2d3a 0%, #1d1f2b 35%, #141520 70%);
+    font-family: 'Fira Code', monospace;
+    transition: background 0.5s ease;
+}
+
+.window {
+    background-color: #282a36;
+    border-radius: 12px;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.65);
+    width: auto;
+    min-width: 720px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    transition: all 0.5s ease;
+}
+
+.title-bar {
+    background-color: #1f2030;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #11121a;
+    position: relative;
+}
+
+.buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.btn {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+.btn:hover { transform: scale(1.1); }
+
+.close { background-color: #ff5555; }
+.minimize { background-color: #f1fa8c; }
+.maximize { background-color: #50fa7b; }
+
+.filename {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #d6d7e0;
+    font-size: 13px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    transition: all 0.3s ease;
+}
+
+.code-area {
+    padding: 20px 26px;
+    color: #f8f8f2;
+    font-size: 15px;
+    line-height: 1.35; 
+    white-space: pre;
+    font-feature-settings: "liga" on;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: linear-gradient(180deg, rgba(68, 71, 90, 0.28) 0%, rgba(40, 42, 54, 0.65) 100%);
+    min-height: 300px;
+    transition: all 0.5s ease;
+}
+
+.line-num {
+    display: inline-block;
+    width: 22px;
+    color: #6d7181;
+    text-align: right;
+    margin-right: 10px;
+    user-select: none;
+    font-size: 12px;
+    opacity: 0.6;
+    transition: all 0.3s ease;
+}
+
+.code-line {
+    position: relative;
+    display: block;
+    padding-right: 170px;
+    transition: all 0.3s ease;
+}
+.code-line::after {
+    content: attr(data-source);
+    position: absolute;
+    right: 0;
+    top: 0;
+    color: #9ea0a6;
+    font-size: 12px;
+    font-weight: 500;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+    pointer-events: none;
+    white-space: pre;
+    max-width: 46ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.code-line:hover::after { opacity: 1; }

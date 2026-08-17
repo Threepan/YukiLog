@@ -1,0 +1,296 @@
+/* === State_Vitrimura (崩坏前夕模式) === */
+/* 
+    该模式对应点击黄色最小化按钮后的状态。
+    整体风格呈现出一种不稳定、即将崩溃的紧张感，带有红色的警告色调和抖动效果。
+*/
+
+/* --- 窗口破碎效果 (Shattered Window) --- */
+
+/* 隐藏原始窗口 */
+.window-hidden {
+    opacity: 0 !important;
+    pointer-events: none;
+    transition: none !important; /* 瞬间消失，不留残影 */
+}
+
+/* 碎片容器 */
+.shards-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 999;
+    pointer-events: none; /* 允许点击穿透到 body，但碎片内部元素会重新启用 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.5s ease;
+}
+
+/* 碎片淡出 */
+.shards-container.shards-fading-out {
+    opacity: 0;
+}
+
+/* 碎片基础样式 */
+.shard {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+    will-change: transform;
+    /* 初始状态：在原点，等待爆炸 */
+    transform: translate(0, 0) rotate(0deg);
+}
+
+/* 碎片内的窗口克隆体 */
+.shard .window-clone {
+    pointer-events: auto; /* 允许点击按钮 */
+    /* 确保克隆体样式与原窗口一致 */
+    margin: 0 !important; /* 移除可能存在的 margin */
+    /* 阴影在碎片上可能看起来很奇怪，因为被切断了，但保留它能增加立体感 */
+}
+
+/* --- 碎片形状与动画 --- */
+
+/* 碎片 1: 左上角 (包含按钮) */
+.shard-1 .window-clone {
+    clip-path: polygon(0 0, 70% 0, 40% 60%, 0 100%);
+}
+.shard-1 {
+    /* 爆炸 + 悬浮 */
+    /* 0.1s 延迟，让用户先看到完整的（虽然是假的）窗口，然后炸开 */
+    animation: explodeShard1 0.4s cubic-bezier(0.1, 0.9, 0.2, 1) 0.1s forwards, floatShard1 4s ease-in-out infinite 0.5s;
+}
+
+/* 碎片 2: 右上角 */
+.shard-2 .window-clone {
+    clip-path: polygon(70% 0, 100% 0, 100% 60%, 40% 60%);
+}
+.shard-2 {
+    animation: explodeShard2 0.45s cubic-bezier(0.1, 0.9, 0.2, 1) 0.1s forwards, floatShard2 5s ease-in-out infinite 0.55s;
+}
+
+/* 碎片 3: 底部 */
+.shard-3 .window-clone {
+    clip-path: polygon(0 100%, 40% 60%, 100% 60%, 100% 100%);
+}
+.shard-3 {
+    animation: explodeShard3 0.5s cubic-bezier(0.1, 0.9, 0.2, 1) 0.1s forwards, floatShard3 6s ease-in-out infinite 0.6s;
+}
+
+
+/* --- 爆炸动画 (快速炸开) --- */
+@keyframes explodeShard1 {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    100% { transform: translate(-60px, -40px) rotate(-5deg); }
+}
+@keyframes explodeShard2 {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    100% { transform: translate(60px, -50px) rotate(5deg); }
+}
+@keyframes explodeShard3 {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    100% { transform: translate(10px, 80px) rotate(-3deg); }
+}
+
+/* --- 悬浮动画 (在炸开的位置附近浮动) --- */
+@keyframes floatShard1 {
+    0%, 100% { transform: translate(-60px, -40px) rotate(-5deg); }
+    50% { transform: translate(-50px, -50px) rotate(-7deg); }
+}
+
+@keyframes floatShard2 {
+    0%, 100% { transform: translate(60px, -50px) rotate(5deg); }
+    50% { transform: translate(70px, -40px) rotate(7deg); }
+}
+
+@keyframes floatShard3 {
+    0%, 100% { transform: translate(10px, 80px) rotate(-3deg); }
+    50% { transform: translate(0px, 90px) rotate(-1deg); }
+}
+
+/* --- 碎片重组 (Reassembling) --- */
+.shards-container.reassembling .shard {
+    /* 强制停止所有动画 */
+    animation: none !important;
+    /* 快速平滑过渡回原点 */
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* 归位 */
+    transform: translate(0, 0) rotate(0deg) !important;
+}
+
+/* --- 行号样式 --- */
+body.state-vitrimura .line-num {
+    /* 基础样式：微小扭曲，模糊，暗红 */
+    filter: blur(0.5px);
+    color: rgba(255, 85, 85, 0.8);
+    transform: rotate(5deg);
+    transition: transform 0.1s; /* 平滑过渡一点点，避免太生硬的复位 */
+}
+
+/* --- JS 控制的激活态 (Glitch Effect - 剧烈) --- */
+body.state-vitrimura .line-num.glitch-active {
+    /* 0.4s 内完成，steps(1) 确保每一帧都是瞬间切换角度，完全没有过渡动画 */
+    animation: spikeShake 0.4s steps(1) forwards; 
+    color: #ffffff;
+    text-shadow: 2px 2px 0px #ff0000, -2px -2px 0px #880000;
+    filter: none;
+    z-index: 10;
+    position: relative;
+}
+
+/* --- JS 控制的激活态 (Glitch Effect - 轻微寒战) --- */
+body.state-vitrimura .line-num.glitch-small {
+    /* 0.2s 快速震颤 */
+    animation: shiver 0.2s linear infinite;
+    color: #ffcccc; /* 稍微亮一点 */
+    text-shadow: 1px 0 0 #ff0000;
+    filter: none;
+    z-index: 5;
+    position: relative;
+}
+
+/* --- 尖刺抖动动画定义 (剧烈) --- */
+@keyframes spikeShake {
+    0% { transform: rotate(5deg) scale(1); }
+    /* 移除位移，纯粹的角度瞬变，模拟机械故障般的卡顿 */
+    20% { transform: rotate(35deg) scale(1.2); }
+    40% { transform: rotate(-25deg) scale(1.1); }
+    60% { transform: rotate(15deg) scale(1.15); }
+    80% { transform: rotate(-10deg) scale(1.1); }
+    100% { transform: rotate(5deg) scale(1); }
+}
+
+/* --- 寒战动画定义 (轻微) --- */
+@keyframes shiver {
+    0% { transform: rotate(5deg) translate(0, 0); }
+    25% { transform: rotate(8deg) translate(1px, 1px); }
+    50% { transform: rotate(2deg) translate(-1px, -1px); }
+    75% { transform: rotate(7deg) translate(-1px, 1px); }
+    100% { transform: rotate(5deg) translate(0, 0); }
+}
+
+/* --- 代码区域样式 --- */
+body.state-vitrimura .code-area {
+    /* 背景变为暗红色的渐变，营造压抑的氛围 */
+    background: linear-gradient(180deg, rgba(80, 20, 20, 0.4) 0%, rgba(60, 10, 10, 0.8) 100%);
+}
+
+/* --- 代码文字样式 (通用) --- */
+body.state-vitrimura .code-line span:not(.line-num) {
+    display: inline-block;
+    /* 应用布朗运动动画，模拟极度不稳定的抖动 */
+    animation: brownianMotion 0.2s infinite;
+    /* 强制覆盖所有语法高亮，统一为鲜红色 */
+    color: #ff5555 !important; 
+    /* 添加黑色阴影，增加文字的立体感和脏乱感 */
+    text-shadow: 2px 0 0 rgba(0,0,0,0.5);
+}
+
+/* --- 特殊处理：self 行 (第4行和第5行) --- */
+/* 第4行: self._attr; */
+body.state-vitrimura .code-line:nth-child(4) span:not(.line-num) {
+    animation: violentShakeA 0.15s infinite steps(2);
+    color: #ff3333 !important;
+    text-shadow: 3px 0 0 rgba(0,0,0,0.7);
+}
+
+/* 第5行: self.__M; */
+body.state-vitrimura .code-line:nth-child(5) span:not(.line-num) {
+    animation: violentShakeB 0.18s infinite steps(3);
+    color: #ff0000 !important;
+    text-shadow: -3px 0 0 rgba(0,0,0,0.7);
+}
+
+/* --- 特殊处理：牢笼词 (static, final, private) --- */
+/* static (第2个span): 死死的锁住，极度稳定 */
+body.state-vitrimura .code-line:nth-child(2) span:nth-child(2) {
+    animation: lockSteady 4s ease-in-out infinite !important;
+    color: #880000 !important; /* 暗红色 */
+    text-shadow: 0 0 2px #000 !important;
+    font-weight: bold;
+    transform-origin: center;
+}
+
+/* final (第3个span) & private (第2个span): 稍微挣扎 */
+body.state-vitrimura .code-line:nth-child(2) span:nth-child(3),
+body.state-vitrimura .code-line:nth-child(3) span:nth-child(2) {
+    animation: lockVibrate 0.1s linear infinite !important;
+    color: #aa0000 !important;
+    text-shadow: 0 0 1px #000 !important;
+    font-weight: bold;
+}
+
+/* --- 布朗运动动画定义 (通用) --- */
+@keyframes brownianMotion {
+    /* 在极小的范围内随机位移，模拟粒子的无规则运动 */
+    0% { transform: translate(0, 0); }
+    25% { transform: translate(1px, 1px); }
+    50% { transform: translate(-1px, 0); }
+    75% { transform: translate(0, -1px); }
+    100% { transform: translate(0, 0); }
+}
+
+/* --- 牢笼静止动画 (final) --- */
+@keyframes lockSteady {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); } /* 极其微弱的呼吸感，像沉重的铁门 */
+}
+
+/* --- 牢笼震颤动画 (private) --- */
+@keyframes lockVibrate {
+    0% { transform: translate(0, 0); }
+    25% { transform: translate(0.5px, 0); }
+    50% { transform: translate(0, 0.5px); }
+    75% { transform: translate(-0.5px, 0); }
+    100% { transform: translate(0, 0); }
+}
+
+/* --- 剧烈抖动 A (针对 self._attr) --- */
+@keyframes violentShakeA {
+    0% { transform: translate(2px, 1px) rotate(1deg); }
+    25% { transform: translate(-2px, -2px) rotate(-1deg); }
+    50% { transform: translate(-1px, 2px) rotate(0deg); }
+    75% { transform: translate(2px, -1px) rotate(1deg); }
+    100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+/* --- 剧烈抖动 B (针对 self.__M) --- */
+@keyframes violentShakeB {
+    0% { transform: translate(-2px, 2px) rotate(-2deg); }
+    33% { transform: translate(3px, -1px) rotate(1deg); }
+    66% { transform: translate(-1px, -3px) rotate(2deg); }
+    100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+/* --- 右侧注释样式 --- */
+body.state-vitrimura .code-line::after {
+    /* 注释闪烁动画 */
+    animation: flashComment 0.5s infinite alternate;
+    /* 默认隐藏，鼠标悬停后延迟显示 */
+    transition-delay: 1s; 
+    opacity: 0;
+    /* 离开后保留3秒的过渡效果 */
+    transition: opacity 3s ease;
+}
+
+/* --- 鼠标悬停时的注释样式 --- */
+body.state-vitrimura .code-line:hover::after {
+    /* 鼠标悬停时立即显示 */
+    opacity: 1;
+    transition-delay: 0s;
+}
+
+/* --- 注释闪烁动画定义 --- */
+@keyframes flashComment {
+    /* 不透明度在 0.3 到 1 之间快速波动，模拟接触不良或信号不稳 */
+    0% { opacity: 0.3; }
+    100% { opacity: 1; }
+}
